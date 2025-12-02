@@ -1,0 +1,415 @@
+# Development Workflow Standards
+
+**Purpose:** Establish Test-Driven Development (TDD) patterns, file organization principles, and commit practices that work across any programming language or framework.
+
+**Source Verification:** Patterns extracted from production development transcripts and verified against industry best practices.
+
+---
+
+## Quick Reference
+
+**🔴 Red-Green-Refactor Cycle**
+1. Write failing test first (RED)
+2. Write minimal code to pass (GREEN)  
+3. Refactor and clean up (REFACTOR)
+4. Commit, then repeat
+
+**📁 Many Small Files**
+- Prefer new files over adding to existing ones
+- Keep files under 1000 lines
+- One responsibility per file
+
+**⚡ Micro-Milestones**
+- Work in commit-sized chunks
+- Optimize for easy rewinding
+- Each commit should be fully functional
+
+---
+
+## Core TDD Workflow
+
+### 1. Red-Green-Refactor Pattern
+
+**Always Follow This Sequence:**
+
+```markdown
+**TDD Cycle Checklist:**
+
+🔴 RED Phase:
+- [ ] Write one failing test
+- [ ] Run test to confirm it fails
+- [ ] Understand exactly what needs to be implemented
+
+🟢 GREEN Phase:  
+- [ ] Write minimal code to make test pass
+- [ ] Run test to confirm it passes
+- [ ] Don't worry about code quality yet
+
+🔧 REFACTOR Phase:
+- [ ] Clean up code while keeping tests green
+- [ ] Improve readability and structure  
+- [ ] Remove duplication
+- [ ] Commit changes with descriptive message
+```
+
+**Example TDD Session:**
+
+```markdown
+**Current Task:** Add input validation to user registration
+
+**RED:** Test for empty email validation
+- File: tests/user-validation.test.js
+- Test: `should reject empty email addresses`
+- Status: ❌ Failing (no validation function exists)
+
+**GREEN:** Minimal validation function
+- File: src/user-validation.js  
+- Code: Basic isEmpty check for email field
+- Status: ✅ Passing
+
+**REFACTOR:** Improve validation logic
+- Enhanced email format validation
+- Better error messages
+- Status: ✅ All tests passing
+- Commit: "feat: add email validation to user registration"
+```
+
+**Integration:** [Quality Control](quality-control.mdc#testing-standards)
+
+### 2. Micro-Milestone Management
+
+**Work in Reversible Increments:**
+
+```markdown
+**Milestone Planning:**
+- Current feature: User authentication
+- Micro-milestone 1: Email validation (1-2 hours)
+- Micro-milestone 2: Password strength check (1-2 hours)  
+- Micro-milestone 3: Login attempt handling (2-3 hours)
+
+**Commit Strategy:**
+- Each milestone = 1 commit
+- Each commit should be fully functional
+- Easy to revert if problems arise
+```
+
+**Benefits:**
+- Easy debugging (revert last commit)
+- Clear progress tracking
+- Reduced risk of losing work
+- Better code review granularity
+
+**Related:** [Communication Standards](communication-standards.mdc#progress-verification-system)
+
+### 3. File Organization Principles
+
+**Always Prefer Many Small Files:**
+
+```markdown
+**File Creation Rules:**
+
+✅ CREATE NEW FILES when:
+- Adding a new feature or component
+- Logic exceeds 200 lines in current file
+- Different responsibility or concern
+- Testing a new integration or API
+
+❌ AVOID EXPANDING existing files when:
+- File is approaching 1000 lines
+- Adding unrelated functionality
+- Logic becomes hard to follow
+- Multiple developers need to work on same file
+```
+
+**File Naming Conventions:**
+
+```markdown
+**Descriptive Names:**
+- `user-validation.js` instead of `validation.js`
+- `email-service.js` instead of `service.js`
+- `auth-middleware.js` instead of `middleware.js`
+- `api-error-handler.js` instead of `errors.js`
+
+**Test File Naming:**
+- `user-validation.test.js` (matches implementation)
+- `email-service.integration.test.js` (integration tests)
+- `auth-middleware.unit.test.js` (unit tests)
+```
+
+---
+
+## Advanced Workflow Patterns
+
+### 4. Observability During Development
+
+**Add Excessive Logging While Working:**
+
+```markdown
+**Logging Strategy:**
+
+🔍 DURING DEVELOPMENT:
+- Add console.log() liberally for debugging
+- Log function entry/exit points
+- Log variable states at key moments
+- Track API request/response cycles
+
+🧹 BEFORE COMMIT:
+- Remove or comment out debug logs
+- Keep only essential logging (errors, warnings)
+- Ensure no sensitive data in logs
+- Run tests to confirm logging removal doesn't break functionality
+```
+
+**Example Logging Pattern:**
+
+```javascript
+// DEVELOPMENT LOGGING (remove before commit)
+console.log('🚀 Starting user validation for:', userData);
+console.log('📧 Email validation result:', isValidEmail);
+console.log('✅ Validation complete, result:', validationResult);
+
+// PRODUCTION LOGGING (keep)
+logger.error('User validation failed', { userId, error: error.message });
+logger.info('User registration successful', { userId });
+```
+
+**Security Note:** [Security Practices](security-practices.mdc#secure-logging)
+
+### 5. Code Quality Maintenance
+
+**Prevent Technical Debt:**
+
+```markdown
+**Quality Checklist (Before Each Commit):**
+
+📝 Code Quality:
+- [ ] Functions under 50 lines each
+- [ ] Clear variable and function names
+- [ ] No duplicated logic
+- [ ] JSDoc comments for new functions
+
+🧪 Testing:
+- [ ] All tests passing
+- [ ] New functionality has tests
+- [ ] Edge cases covered
+- [ ] No skipped or pending tests
+
+🔒 Security:
+- [ ] Input validation where needed
+- [ ] No hardcoded credentials
+- [ ] Secure error handling
+- [ ] Dependencies up to date
+```
+
+**Dead Code Prevention:**
+
+```markdown
+**Clean Removal Strategy:**
+- Delete unused functions completely
+- Remove commented-out code blocks
+- Clean up unused imports and dependencies
+- Remove temporary debugging code
+- Delete obsolete test files
+```
+
+### 6. Human-Readable over DRY
+
+**Prioritize Clarity:**
+
+```markdown
+**Code Readability Guidelines:**
+
+✅ PREFER readable code:
+- Explicit variable names over abbreviations
+- Clear function names that describe purpose
+- Inline documentation for complex logic
+- Separate functions for different concerns
+
+⚠️ AVOID premature optimization:
+- Complex abstractions for simple operations
+- Over-engineering for minimal code reuse
+- Obscure one-liners that save space but hurt readability
+- Generic functions that handle too many cases
+```
+
+**Example:**
+
+```javascript
+// ✅ GOOD: Human-readable
+function validateUserEmailAddress(email) {
+  if (!email || email.trim() === '') {
+    return { valid: false, error: 'Email address is required' };
+  }
+  
+  if (!email.includes('@')) {
+    return { valid: false, error: 'Email address must contain @ symbol' };
+  }
+  
+  return { valid: true };
+}
+
+// ❌ AVOID: Over-engineered DRY
+function validate(input, rules) {
+  return rules.every(rule => rule.test(input)) 
+    ? { valid: true } 
+    : { valid: false, error: rules.find(r => !r.test(input)).error };
+}
+```
+
+---
+
+## Code Review Process
+
+### 7. Effective Code Review Communication
+
+**Review Request Format:**
+
+```markdown
+**Code Review Request:**
+
+**Changes Made:**
+- Added email validation to user registration
+- Created user-validation.js module  
+- Added comprehensive tests for edge cases
+
+**Testing Done:**
+- ✅ All existing tests pass
+- ✅ New email validation tests pass
+- ✅ Manual testing with invalid emails
+
+**Review Focus Areas:**
+1. Line 23-31: Email regex pattern - is this comprehensive enough?
+2. Error messages: Are they user-friendly and actionable?
+3. Test coverage: Any edge cases missing?
+
+**Dependencies:** None
+**Breaking Changes:** None
+```
+
+**Integration:** [Communication Standards](communication-standards.mdc#code-review-communication)
+
+### 8. Git Workflow Integration
+
+**Semantic Commit Messages:**
+
+```markdown
+**Commit Message Format:**
+type(scope): description
+
+**Types:**
+- feat: New feature
+- fix: Bug fix  
+- test: Adding tests
+- refactor: Code restructuring
+- docs: Documentation changes
+
+**Examples:**
+- `feat(auth): add email validation to user registration`
+- `fix(validation): handle empty string edge case`
+- `test(auth): add comprehensive email validation tests`
+- `refactor(validation): extract common validation utilities`
+```
+
+**Branch Strategy:**
+
+```markdown
+**Branch Naming:**
+- feature/email-validation
+- bugfix/validation-edge-case
+- test/auth-comprehensive-coverage
+- refactor/validation-utilities
+
+**Workflow:**
+1. Create feature branch from main
+2. Implement using TDD cycle
+3. Create pull request with test evidence
+4. Code review and merge
+5. Delete feature branch
+```
+
+---
+
+## Project Structure Templates
+
+### 9. Standard Directory Organization
+
+**Language-Agnostic Structure:**
+
+```
+project-root/
+├── src/                     # Implementation code
+│   ├── core/               # Core business logic
+│   ├── services/           # External integrations
+│   ├── utils/              # Utility functions
+│   └── types/              # Type definitions
+├── tests/                  # All test files
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── fixtures/          # Test data
+├── docs/                   # Documentation
+└── config/                 # Configuration files
+```
+
+**Benefits:**
+- Clear separation of concerns
+- Easy navigation for new team members
+- Consistent across different projects
+- Scales well as project grows
+
+### 10. Documentation Integration
+
+**Maintain Project Focus:**
+
+```markdown
+**Essential Documentation Files:**
+
+📋 BUILD.md:
+- Setup instructions
+- Build commands  
+- Dependency information
+- Environment requirements
+
+📋 TASK.md:
+- Current sprint goals
+- Active development tasks
+- Blocked items
+- Next milestones
+
+📋 PAGELIST.md (for web projects):
+- All routes/pages
+- Component inventory
+- API endpoints
+- Feature completion status
+```
+
+**Related:** [Quality Control](quality-control.mdc#documentation-standards)
+
+---
+
+## Quick Implementation Guide
+
+**✅ Start Today:**
+- [ ] Write one failing test before any new code
+- [ ] Create new file instead of expanding existing one
+- [ ] Add debug logging during development
+- [ ] Remove debug logs before commit
+
+**✅ This Week:**
+- [ ] Implement full TDD cycle for next feature
+- [ ] Establish micro-milestone planning
+- [ ] Set up semantic commit messages
+- [ ] Create project documentation files
+
+**✅ Advanced Implementation:**
+- [ ] Integrate with [Quality Control](quality-control.mdc) standards
+- [ ] Establish team code review practices
+- [ ] Set up automated testing in CI/CD
+- [ ] Create project-specific workflow guidelines
+
+---
+
+**Next Steps:** Review [Security Practices](security-practices.mdc) for secure development workflows or [Quality Control](quality-control.mdc) for testing and documentation standards.
+description:
+globs:
+alwaysApply: false
+---

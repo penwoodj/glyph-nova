@@ -1,0 +1,659 @@
+# Quality Control Standards
+
+**Purpose:** Establish comprehensive quality standards for testing, documentation, and code review that ensure consistent, maintainable, and reliable software delivery.
+
+**Source Verification:** Patterns derived from production quality practices and verified against industry standards.
+
+---
+
+## Quick Reference
+
+**🧪 Testing First**
+- Write tests before implementing features
+- Aim for 80%+ code coverage
+- Test edge cases and error scenarios
+
+**📚 Living Documentation**
+- Keep README.md current and useful
+- Document API changes immediately
+- Include usage examples
+
+**🔍 Code Review Standards**
+- Review for security, performance, and maintainability
+- Use semantic commit messages
+- Validate all tests pass before merge
+
+---
+
+## Testing Standards
+
+### 1. Test-Driven Quality
+
+**Comprehensive Testing Strategy:**
+
+```markdown
+**Testing Hierarchy:**
+
+🔴 Unit Tests (Fastest):
+- Test individual functions in isolation
+- Mock external dependencies
+- Cover edge cases and error conditions
+- Run in milliseconds, execute frequently
+
+🟡 Integration Tests (Medium):
+- Test component interactions
+- Use real dependencies where safe
+- Test API contracts and data flow
+- Run in seconds, execute on commits
+
+🟢 End-to-End Tests (Slowest):
+- Test complete user workflows
+- Use production-like environment
+- Validate critical business processes
+- Run in minutes, execute on releases
+```
+
+**Test Coverage Requirements:**
+
+```markdown
+**Minimum Coverage Targets:**
+
+✅ CRITICAL Functions (100% coverage):
+- Authentication and authorization
+- Data validation and sanitization
+- Payment and financial operations
+- Security-sensitive operations
+
+✅ CORE Functions (90% coverage):
+- Main business logic
+- API endpoints and controllers
+- Data transformation functions
+- Error handling mechanisms
+
+✅ UTILITY Functions (80% coverage):
+- Helper functions and utilities
+- Configuration and setup code
+- Non-critical UI components
+- Logging and monitoring code
+```
+
+**Example Testing Implementation:**
+
+```javascript
+// ✅ GOOD: Comprehensive test structure
+describe('User Authentication', () => {
+  describe('Email Validation', () => {
+    test('should accept valid email formats', () => {
+      const validEmails = [
+        'user@example.com',
+        'test.email+tag@domain.co.uk',
+        'user123@subdomain.example.org'
+      ];
+      
+      validEmails.forEach(email => {
+        expect(validateEmail(email)).toBe(true);
+      });
+    });
+    
+    test('should reject invalid email formats', () => {
+      const invalidEmails = [
+        'invalid-email',
+        '@example.com',
+        'user@',
+        '',
+        null,
+        undefined
+      ];
+      
+      invalidEmails.forEach(email => {
+        expect(validateEmail(email)).toBe(false);
+      });
+    });
+    
+    test('should handle edge cases gracefully', () => {
+      // Test extremely long emails
+      const longEmail = 'a'.repeat(100) + '@example.com';
+      expect(validateEmail(longEmail)).toBe(false);
+      
+      // Test with special characters
+      expect(validateEmail('user+tag@example.com')).toBe(true);
+      expect(validateEmail('user@domain-name.com')).toBe(true);
+    });
+  });
+  
+  describe('Error Handling', () => {
+    test('should not expose sensitive information in errors', () => {
+      const result = authenticateUser('invalid@email.com', 'wrongpassword');
+      
+      expect(result.success).toBe(false);
+      expect(result.message).not.toContain('database');
+      expect(result.message).not.toContain('internal');
+      expect(result.message).toBe('Invalid credentials provided');
+    });
+  });
+});
+```
+
+**Integration:** [Development Workflow](development-workflow.mdc#red-green-refactor-pattern)
+
+### 2. Security Testing Integration
+
+**Security-Focused Testing:**
+
+```markdown
+**Security Test Categories:**
+
+🔒 Input Validation Tests:
+- [ ] Test SQL injection attempts
+- [ ] Test XSS payload injection
+- [ ] Test command injection scenarios
+- [ ] Test buffer overflow attempts
+
+🛡️ Authentication Tests:
+- [ ] Test with invalid credentials
+- [ ] Test with expired sessions
+- [ ] Test privilege escalation
+- [ ] Test concurrent session handling
+
+🔐 Data Protection Tests:
+- [ ] Test sensitive data is not logged
+- [ ] Test encryption/decryption functions
+- [ ] Test data sanitization
+- [ ] Test secure transmission
+```
+
+**Security Test Examples:**
+
+```javascript
+// Security-focused testing examples
+describe('Security Tests', () => {
+  describe('Input Sanitization', () => {
+    test('should prevent XSS attacks', () => {
+      const xssPayload = '<script>alert("XSS")</script>';
+      const sanitized = sanitizeUserInput(xssPayload);
+      
+      expect(sanitized).not.toContain('<script>');
+      expect(sanitized).not.toContain('alert');
+    });
+    
+    test('should prevent SQL injection', () => {
+      const sqlInjection = "'; DROP TABLE users; --";
+      const result = validateDatabaseQuery(sqlInjection);
+      
+      expect(result.isValid).toBe(false);
+      expect(result.sanitized).not.toContain('DROP TABLE');
+    });
+  });
+  
+  describe('Credential Protection', () => {
+    test('should never log passwords', () => {
+      const logSpy = jest.spyOn(console, 'log');
+      
+      authenticateUser('user@example.com', 'secret-password');
+      
+      const logCalls = logSpy.mock.calls.flat().join(' ');
+      expect(logCalls).not.toContain('secret-password');
+      
+      logSpy.mockRestore();
+    });
+  });
+});
+```
+
+**Related:** [Security Practices](security-practices.mdc#security-testing)
+
+---
+
+## Documentation Standards
+
+### 3. Living Documentation
+
+**Documentation That Stays Current:**
+
+```markdown
+**Essential Documentation Files:**
+
+📋 README.md Requirements:
+- [ ] Project description and purpose
+- [ ] Installation and setup instructions
+- [ ] Usage examples with code
+- [ ] API documentation or links
+- [ ] Contributing guidelines
+- [ ] License information
+
+📋 API Documentation:
+- [ ] Endpoint descriptions
+- [ ] Request/response examples
+- [ ] Authentication requirements
+- [ ] Error code explanations
+- [ ] Rate limiting information
+
+📋 Code Documentation:
+- [ ] JSDoc for all public functions
+- [ ] Inline comments for complex logic
+- [ ] Architecture decision records
+- [ ] Deployment and configuration guides
+```
+
+**README.md Template:**
+
+```markdown
+# Project Name
+
+Brief description of what this project does and who it's for.
+
+## Installation
+
+```bash
+# Prerequisites
+npm install
+
+# Configuration
+cp config.template.js config.js
+# Edit config.js with your settings
+
+# Run tests
+npm test
+
+# Start application
+npm start
+```
+
+## Usage
+
+Basic usage examples:
+
+```javascript
+const { validateUser } = require('./src/validation');
+
+// Validate user input
+const result = validateUser({
+  email: 'user@example.com',
+  password: 'secure-password'
+});
+
+if (result.isValid) {
+  console.log('User is valid');
+} else {
+  console.log('Validation errors:', result.errors);
+}
+```
+
+## API Reference
+
+### POST /api/users/validate
+
+Validates user registration data.
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "password": "secure-password"
+}
+```
+
+**Response:**
+```json
+{
+  "isValid": true,
+  "errors": []
+}
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Write tests for your changes
+4. Ensure all tests pass: `npm test`
+5. Commit changes: `git commit -m 'feat: add amazing feature'`
+6. Push to branch: `git push origin feature/amazing-feature`
+7. Create Pull Request
+
+## License
+
+MIT License - see LICENSE file for details.
+```
+
+### 4. Code Documentation Standards
+
+**Inline Documentation:**
+
+```javascript
+/**
+ * Validates user registration data against security requirements
+ * 
+ * @param {Object} userData - User registration data
+ * @param {string} userData.email - User email address
+ * @param {string} userData.password - User password
+ * @param {string} [userData.name] - Optional user display name
+ * @returns {Object} Validation result with success status and errors
+ * 
+ * @example
+ * const result = validateUserRegistration({
+ *   email: 'user@example.com',
+ *   password: 'SecurePass123!'
+ * });
+ * 
+ * if (result.isValid) {
+ *   // Proceed with registration
+ * } else {
+ *   // Handle validation errors
+ *   console.log(result.errors);
+ * }
+ * 
+ * @throws {Error} Throws error if userData is null or undefined
+ * @since 1.0.0
+ */
+function validateUserRegistration(userData) {
+  // Input validation to prevent null/undefined access
+  if (!userData) {
+    throw new Error('User data is required for validation');
+  }
+  
+  const errors = [];
+  
+  // Email validation with comprehensive format checking
+  if (!userData.email || typeof userData.email !== 'string') {
+    errors.push('Email is required and must be a string');
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+    errors.push('Email format is invalid');
+  }
+  
+  // Password strength validation
+  if (!userData.password || userData.password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    validatedData: userData
+  };
+}
+```
+
+---
+
+## Code Review Process
+
+### 5. Review Standards
+
+**Comprehensive Code Review Checklist:**
+
+```markdown
+**Pre-Review Preparation:**
+
+📋 Author Checklist (Before Requesting Review):
+- [ ] All tests pass locally
+- [ ] Code follows project style guidelines
+- [ ] Documentation updated for public API changes
+- [ ] Security considerations addressed
+- [ ] Performance impact considered
+- [ ] Breaking changes documented
+
+📋 Reviewer Checklist:
+- [ ] Code logic is clear and correct
+- [ ] Security vulnerabilities addressed
+- [ ] Test coverage is adequate
+- [ ] Performance implications reviewed
+- [ ] Documentation is accurate
+- [ ] Breaking changes are justified
+```
+
+**Review Request Template:**
+
+```markdown
+## Code Review Request
+
+**Summary:**
+Brief description of changes and motivation.
+
+**Type of Change:**
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+
+**Testing Done:**
+- [ ] Unit tests added/updated
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+- [ ] Security testing performed
+
+**Review Focus Areas:**
+1. **Security:** Input validation on user registration form
+2. **Performance:** Database query optimization in getUserData()
+3. **Logic:** Edge case handling in validateEmail()
+
+**Screenshots/Evidence:**
+Include screenshots for UI changes or test output for logic changes.
+
+**Checklist:**
+- [ ] My code follows the project style guidelines
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes
+```
+
+### 6. Semantic Commit Standards
+
+**Consistent Commit Messages:**
+
+```markdown
+**Commit Message Format:**
+type(scope): subject
+
+body (optional)
+
+footer (optional)
+
+**Types:**
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- style: Changes that do not affect the meaning of the code
+- refactor: A code change that neither fixes a bug nor adds a feature
+- perf: A code change that improves performance
+- test: Adding missing tests or correcting existing tests
+- chore: Changes to the build process or auxiliary tools
+
+**Examples:**
+```
+
+```bash
+# Good commit messages
+feat(auth): add email validation to user registration
+
+fix(api): handle null response from external service
+
+docs(readme): update installation instructions
+
+test(auth): add comprehensive validation test cases
+
+refactor(utils): extract common validation logic
+
+perf(db): optimize user lookup query
+
+style(lint): fix ESLint warnings in auth module
+
+chore(deps): update security dependencies
+```
+
+**Commit Message Best Practices:**
+
+```markdown
+**Subject Line Guidelines:**
+- Use imperative mood ("add" not "added")
+- Keep under 50 characters
+- Don't end with period
+- Be specific about what changed
+
+**Body Guidelines:**
+- Explain what and why, not how
+- Include ticket numbers if applicable
+- Break at 72 characters per line
+- Use bullet points for multiple changes
+
+**Footer Guidelines:**
+- Reference breaking changes: BREAKING CHANGE:
+- Close issues: Closes #123
+- Reference related work: Related to #456
+```
+
+---
+
+## Performance and Quality Metrics
+
+### 7. Quality Metrics Tracking
+
+**Key Quality Indicators:**
+
+```markdown
+**Code Quality Metrics:**
+
+📊 Test Coverage:
+- Target: 80% overall, 100% for critical paths
+- Measure: Lines, branches, functions covered
+- Tools: Jest coverage, NYC, Codecov
+
+📊 Code Complexity:
+- Target: Cyclomatic complexity < 10 per function
+- Measure: Number of decision points
+- Tools: ESLint complexity rules
+
+📊 Security Metrics:
+- Target: Zero known vulnerabilities
+- Measure: Dependency audit results
+- Tools: npm audit, Snyk, GitHub security alerts
+
+📊 Performance Metrics:
+- Target: API response time < 200ms
+- Measure: Response times, memory usage
+- Tools: Performance monitoring, profiling
+```
+
+**Quality Gate Implementation:**
+
+```javascript
+// Example quality gate script
+const qualityGates = {
+  testCoverage: 80,
+  maxComplexity: 10,
+  maxFileSize: 1000,
+  securityVulnerabilities: 0
+};
+
+function checkQualityGates() {
+  const results = {
+    testCoverage: checkTestCoverage(),
+    complexity: checkCodeComplexity(),
+    fileSize: checkFileSize(),
+    security: checkSecurityVulnerabilities()
+  };
+  
+  const failures = [];
+  
+  if (results.testCoverage < qualityGates.testCoverage) {
+    failures.push(`Test coverage ${results.testCoverage}% below target ${qualityGates.testCoverage}%`);
+  }
+  
+  if (results.complexity > qualityGates.maxComplexity) {
+    failures.push(`Code complexity ${results.complexity} exceeds maximum ${qualityGates.maxComplexity}`);
+  }
+  
+  if (results.security > qualityGates.securityVulnerabilities) {
+    failures.push(`${results.security} security vulnerabilities found`);
+  }
+  
+  if (failures.length > 0) {
+    console.error('Quality gates failed:');
+    failures.forEach(failure => console.error(`- ${failure}`));
+    process.exit(1);
+  }
+  
+  console.log('✅ All quality gates passed');
+}
+```
+
+### 8. Continuous Quality Improvement
+
+**Quality Process Integration:**
+
+```markdown
+**CI/CD Quality Checks:**
+
+🔄 Pre-Commit Hooks:
+- [ ] Lint code for style violations
+- [ ] Run unit tests
+- [ ] Check for security vulnerabilities
+- [ ] Validate commit message format
+
+🔄 Pull Request Checks:
+- [ ] All tests pass
+- [ ] Code coverage maintains threshold
+- [ ] No new security vulnerabilities
+- [ ] Documentation updated
+
+🔄 Pre-Deployment Checks:
+- [ ] Integration tests pass
+- [ ] Performance benchmarks met
+- [ ] Security scan clean
+- [ ] Deployment documentation updated
+```
+
+**Quality Review Schedule:**
+
+```markdown
+**Regular Quality Activities:**
+
+📅 Daily:
+- Review test results
+- Monitor performance metrics
+- Check security alerts
+
+📅 Weekly:
+- Code quality review
+- Dependency updates
+- Security audit
+
+📅 Monthly:
+- Architecture review
+- Technical debt assessment
+- Quality metrics analysis
+- Team retrospective on quality practices
+```
+
+---
+
+## Quick Implementation Guide
+
+**✅ Start Today:**
+- [ ] Set up basic test structure for current project
+- [ ] Add JSDoc comments to main functions
+- [ ] Implement semantic commit messages
+- [ ] Create basic README.md with installation instructions
+
+**✅ This Week:**
+- [ ] Achieve 80% test coverage on critical functions
+- [ ] Set up pre-commit hooks for quality checks
+- [ ] Establish code review process
+- [ ] Document API endpoints
+
+**✅ Advanced Implementation:**
+- [ ] Integrate with [Security Practices](security-practices.mdc) for security testing
+- [ ] Set up automated quality gates in CI/CD
+- [ ] Establish performance monitoring
+- [ ] Create quality metrics dashboard
+
+---
+
+**Next Steps:** Review [Problem-Solving](problem-solving.mdc) for systematic debugging approaches or [Conversation-Driven](conversation-driven.mdc) for AI-assisted development patterns.
+description:
+globs:
+alwaysApply: false
+---

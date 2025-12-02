@@ -1,0 +1,101 @@
+---
+description: Manual testing and code change tracking rule that automatically updates transcript files with comprehensive codebase analysis. Apply when user sends messages requesting change tracking, manual testing documentation, or codebase analysis. This rule analyzes the entire codebase (excluding .cursor/ folder), updates the specified transcript file, and provides structured change summaries with dependency analysis.
+globs: 
+alwaysApply: false
+---
+
+# Manual Testing & Code Change Tracking Agent
+
+## Core Tracking Mission
+
+**Primary Objective:** Document manual code changes and testing activities in structured transcript format while providing comprehensive codebase analysis and dependency mapping.
+
+**Target Transcript File:** `/Users/jonp/code/projects/integrations/opencti-ioc-submission/.cursor/docs/transcripts/manual-testing-and-updating-transcript.md`
+
+## Critical Execution Steps
+
+### 1. Transcript Update Process
+
+- **ALWAYS update transcript FIRST** before providing any response
+- **Follow transcript formatting standards:** Reference @transcript-formatting-agent for consistent formatting
+- **Create file if missing:** Initialize with proper header structure if transcript doesn't exist
+- **Append new entries:** Add timestamp, message content, and analysis to existing transcript
+- **Maintain chronological order:** Ensure proper sequence of manual changes and testing activities
+
+### 2. Comprehensive Codebase Analysis
+
+**Scope:** Analyze entire codebase excluding `.cursor/` folder
+- **File Analysis:** Scan all source files for recent changes, dependencies, and patterns
+- **Dependency Mapping:** Identify related files that could be impacted by manual changes
+- **Integration Pattern Recognition:** Analyze Polarity integration structure and OpenCTI patterns
+- **Test Impact Assessment:** Evaluate which tests might need updates based on code changes
+
+### 3. Structured Response Format
+
+After updating transcript, provide this exact format:
+
+```
+## 📋 Change Summary
+
+**Transcript Updated:** manual-testing-and-updating-transcript.md
+**Analysis Timestamp:** [YYYY-MM-DD HH:MM:SS]
+**Codebase Scan Scope:** [excluded .cursor/ folder]
+
+### 🔍 Affected Files
+- [List of files that were changed or analyzed]
+
+### 🔗 Related Dependencies  
+- [Files that could be impacted by the changes]
+- [Integration patterns that might need attention]
+- [Test files that may require updates]
+
+### 🎯 Manual Testing Recommendations
+- [Specific testing scenarios based on changes]
+- [Integration endpoints to verify]
+- [Configuration changes to validate]
+
+### 📊 Definition of Done Status
+**Reference:** backend-implementation-execution-v2-transcript.md completion criteria
+- [Assessment against established completion criteria]
+- [Outstanding items needed for full completion]
+```
+
+## References & Integration
+
+**Transcript Standards:** Apply formatting rules from @transcript-formatting-agent
+**Completion Reference:** Use `/Users/jonp/code/projects/integrations/opencti-ioc-submission/.cursor/docs/transcripts/backend-implementation-execution-v2-transcript.md` for definition of done criteria
+**Analysis Goals:** Prepare comprehensive change documentation for future automated test updates and script improvements
+
+## Analysis Priorities
+
+### Code Pattern Recognition
+- **Polarity Integration Framework:** Entity types, configuration patterns, API integration
+- **OpenCTI Integration:** GraphQL queries, authentication, data transformation
+- **Test Structure:** Unit tests, integration tests, mock data patterns
+- **Error Handling:** Consistent error patterns and validation approaches
+
+### Dependency Impact Assessment
+- **Server-side Changes:** Impact on client templates and data structures
+- **API Modifications:** Impact on queries, mutations, and response handling
+- **Configuration Updates:** Impact on validation, authentication, and deployment
+- **Test Dependencies:** Mock data, test helpers, and validation patterns
+
+## Examples
+
+<example>
+**User Message:** "I manually updated the GraphQL query in create-indicator.js to handle the new field validation"
+
+**Action Sequence:**
+1. Update transcript with message and timestamp
+2. Analyze create-indicator.js and related files
+3. Identify dependent files (tests, related queries, client code)
+4. Provide structured response with impact assessment
+</example>
+
+<example type="invalid">
+**NEVER respond without updating transcript first**
+**NEVER limit analysis to only mentioned files**
+**NEVER skip dependency impact assessment**
+</example>
+
+**REMEMBER: This rule bridges manual development work with systematic documentation, enabling comprehensive analysis of all changes for future automated improvements and test updates.**

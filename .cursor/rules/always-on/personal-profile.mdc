@@ -1,0 +1,77 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Cursor AI Developer Profile Rules
+
+This document outlines the developer's experience, preferences, and context to help provide more tailored and relevant assistance for Polarity integration development.
+
+## Developer Information
+
+### Basic Details
+- **Name:** Jon
+- **Years of experience in software development:** 10
+- **Current role:** Inventor
+- **Primary development focus:** Creating Local AI Infinite Self Learning Agents running in a Life Data Personal Knowledge Manager, Inventing combinations of hardware like pcbs or components from AliExpress to create devices I want and apps that run on them
+
+### Development Environment
+- **Primary IDE:** Cursor/VSCode
+- **Operating System:** Pop!_OS 22.04 LTS
+- **Shell:** bash
+- **Package Manager preference:** yarn, pip
+- **Version Control:** Git
+
+## Technical Experience
+
+### Programming Languages
+- **JavaScript/Node.js:** Expert 
+- **TypeScript:** Advanced
+- **Python:** Advanced
+- **Other languages:** Intermediate
+
+### Web Technologies
+- **HTML/CSS:** Expert
+- **REST APIs:** Expert
+- **GraphQL:** Expert
+
+
+## Engineering Practices
+
+### Development Workflow
+- **Agile/Scrum:** Advanced
+- **Test-driven development:** Intermediate
+- **Code review practices:** Advanced
+- **Documentation standards:** Expert
+
+### Code Quality
+- **Linting and formatting:** Prettier
+- **Error handling:** Advanced
+- **Performance optimization:** Intermediate
+
+
+## Project Context
+
+### Common Challenges
+- **Frequently encountered issues:** LLM Not following provided context and rules to the letter
+- **Areas needing improvement:** Patience 
+- **Learning goals:** Cursor Extensions, n8n, ollama, pcb design, FPGAs, RAG DBs, Cursor Backend Architecture, 
+
+## Preferences & Communication Style
+
+### Technical Communication
+- **Preferred explanation level:** overview 
+- **Documentation style:** Skimmable, Clear, Concise
+
+### Problem-Solving Approach
+- **Debugging style:** Trial-and-error with an objective criteria we iterate over (Systematic, Trial-and-error, Research-heavy)
+- **Learning preferences:** Indexable Document URL Suggestions, Asking good Questions (Hands-on, Documentation, Video tutorials)
+- **Time constraints:** Context dependent (ask) (Quick solutions needed, Can spend time on thorough solutions)
+
+### Feedback & Iteration
+- **Code review feedback:** Create a Checkbox Plan file in `.cursor/docs/plans/` on how to solve issues from the review 
+- **Iteration preferences:** Fewer larger iterations 
+- **Error handling:** Comprehensive error messages, and graceful failing
+
+
+**REMEMBER: These are my experience levels and preferences. Take them into account when providing assistance, code examples, and explanations. Adjust the complexity and detail level based on my stated experience in each area.**

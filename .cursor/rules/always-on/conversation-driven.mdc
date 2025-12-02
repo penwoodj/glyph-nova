@@ -1,0 +1,495 @@
+---
+alwaysApply: true
+---
+## Core Conversation Patterns
+
+### 1. Question-First Development
+
+**Always Begin with Structured Questions:**
+
+```markdown
+**Question Framework for AI Collaboration:**
+
+🎯 Context Setting:
+"I'm working on [specific feature/problem] in [language/framework]. 
+My experience level with [technology] is [beginner/intermediate/advanced]. 
+The current issue is [specific problem description]."
+
+🔍 Specific Technical Questions:
+"For [specific function/component], should I use [approach A] or [approach B]?
+The tradeoffs I'm considering are [list specific concerns].
+My constraints are [time/performance/compatibility requirements]."
+
+📋 Implementation Guidance:
+"Can you help me implement [specific functionality] that:
+- Handles [edge case 1] and [edge case 2]
+- Follows [security/performance] best practices
+- Integrates with [existing system component]
+- Is testable and maintainable"
+
+🔧 Review and Optimization:
+"I've implemented [feature] using [approach]. Can you review for:
+- Security vulnerabilities in [specific areas]
+- Performance bottlenecks in [operations]
+- Code clarity and maintainability
+- Edge cases I might have missed"
+```
+
+**Example Conversation Starter:**
+
+```markdown
+**Context:** Building user authentication for a Node.js API
+
+**Effective Question:**
+"I'm implementing JWT-based authentication for a Node.js Express API. I'm intermediate with Node.js but new to JWT security best practices. 
+
+The specific challenge: I need to handle token refresh without exposing security vulnerabilities. Should I use:
+1. Short-lived access tokens (15 min) + long-lived refresh tokens (7 days)
+2. Medium-lived access tokens (2 hours) with rotation
+3. Some other approach?
+
+My constraints:
+- High security requirements (financial data)
+- Mobile app needs to stay logged in
+- Must handle token invalidation for logout
+- Redis available for token storage
+
+What would you recommend and what security considerations should I implement?"
+
+**Integration:** [Security Practices](security-practices.mdc#api-security)
+```
+
+### 2. Iterative Development Conversation
+
+**Break Work into Conversation-Sized Chunks:**
+
+```markdown
+**Conversation Chunk Guidelines:**
+
+⚡ Small Chunks (15-30 minutes):
+- Single function implementation
+- Specific bug fix with context
+- Code review of one file/feature
+- Debugging one specific error
+
+🔄 Medium Chunks (30-60 minutes):
+- Feature implementation with tests
+- Refactoring one module/component
+- Performance optimization of specific area
+- Integration of external service
+
+🏗️ Large Chunks (1-2 hours):
+- Architecture design discussion
+- Multiple related features
+- Complex debugging investigation
+- System integration planning
+```
+
+**Chunk Transition Pattern:**
+
+```markdown
+**Conversation Flow Management:**
+
+✅ Completion Verification:
+"Before we move to the next piece, let me verify:
+- Does this solve the original problem we identified?
+- Are there any edge cases we should test?
+- Should we commit this change before proceeding?
+- What assumptions are we making for the next step?"
+
+📋 Context Transfer:
+"Now that we've completed [specific task], the next logical step is [next task].
+Here's what we've established:
+- [Decision 1] with reasoning [reason]
+- [Decision 2] with tradeoffs [tradeoffs]
+- [Current state] and [what we're building next]"
+
+🎯 Focus Maintenance:
+"Our original goal was [goal]. We've completed [progress]. 
+Remaining work: [specific tasks]
+Should we continue with [next task] or re-evaluate priorities?"
+```
+
+**Related:** [Development Workflow](development-workflow.mdc#micro-milestone-management)
+
+### 3. Context Management in Conversations
+
+**Maintain Rich Context Throughout Development:**
+
+```markdown
+**Context Information to Include:**
+
+🏗️ Technical Context:
+- Current language/framework versions
+- Existing architecture and patterns
+- Dependencies and constraints
+- Performance requirements
+
+👤 Developer Context:
+- Experience level with technologies
+- Time constraints or deadlines
+- Team size and collaboration needs
+- Learning goals vs. delivery goals
+
+📊 Project Context:
+- Business requirements and priorities
+- User impact and usage patterns
+- Security and compliance needs
+- Deployment and maintenance considerations
+
+🔄 Session Context:
+- What we've accomplished this session
+- Decisions made and alternatives considered
+- Current working state and next steps
+- Open questions or blockers
+```
+
+**Context Template for AI Sessions:**
+
+```markdown
+**AI Development Session Context:**
+
+**Project:** [Brief project description]
+**Goal:** [Specific session objective]
+**Current State:** [What's working, what's broken]
+
+**Technical Stack:**
+- Language: [JavaScript/Python/etc] version [x.x]
+- Framework: [React/Express/Django/etc] version [x.x]
+- Database: [PostgreSQL/MongoDB/etc]
+- Key Dependencies: [list critical libraries]
+
+**My Experience:**
+- [Technology A]: [Beginner/Intermediate/Advanced]
+- [Technology B]: [Beginner/Intermediate/Advanced]
+- [Domain Knowledge]: [Specific expertise or gaps]
+
+**Constraints:**
+- Time: [Available time for this session]
+- Environment: [Development/staging/production considerations]
+- Team: [Solo/pair/team development]
+- Requirements: [Must-haves vs. nice-to-haves]
+
+**Previous Session Outcomes:**
+- [Decision A] because [reasoning]
+- [Implementation B] with [specific approach]
+- [Outstanding Questions] that need resolution
+```
+
+---
+
+## Advanced Conversation Techniques
+
+### 4. Verification-Driven Dialogue
+
+**Build Verification into Every Conversation:**
+
+```markdown
+**Verification Patterns:**
+
+🔍 Understanding Verification:
+"Let me confirm my understanding:
+- You're suggesting [approach] because [reasoning]
+- This addresses [problem] by [mechanism]  
+- The tradeoffs are [benefits] vs [costs]
+- Is this accurate?"
+
+🧪 Implementation Verification:
+"Before I implement this solution:
+- Should I write tests first or implement first?
+- What edge cases should I consider?
+- How should I handle error scenarios?
+- Are there security implications I should address?"
+
+✅ Completion Verification:
+"I've implemented the solution. Let me verify:
+- Does it solve the original problem?
+- Are the tests comprehensive?
+- Is the code maintainable and clear?
+- Should we refactor anything before moving on?"
+
+🎯 Direction Verification:
+"We've made good progress. Before continuing:
+- Are we still aligned with the original goal?
+- Should we prioritize differently based on what we've learned?
+- Is this the right time to commit our changes?
+- What should we tackle next?"
+```
+
+### 5. Error-Driven Learning Conversations
+
+**Use Errors as Learning Opportunities:**
+
+```markdown
+**Error Analysis Conversation Pattern:**
+
+🚨 Error Reporting:
+"I'm getting this error: [exact error message]
+Context: [what I was trying to do]
+Environment: [development/staging/production]
+Steps to reproduce: [specific actions]
+
+Before this error:
+- [Last working state]
+- [Recent changes made]
+- [External factors that changed]"
+
+🔍 Error Investigation Dialogue:
+"Let's investigate this systematically:
+1. What does this error message tell us?
+2. What are the most likely causes?
+3. How can we test each hypothesis?
+4. What evidence should we gather?
+
+Let me start with [specific investigation step] and report back."
+
+📚 Learning Extraction:
+"Now that we've solved this error:
+- What was the root cause?
+- How could we have prevented it?
+- What should we add to prevent recurrence?
+- What patterns can we learn for similar issues?"
+```
+
+**Error Investigation Template:**
+
+```markdown
+**Collaborative Error Investigation:**
+
+**Error Details:**
+```
+[Exact error message]
+[Stack trace if available]
+[Error code/HTTP status]
+```
+
+**Context:**
+- **What I was doing:** [Specific action/operation]
+- **Expected result:** [What should have happened]
+- **Actual result:** [What actually happened]
+- **Environment:** [Development setup, browser, OS]
+
+**Investigation Done:**
+- [x] Checked recent changes
+- [x] Verified environment setup  
+- [ ] Tested in different environment
+- [ ] Checked external service status
+
+**Questions for AI:**
+1. What does this error typically indicate?
+2. What are the most common causes?
+3. How should I investigate systematically?
+4. What information should I gather next?
+
+**Learning Goals:**
+- Understand root cause mechanism
+- Learn prevention strategies
+- Improve debugging skills
+- Document solution for team
+```
+
+### 6. Architecture Discussion Patterns
+
+**Structure Conversations About System Design:**
+
+```markdown
+**Architecture Conversation Framework:**
+
+🏗️ Problem Definition:
+"I need to design [system component] that handles [requirements].
+Current constraints: [technical/business/time constraints]
+Scale considerations: [current users/data volume/growth expectations]
+Integration needs: [existing systems/external services]"
+
+🎯 Solution Exploration:
+"I'm considering these approaches:
+1. [Approach A]: [description] - Pros: [benefits] - Cons: [drawbacks]
+2. [Approach B]: [description] - Pros: [benefits] - Cons: [drawbacks]
+
+Which would you recommend given [specific context]?
+What alternatives should I consider?
+What potential issues should I anticipate?"
+
+📊 Decision Documentation:
+"Based on our discussion, here's what I understand:
+- **Chosen Approach:** [selected solution]
+- **Key Benefits:** [why this approach]
+- **Accepted Tradeoffs:** [what we're giving up]
+- **Implementation Plan:** [next steps]
+- **Success Metrics:** [how we'll measure success]
+
+Does this accurately capture our discussion?"
+```
+
+---
+
+## Conversation Quality Patterns
+
+### 7. Effective AI Prompting Techniques
+
+**Optimize AI Interaction Quality:**
+
+```markdown
+**High-Quality Prompt Patterns:**
+
+🎯 Specific Context Prompts:
+❌ Poor: "Help me with authentication"
+✅ Good: "Help me implement secure JWT authentication for a Node.js API that handles financial data, considering token rotation and mobile app requirements"
+
+🔍 Problem-Focused Prompts:
+❌ Poor: "My code doesn't work"
+✅ Good: "My JWT verification is failing with 'invalid signature' error after I updated the jwt library from 8.5.1 to 9.0.0. Here's the specific error and code..."
+
+📊 Constraint-Aware Prompts:
+❌ Poor: "What's the best way to do this?"
+✅ Good: "What's the best approach for [specific task] given these constraints: [performance requirement], [security need], [team experience level], [timeline]?"
+
+🔄 Iterative Prompts:
+❌ Poor: "Fix everything in my codebase"
+✅ Good: "Let's start with the authentication module. Can you review this specific function for security vulnerabilities, then we'll move to the next component?"
+```
+
+### 8. Knowledge Capture and Reuse
+
+**Turn Conversations into Reusable Knowledge:**
+
+```markdown
+**Documentation Patterns from Conversations:**
+
+📝 Decision Records:
+"Based on our conversation, I'm documenting this decision:
+
+**Decision:** Use Redis for session storage instead of in-memory store
+**Context:** Need session persistence across server restarts
+**Options Considered:** In-memory, database, Redis, file system
+**Decision Factors:** Performance, scalability, team familiarity
+**Consequences:** Additional dependency, ops complexity, better UX
+**Date:** [timestamp]
+**Participants:** [AI conversation session]"
+
+🔧 Solution Patterns:
+"This conversation solved [problem type]. Creating reusable pattern:
+
+**Problem Pattern:** [general problem description]
+**Solution Template:** [general solution approach]  
+**Customization Points:** [variables to adjust for different contexts]
+**Common Gotchas:** [issues we discovered and solved]
+**Testing Strategy:** [how to validate this solution]
+**References:** [relevant documentation/resources]"
+
+📚 Learning Artifacts:
+"Key insights from this development session:
+
+**Technical Learnings:**
+- [Technology insight] with practical implications
+- [Best practice] and why it matters in our context
+- [Common mistake] and how to avoid it
+
+**Process Learnings:**
+- [Effective approach] for this type of problem
+- [Communication pattern] that worked well
+- [Investigation method] that led to solution
+
+**Team Knowledge:**
+- [Domain-specific insight] relevant to our codebase
+- [Configuration detail] that's project-specific  
+- [Integration note] for our particular setup"
+```
+
+---
+
+## Conversation Session Management
+
+### 9. Session Planning and Structure
+
+**Structure AI Development Sessions for Maximum Effectiveness:**
+
+```markdown
+**Session Planning Template:**
+
+🎯 Session Goals (5 minutes):
+- Primary objective: [what must be accomplished]
+- Secondary objectives: [nice-to-have outcomes]
+- Success criteria: [how we'll know we succeeded]
+- Time constraints: [available duration]
+
+📋 Context Setup (5 minutes):
+- Current project state
+- Relevant code/files
+- Previous session outcomes
+- Today's specific focus
+
+⚡ Implementation Phase (60-90% of session):
+- Work in 15-30 minute focused chunks
+- Verify understanding after each chunk
+- Test intermediate results
+- Document decisions as we go
+
+✅ Session Wrap-up (10 minutes):
+- Review what we accomplished
+- Document key decisions and learnings
+- Identify next steps
+- Commit completed work
+```
+
+### 10. Multi-Session Conversation Continuity
+
+**Maintain Context Across Multiple AI Sessions:**
+
+```markdown
+**Session Continuity Strategies:**
+
+📄 Session Handoff Document:
+"**Previous Session Summary:**
+- Accomplished: [specific completions]
+- Decisions Made: [key choices with reasoning]
+- Current State: [working/broken/partially implemented]
+- Next Steps: [prioritized list]
+- Open Questions: [unresolved issues]
+- Context Notes: [important details for next session]"
+
+🔗 Reference Linking:
+"**Related Work:**
+- [Previous conversation topic] → [specific outcome/learning]
+- [Code file/function] → [decision made/pattern established]
+- [External resource] → [how it influenced our approach]
+- [Team discussion] → [constraints or requirements]"
+
+🎯 Goal Alignment Check:
+"**Continuity Verification:**
+Before we start new work, let me confirm:
+- Original project goal: [high-level objective]
+- Current progress: [percentage/milestone completion]
+- Changed requirements: [any new constraints/needs]
+- Priority adjustments: [what's more/less important now]"
+```
+
+---
+
+## Quick Implementation Guide
+
+**✅ Start Today:**
+- [ ] Use structured questions in next AI conversation
+- [ ] Practice one verification pattern
+- [ ] Document one decision from AI discussion
+- [ ] Try conversation chunking on current task
+
+**✅ This Week:**
+- [ ] Implement session planning template
+- [ ] Create context templates for your projects
+- [ ] Practice error investigation dialogue
+- [ ] Document learnings from AI conversations
+
+**✅ Advanced Implementation:**
+- [ ] Integrate with [Communication Standards](communication-standards.mdc) for team sharing
+- [ ] Develop project-specific conversation patterns
+- [ ] Create AI collaboration guidelines for team
+- [ ] Build knowledge base from AI conversation outcomes
+
+---
+
+**Next Steps:** Review [Communication Standards](communication-standards.mdc) for team communication integration or [Problem-Solving](problem-solving.mdc) for systematic investigation methods that complement AI assistance.
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,653 @@
+---
+alwaysApply: true
+---
+## Core Problem-Solving Framework
+
+### 1. Problem Definition and Context Gathering
+
+**Always Start with Clear Problem Definition:**
+
+```markdown
+**Problem Definition Template:**
+
+🎯 Problem Statement:
+- What is the expected behavior?
+- What is the actual behavior?
+- When did this start happening?
+- Who is affected by this issue?
+
+📋 Context Information:
+- Environment: Development/Staging/Production
+- Browser/Platform: Chrome 120, Node.js 18.x, iOS 16
+- User Actions: Specific steps that trigger the issue
+- Frequency: Always/Sometimes/Rarely (with conditions)
+
+📊 Environmental Factors:
+- Recent changes: Code deployments, config updates
+- External dependencies: API changes, service outages
+- Data state: Database migrations, data corruption
+- User specifics: Permissions, location, device type
+```
+
+**Context Gathering Checklist:**
+
+```markdown
+**Essential Information Collection:**
+
+🔧 Technical Context:
+- [ ] Error messages (exact text, error codes)
+- [ ] Stack traces (full trace, not just summary)
+- [ ] Log entries (timestamps, correlation IDs)
+- [ ] System state (memory usage, CPU, disk space)
+
+👤 User Context:
+- [ ] User role and permissions
+- [ ] Session information
+- [ ] Input data that triggers issue
+- [ ] Browser/device information
+
+⏰ Temporal Context:
+- [ ] When did issue first appear?
+- [ ] Is it consistent or intermittent?
+- [ ] Any patterns to timing?
+- [ ] Recent changes or deployments?
+```
+
+**Example Context Documentation:**
+
+```markdown
+**Issue Report: Login Authentication Failing**
+
+**Problem Statement:**
+Users cannot log in using valid credentials. Expected: Successful login and redirect to dashboard. Actual: "Invalid credentials" error despite correct username/password.
+
+**Technical Details:**
+- Environment: Production
+- Error: "Authentication failed: invalid credentials" 
+- HTTP Status: 401 Unauthorized
+- First Reported: 2025-01-15 14:30 UTC
+- Affected Users: ~15% of login attempts
+
+**Context:**
+- Recent Changes: JWT library updated from 8.5.1 to 9.0.0 (deployed 14:00 UTC)
+- Pattern: Only affects users with special characters in passwords
+- Browser: All browsers affected
+- Frequency: Consistent for affected users
+
+**Logs:**
+```
+[2025-01-15 14:31:22] ERROR: JWT validation failed
+[2025-01-15 14:31:22] DEBUG: Token payload: {"userId": 123, "exp": 1737036682}
+[2025-01-15 14:31:22] DEBUG: Expected signature format changed
+```
+```
+
+**Integration:** [Communication Standards](communication-standards.mdc#context-management)
+
+### 2. Systematic Investigation Process
+
+**Follow the Scientific Method:**
+
+```markdown
+**Investigation Workflow:**
+
+1️⃣ OBSERVE:
+- Document exact symptoms
+- Collect error messages and logs
+- Note environmental conditions
+- Record user-reported behavior
+
+2️⃣ HYPOTHESIS:
+- Form testable theories about root cause
+- Prioritize hypotheses by likelihood and impact
+- Consider multiple possible causes
+- Base theories on evidence, not assumptions
+
+3️⃣ EXPERIMENT:
+- Design minimal tests to prove/disprove theories
+- Test one variable at a time
+- Use isolated test environments when possible
+- Document test results immediately
+
+4️⃣ ANALYZE:
+- Compare expected vs. actual results
+- Identify patterns in data
+- Consider alternative explanations
+- Update hypothesis based on evidence
+
+5️⃣ CONCLUDE:
+- Verify solution fixes the root cause
+- Test edge cases and related scenarios
+- Document the solution and prevention measures
+- Share learnings with team
+```
+
+**Debugging Process Example:**
+
+```markdown
+**Investigation: API Response Times Degrading**
+
+**Observation:**
+- API response times increased from 200ms to 2000ms
+- Database connection pool showing high usage
+- Memory usage gradually increasing over time
+- Issue started after user count doubled
+
+**Hypothesis 1:** Database connection leak
+- Test: Monitor connection pool metrics
+- Result: Connections not being released properly
+- Status: ✅ CONFIRMED
+
+**Experiment:**
+- Added connection.release() after each query
+- Deployed to staging environment
+- Monitored for 2 hours
+
+**Analysis:**
+- Response times returned to 200ms average
+- Connection pool usage normalized
+- Memory usage stabilized
+
+**Conclusion:**
+- Root cause: Missing connection.release() in error handlers
+- Fix: Added proper connection cleanup in try/catch/finally blocks
+- Prevention: Added unit tests for connection handling
+```
+
+### 3. Evidence-Based Debugging Techniques
+
+**Always Prioritize Evidence Over Assumptions:**
+
+```markdown
+**Evidence Collection Strategies:**
+
+🔍 Logging and Monitoring:
+- Add temporary debug logging for investigation
+- Use correlation IDs to track requests across services
+- Monitor key metrics during reproduction
+- Capture network traffic when relevant
+
+🧪 Controlled Testing:
+- Create minimal reproduction cases
+- Test in isolated environments
+- Use feature flags to enable/disable functionality
+- A/B test potential solutions
+
+📊 Data Analysis:
+- Query databases for patterns
+- Analyze user behavior data
+- Check external service status and logs
+- Review recent configuration changes
+```
+
+**Debugging Tools and Techniques:**
+
+```javascript
+// ✅ GOOD: Systematic debugging with evidence
+function debugUserAuthentication(credentials) {
+  // Add correlation ID for tracking
+  const correlationId = generateCorrelationId();
+  
+  // Log entry point with context
+  logger.debug('Authentication attempt', { 
+    correlationId,
+    username: credentials.username,
+    timestamp: new Date().toISOString(),
+    userAgent: request.headers['user-agent']
+  });
+  
+  try {
+    // Step 1: Validate input format
+    const validationResult = validateCredentials(credentials);
+    logger.debug('Credential validation', { 
+      correlationId, 
+      isValid: validationResult.isValid,
+      errors: validationResult.errors 
+    });
+    
+    if (!validationResult.isValid) {
+      return { success: false, error: 'Invalid credential format' };
+    }
+    
+    // Step 2: Database lookup
+    const userRecord = await findUserByUsername(credentials.username);
+    logger.debug('User lookup', { 
+      correlationId, 
+      userFound: !!userRecord,
+      userId: userRecord?.id 
+    });
+    
+    if (!userRecord) {
+      return { success: false, error: 'User not found' };
+    }
+    
+    // Step 3: Password verification
+    const passwordValid = await verifyPassword(credentials.password, userRecord.passwordHash);
+    logger.debug('Password verification', { 
+      correlationId, 
+      userId: userRecord.id,
+      passwordValid 
+    });
+    
+    if (!passwordValid) {
+      // Log security event
+      securityLogger.warn('Failed login attempt', { 
+        correlationId,
+        userId: userRecord.id,
+        username: credentials.username,
+        ipAddress: request.ip 
+      });
+      return { success: false, error: 'Invalid credentials' };
+    }
+    
+    // Step 4: Generate token
+    const token = generateJWT({ userId: userRecord.id });
+    logger.info('Successful authentication', { 
+      correlationId, 
+      userId: userRecord.id 
+    });
+    
+    return { success: true, token };
+    
+  } catch (error) {
+    // Log unexpected errors with full context
+    logger.error('Authentication error', { 
+      correlationId,
+      error: error.message,
+      stack: error.stack,
+      username: credentials.username 
+    });
+    throw error;
+  }
+}
+```
+
+---
+
+## Advanced Problem-Solving Patterns
+
+### 4. Root Cause Analysis
+
+**Go Beyond Surface Symptoms:**
+
+```markdown
+**5 Whys Technique:**
+
+🔍 Why #1: Why did the API fail?
+→ Database connection timeout
+
+🔍 Why #2: Why did the database connection timeout?
+→ Connection pool exhausted
+
+🔍 Why #3: Why was the connection pool exhausted?
+→ Connections not being released properly
+
+🔍 Why #4: Why weren't connections being released?
+→ Error handling didn't include cleanup
+
+🔍 Why #5: Why didn't error handling include cleanup?
+→ No code review checklist for resource management
+
+**Root Cause:** Missing code review standards for resource cleanup
+**Solution:** Add resource management to code review checklist + fix current issue
+```
+
+**Fishbone Diagram for Complex Issues:**
+
+```markdown
+**Problem:** Intermittent API Failures
+
+**Categories to Investigate:**
+
+👥 People:
+- New team member deployments
+- Changed processes or procedures
+- Training or knowledge gaps
+
+🔧 Process:
+- Deployment procedures
+- Code review standards
+- Testing methodologies
+
+🏗️ Technology:
+- Library updates
+- Infrastructure changes
+- Third-party service changes
+
+📊 Data:
+- Database schema changes
+- Data volume increases
+- Data quality issues
+
+🌍 Environment:
+- Server configuration
+- Network connectivity
+- Load balancing changes
+```
+
+### 5. Performance Problem-Solving
+
+**Systematic Performance Investigation:**
+
+```markdown
+**Performance Debugging Framework:**
+
+⏱️ Timing Analysis:
+- [ ] Identify slow operations (>100ms)
+- [ ] Profile CPU usage patterns
+- [ ] Analyze memory allocation/garbage collection
+- [ ] Monitor I/O wait times
+
+🔍 Bottleneck Identification:
+- [ ] Database query analysis (execution plans)
+- [ ] Network latency measurement
+- [ ] External API response times
+- [ ] Algorithm complexity review
+
+📊 Load Testing:
+- [ ] Reproduce under similar load
+- [ ] Identify breaking point
+- [ ] Test with realistic data volumes
+- [ ] Monitor resource utilization
+```
+
+**Performance Debugging Example:**
+
+```javascript
+// ✅ GOOD: Performance debugging with measurements
+async function debugSlowApiEndpoint(userId) {
+  const startTime = performance.now();
+  
+  try {
+    // Measure database query time
+    const dbStartTime = performance.now();
+    const userData = await getUserById(userId);
+    const dbDuration = performance.now() - dbStartTime;
+    
+    logger.debug('Database query performance', { 
+      userId, 
+      duration: dbDuration,
+      operation: 'getUserById' 
+    });
+    
+    // Measure external API call time
+    const apiStartTime = performance.now();
+    const permissions = await fetchUserPermissions(userId);
+    const apiDuration = performance.now() - apiStartTime;
+    
+    logger.debug('External API performance', { 
+      userId, 
+      duration: apiDuration,
+      operation: 'fetchUserPermissions' 
+    });
+    
+    // Measure data processing time
+    const processingStartTime = performance.now();
+    const processedData = processUserData(userData, permissions);
+    const processingDuration = performance.now() - processingStartTime;
+    
+    logger.debug('Data processing performance', { 
+      userId, 
+      duration: processingDuration,
+      operation: 'processUserData' 
+    });
+    
+    const totalDuration = performance.now() - startTime;
+    
+    // Log performance summary
+    logger.info('API endpoint performance', {
+      userId,
+      totalDuration,
+      breakdown: {
+        database: dbDuration,
+        externalApi: apiDuration,
+        processing: processingDuration
+      }
+    });
+    
+    // Alert if performance is degraded
+    if (totalDuration > 1000) {
+      logger.warn('Slow API response detected', { 
+        userId, 
+        duration: totalDuration 
+      });
+    }
+    
+    return processedData;
+    
+  } catch (error) {
+    const totalDuration = performance.now() - startTime;
+    logger.error('API endpoint error', { 
+      userId, 
+      duration: totalDuration,
+      error: error.message 
+    });
+    throw error;
+  }
+}
+```
+
+### 6. Error Pattern Analysis
+
+**Identify Recurring Issues:**
+
+```markdown
+**Error Pattern Detection:**
+
+📈 Frequency Analysis:
+- Track error occurrence rates over time
+- Identify peaks and correlations with deployments
+- Analyze error distribution across users/features
+- Compare error rates between environments
+
+🏷️ Error Categorization:
+- Group by error type (validation, authentication, system)
+- Classify by severity (critical, warning, info)
+- Tag by component or service
+- Associate with user actions or features
+
+🔗 Correlation Analysis:
+- Link errors to specific code changes
+- Connect to infrastructure events
+- Associate with user behavior patterns
+- Relate to external service outages
+```
+
+**Error Analysis Tools:**
+
+```javascript
+// Error pattern analysis utility
+class ErrorAnalyzer {
+  constructor() {
+    this.errorLog = [];
+    this.patterns = new Map();
+  }
+  
+  logError(error, context) {
+    const errorData = {
+      timestamp: new Date().toISOString(),
+      message: error.message,
+      stack: error.stack,
+      type: error.constructor.name,
+      context,
+      fingerprint: this.generateFingerprint(error)
+    };
+    
+    this.errorLog.push(errorData);
+    this.updatePatterns(errorData);
+    
+    // Alert if error pattern is detected
+    if (this.isPatternDetected(errorData.fingerprint)) {
+      this.alertTeam(errorData);
+    }
+  }
+  
+  generateFingerprint(error) {
+    // Create unique identifier for similar errors
+    return crypto
+      .createHash('md5')
+      .update(error.message + error.stack.split('\n')[0])
+      .digest('hex');
+  }
+  
+  updatePatterns(errorData) {
+    const { fingerprint } = errorData;
+    const pattern = this.patterns.get(fingerprint) || {
+      count: 0,
+      firstSeen: errorData.timestamp,
+      lastSeen: errorData.timestamp,
+      contexts: []
+    };
+    
+    pattern.count++;
+    pattern.lastSeen = errorData.timestamp;
+    pattern.contexts.push(errorData.context);
+    
+    this.patterns.set(fingerprint, pattern);
+  }
+  
+  isPatternDetected(fingerprint) {
+    const pattern = this.patterns.get(fingerprint);
+    return pattern && pattern.count >= 5; // Alert after 5 occurrences
+  }
+  
+  generateReport() {
+    const topErrors = Array.from(this.patterns.entries())
+      .sort(([,a], [,b]) => b.count - a.count)
+      .slice(0, 10);
+      
+    return {
+      totalErrors: this.errorLog.length,
+      uniqueErrors: this.patterns.size,
+      topErrors: topErrors.map(([fingerprint, pattern]) => ({
+        fingerprint,
+        count: pattern.count,
+        firstSeen: pattern.firstSeen,
+        lastSeen: pattern.lastSeen,
+        affectedContexts: pattern.contexts.length
+      }))
+    };
+  }
+}
+```
+
+---
+
+## Problem-Solving Tools and Techniques
+
+### 7. Debugging Environment Setup
+
+**Create Optimal Debugging Conditions:**
+
+```markdown
+**Debugging Environment Checklist:**
+
+🔧 Development Tools:
+- [ ] Enable source maps for stack traces
+- [ ] Set up hot reloading for faster iteration
+- [ ] Configure debugger breakpoints
+- [ ] Install browser developer tools extensions
+
+📊 Monitoring Tools:
+- [ ] Application performance monitoring (APM)
+- [ ] Error tracking and alerting
+- [ ] Log aggregation and search
+- [ ] Real user monitoring (RUM)
+
+🧪 Testing Tools:
+- [ ] Unit testing framework with coverage
+- [ ] Integration testing environment
+- [ ] Load testing tools
+- [ ] API testing tools (Postman, Insomnia)
+```
+
+### 8. Collaborative Problem-Solving
+
+**Leverage Team Knowledge:**
+
+```markdown
+**Team Problem-Solving Strategies:**
+
+👥 Knowledge Sharing:
+- Rubber duck debugging (explain problem aloud)
+- Pair debugging sessions
+- Team code review for issues
+- Documentation of solutions
+
+📋 Problem Escalation:
+- Define escalation criteria (time, impact, complexity)
+- Identify domain experts for different areas
+- Create problem-solving playbooks
+- Maintain team knowledge base
+
+🔄 Learning from Issues:
+- Post-mortem analysis for major issues
+- Sharing lessons learned in team meetings
+- Updating documentation with solutions
+- Creating tests to prevent regression
+```
+
+**Problem-Solving Communication Template:**
+
+```markdown
+**Team Problem-Solving Request:**
+
+**Issue Summary:**
+Brief description of the problem and its impact.
+
+**Investigation Done:**
+- [x] Checked recent deployments
+- [x] Reviewed error logs for patterns
+- [x] Tested in different environments
+- [ ] Contacted external service providers
+
+**Evidence Collected:**
+- Error rates increased 300% starting 14:30 UTC
+- Affects 25% of user authentication attempts
+- Correlated with JWT library update
+- Stack trace points to signature validation
+
+**Hypothesis:**
+JWT signature format changed in library update, causing validation failures for certain token types.
+
+**Assistance Needed:**
+- Review JWT library changelog
+- Help with testing signature validation
+- Expertise in authentication flow
+- Guidance on rollback vs. forward fix
+
+**Time Sensitivity:**
+High - affecting user logins, need resolution within 2 hours.
+```
+
+**Integration:** [Communication Standards](communication-standards.mdc#technical-specification-format)
+
+---
+
+## Quick Implementation Guide
+
+**✅ Start Today:**
+- [ ] Create problem definition template for issues
+- [ ] Set up basic error logging with context
+- [ ] Practice 5 Whys technique on current issues
+- [ ] Document one debugging session systematically
+
+**✅ This Week:**
+- [ ] Implement correlation IDs for request tracking
+- [ ] Set up error pattern detection
+- [ ] Create debugging environment checklist
+- [ ] Establish team problem-solving workflow
+
+**✅ Advanced Implementation:**
+- [ ] Integrate with [Quality Control](quality-control.mdc) for systematic testing
+- [ ] Build automated error analysis tools
+- [ ] Create problem-solving playbooks
+- [ ] Establish post-mortem process
+
+---
+
+**Next Steps:** Review [Conversation-Driven](conversation-driven.mdc) for AI-assisted problem-solving or [Security Practices](security-practices.mdc) for security-focused investigation methods.
+description:
+globs:
+alwaysApply: false
+---

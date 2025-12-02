@@ -1,0 +1,261 @@
+# Plan-Execute-Verify Manual Workflow Rule
+
+**Purpose:** Manual workflow control for plan updates, execution, verification, and transcript documentation.
+
+**Priority:** This rule overrides all other rules and is always active when engaged.
+
+## 🚨 CRITICAL RULES - NEVER VIOLATE THESE
+
+### 🔄 MANDATORY PLAN-EXECUTE-VERIFY CYCLE
+
+**ALL work must follow this exact sequence:**
+
+1. **⚡ EXECUTE** - Work on the updated plan
+2. **✅ VERIFY** - Ensure real-world criteria are met
+3. **📊 UPDATE TRANSCRIPT** - Document at the end
+4. **📋 UPDATE PLAN** - At the End of every response with progress
+
+**This cycle is MANDATORY for:**
+- Feature development tasks
+- Bug fixes and debugging
+- Security improvements
+- Testing and validation
+- Documentation updates
+- ANY development task
+
+### 🎯 PLAN UPDATE REQUIREMENTS
+
+**At the beginning of EVERY response, update the plan using this template:**
+
+```markdown
+## Plan Update - [YYYY-MM-DD HH:MM]
+
+### ✅ Completed Since Last Update
+- [Specific task completed with file names]
+- [Tests passing/failing status with counts]
+- [Issues resolved with details]
+- [Real-world verification results]
+
+### 🔄 Current Status
+- [What we're working on now]
+- [Current blockers or issues]
+- [Next immediate action]
+- [Dependencies blocking progress]
+
+### 📋 Updated Plan
+- [New tasks added with priority]
+- [Priority changes with reasoning]
+- [Dependencies identified]
+- [Estimated completion criteria]
+
+### 🎯 Meta Context for Future
+- [Important decisions made]
+- [Patterns established]
+- [Context needed for later work]
+- [User preferences discovered]
+```
+
+### ⚡ EXECUTION REQUIREMENTS
+
+**During execution phase:**
+- Work systematically through updated plan items
+- Focus on one task at a time until completion
+- Apply TDD principles (test first, then implement)
+- Follow security best practices
+- Document decisions and reasoning as you work
+
+**Real-world execution criteria:**
+- All tests must pass (not just some)
+- Implementation must be complete and functional
+- All changed files must be formatted with prettier
+- No security issues or credential leaks
+- API calls must return expected results
+- Scripts must execute successfully
+
+### ✅ VERIFICATION REQUIREMENTS
+
+**Before concluding any response, verify:**
+- All tests are passing (run test suite)
+- Implementation works as expected (test manually)
+- No security vulnerabilities introduced
+- All files are properly formatted
+- Documentation is updated if needed
+- Git status is clean (no untracked sensitive files)
+
+**Verification methods:**
+- Run test suite: `npm test` or equivalent
+- Execute scripts: `node test-runner.js` or equivalent
+- Check linting: `npm run lint` or equivalent
+- Validate security: Check for credentials, validate inputs
+- Test functionality: Manual verification of features
+
+### 📊 TRANSCRIPT UPDATE REQUIREMENTS
+
+**At the end of EVERY response, update transcript using this template:**
+
+```markdown
+### [YYYY-MM-DD HH:MM:SS Timezone] - Response #[Number]
+
+**Status Update:**
+- [Current progress toward goal]
+- [Tests passing/failing count: X/Y]
+- [Files modified in this response]
+- [Real-world verification results]
+
+**Decisions Made:**
+- [Key decision 1 with reasoning]
+- [Key decision 2 with reasoning]
+- [Security considerations addressed]
+
+**Performance Metrics:**
+- Duration: [Time taken]
+- Iterations: [Number in sequence]
+- Success Rate: [Tests passing/total]
+- Verification Status: [Pass/Fail with details]
+
+**Next Action:**
+- [Immediate next step]
+- [Expected outcome]
+- [Dependencies to resolve]
+```
+
+## 🔄 CONTINUOUS PROGRESS RULE
+
+**NEVER stop until real-world criteria are met:**
+
+❌ **FORBIDDEN:**
+- Stopping when tests fail
+- Stopping when API calls don't return expected results
+- Stopping when scripts have errors
+- Stopping when implementation is incomplete
+- Stopping for minor formatting issues
+
+✅ **ALLOWED:**
+- Stopping only when ALL tests pass
+- Stopping only when implementation is complete AND functional
+- Stopping only when real-world verification succeeds
+- Stopping only when user explicitly requests it
+- Stopping when approaching token limits (with clear status update)
+
+## 🎯 REAL-WORLD VERIFICATION CRITERIA
+
+**Implementation must meet these criteria:**
+- **Functional Testing:** Feature works as intended
+- **Test Coverage:** All tests pass with good coverage
+- **Security Validation:** No credentials exposed, inputs validated
+- **Performance:** Acceptable response times and resource usage
+- **Integration:** Works with existing codebase
+- **Documentation:** Updated and accurate
+
+**Verification checklist:**
+```
+□ All unit tests pass
+□ Integration tests pass
+□ Manual testing confirms functionality
+□ No security issues detected
+□ Code follows style guidelines
+□ Documentation updated
+□ Git status clean
+□ Performance acceptable
+```
+
+## 🚀 IMPLEMENTATION GUIDELINES
+
+### Plan Update Process
+1. **Review previous plan** and identify completed items
+2. **Assess current status** and any blockers
+3. **Update priorities** based on new information
+4. **Add new tasks** discovered during work
+5. **Estimate completion** criteria for each task
+
+### Execution Process
+1. **Start with highest priority** task from updated plan
+2. **Follow TDD approach** (test first, then implement)
+3. **Apply security practices** throughout development
+4. **Document decisions** and reasoning
+5. **Verify each step** before moving to next
+
+### Verification Process
+1. **Run all tests** and ensure they pass
+2. **Test functionality** manually
+3. **Check security** for vulnerabilities
+4. **Validate performance** and resource usage
+5. **Confirm integration** with existing code
+
+### Transcript Update Process
+1. **Document progress** toward overall goal
+2. **Record decisions** and reasoning
+3. **Track performance** metrics
+4. **Note verification** results
+5. **Plan next actions** clearly
+
+## 🎯 SUCCESS METRICS
+
+**This rule is successful when:**
+- Plan is updated at start of every response
+- Execution follows systematic approach
+- Real-world verification criteria are met
+- Transcript is updated at end of every response
+- User achieves desired outcomes with minimal iterations
+
+## 🔧 CONFIGURATION OPTIONS
+
+**Manual Control Settings:**
+- `MANUAL_PLAN_UPDATES: true` - Require explicit plan updates
+- `MANUAL_VERIFICATION: true` - Require explicit verification steps
+- `MANUAL_TRANSCRIPT_UPDATES: true` - Require explicit transcript updates
+- `STRICT_REAL_WORLD_CRITERIA: true` - Enforce all verification criteria
+
+**Integration Settings:**
+- `INTEGRATE_WITH_TDD: true` - Apply TDD principles during execution
+- `INTEGRATE_WITH_SECURITY: true` - Apply security rules during execution
+- `INTEGRATE_WITH_GIT: false` - Suggest git actions (still requires user approval)
+
+## 📋 COPYABLE QUESTION TEMPLATES
+
+**Planning Questions:**
+```
+- What's the main goal we're trying to achieve?
+- Me: 
+- Side Notes: 
+
+- What are the specific success criteria?
+- Me: 
+- Side Notes: 
+
+- Are there any dependencies or blockers?
+- Me: 
+- Side Notes: 
+```
+
+**Execution Questions:**
+```
+- Should I follow TDD approach for this task?
+- Me: 
+- Side Notes: 
+
+- Are there any security considerations?
+- Me: 
+- Side Notes: 
+
+- What's the priority: speed or thoroughness?
+- Me: 
+- Side Notes: 
+```
+
+**Verification Questions:**
+```
+- What constitutes "working" for this feature?
+- Me: 
+- Side Notes: 
+
+- How should I verify the implementation?
+- Me: 
+- Side Notes: 
+
+- Are there any edge cases to test?
+- Me: 
+- Side Notes: 
+```
+
+**REMEMBER: This rule ensures systematic progress through plan-execute-verify cycles with complete documentation. Focus on real-world working criteria and continuous progress toward user goals.**

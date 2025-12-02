@@ -1,0 +1,443 @@
+# Plan Generation Rule - OpenCTI IOC Submission Project
+
+**Purpose**: Generate comprehensive, actionable implementation plans for OpenCTI IOC submission integration with intelligent context usage, overlap detection, and project-specific workflows.
+
+**Usage**: Manual rule for creating detailed project plans with consistent quality standards and overlap prevention.
+
+**Version**: 2.0  
+**Created**: January 14, 2025  
+**Updated**: January 14, 2025  
+**Context**: Based on OpenCTI IOC submission UI plan generation success patterns and user feedback improvements
+
+## Intelligence Layer - Context Analysis Before Questions
+
+### Pre-Question Analysis Checklist
+Before generating any questions, ALWAYS perform this analysis:
+
+#### [ ] 1. Message Context Analysis
+- **What has already been provided?** Scan the user's message for:
+  - File paths referenced with specific purpose
+  - Existing documentation mentioned
+  - Previous context that answers potential questions
+  - Specific goals and constraints already stated
+
+#### [ ] 2. Referenced Files Analysis
+- **What files were mentioned?** For each file path referenced:
+  - Read and analyze the file content BEFORE asking questions
+  - Extract the answers to potential questions from the file content
+  - Use the file information to inform plan generation directly
+
+#### [ ] 3. Context Sufficiency Check
+- **Can I answer this from provided context?** For each potential question:
+  - ✅ **Skip Question**: If the answer is already in the message or referenced files
+  - ❌ **Ask Question**: Only if the information is truly missing and needed for planning
+
+#### [ ] 4. Question Quality Filter
+- **Is this question necessary?** Only ask questions that:
+  - Cannot be answered from provided context
+  - Are essential for plan generation
+  - Would significantly improve plan quality
+  - Are not redundant with information already given
+
+## Plan Overlap Detection System
+
+### Pre-Generation Plan Analysis
+Before creating any plan, ALWAYS check existing plans:
+
+#### [ ] 1. Existing Plans Analysis
+- **Check folder**: `.cursor/docs/plans`
+- **Read all existing plans** to understand:
+  - Previous approaches taken
+  - Tasks already completed
+  - Patterns and structures used
+  - Potential overlap areas
+
+#### [ ] 2. Overlap Detection
+- **Identify overlaps** between new plan and existing plans:
+  - Similar task sequences
+  - Duplicate implementation steps
+  - Repeated validation approaches
+  - Common risk assessments
+
+#### [ ] 3. Uniqueness Optimization
+- **Ensure uniqueness** by:
+  - Focusing on different aspects than previous plans
+  - Building upon completed work from previous plans
+  - Avoiding repetition of identical tasks
+  - Creating complementary rather than duplicate plans
+
+#### [ ] 4. Post-Generation Overlap Review
+After generating the plan, ALWAYS:
+- **Call out potential overlaps** with specific plan files
+- **Offer duplication removal** with specific recommendations
+- **Suggest plan consolidation** if beneficial
+
+## Plan Generation Standards
+
+### 10 Quality Criteria (All Must Be Maximized)
+
+1. **✅ Verified External Links**: Include 8-12 verified external documentation links
+2. **✅ Nested Checkboxes**: Every task must have sub-checkboxes with actionable items
+3. **✅ Time Estimates**: Include detailed time estimates with buffer time calculation
+4. **✅ File Paths & Code Examples**: Specify exact file paths and provide code examples
+5. **✅ Success Criteria**: 10-15 specific, measurable success criteria
+6. **✅ Dependencies**: Clear dependency tracking with visual representation
+7. **✅ Implementation Order**: Numbered phases with priority levels
+8. **✅ Risk Assessment**: High/Medium/Low risk categorization with mitigation strategies
+9. **✅ Rollback Procedures**: Immediate, phase-specific, and emergency rollback strategies
+10. **✅ Validation Checkpoints**: Multi-tier validation system (phase, mid-implementation, pre-deployment)
+
+### Context-Driven Question Generation
+
+**ONLY ask questions that cannot be answered from:**
+- The user's current message
+- Files referenced in the message
+- Previous conversation context
+- Existing project documentation
+
+**Question Categories (Only When Truly Needed)**:
+- **Missing Technical Details**: Specific implementation requirements not covered in referenced files
+- **Scope Ambiguity**: Unclear boundaries that affect plan structure
+- **Priority Conflicts**: When multiple approaches are possible and choice affects timeline
+- **Integration Points**: External dependencies not documented in referenced files
+- **User Preferences**: Subjective choices that significantly impact implementation
+
+## Plan Generation Process
+
+### Step 1: Requirements Gathering (30 minutes)
+**Use Copyable Question Blocks**:
+```
+- [Specific question about requirements]?
+- Ans: 
+- Notes: 
+
+- [Specific question about scope]?
+- Ans: 
+- Notes: 
+
+[Continue for 8-12 questions]
+```
+
+**Question Categories**:
+- **Scope & Requirements**: What needs to be accomplished?
+- **Technical Architecture**: How will it be implemented?
+- **Data & Integration**: What data structures are involved?
+- **UI/UX Considerations**: How will users interact?
+- **Error Handling**: What can go wrong?
+- **Performance**: What are the performance requirements?
+- **Security**: What are the security considerations?
+- **Testing**: How will it be validated?
+- **Deployment**: How will it be deployed?
+- **Maintenance**: How will it be maintained?
+
+### Step 2: File Analysis (45 minutes)
+**Analyze Existing Codebase**:
+- [ ] Read all referenced files completely
+- [ ] Identify existing patterns and structures
+- [ ] Document current data flows
+- [ ] Identify dependencies and integration points
+- [ ] Assess technical debt and refactoring needs
+
+**Analysis Framework**:
+- **Architecture**: How is the current system structured?
+- **Data Flow**: How does data move through the system?
+- **Integration Points**: Where does the system connect to others?
+- **Error Patterns**: How are errors currently handled?
+- **Performance Bottlenecks**: Where are the slow points?
+- **Security Concerns**: What are the security implications?
+
+### Step 3: External Research (30 minutes)
+**Gather External Documentation**:
+- [ ] Find 8-12 verified external links
+- [ ] Validate all links are accessible
+- [ ] Categorize links by topic (API docs, frameworks, guides, etc.)
+- [ ] Include community forums and discussion boards
+- [ ] Add official documentation and specifications
+
+**Link Categories**:
+- **API Documentation**: Official API docs and schemas
+- **Framework Guides**: Framework-specific documentation
+- **Community Resources**: Forums, discussions, Stack Overflow
+- **Specifications**: Technical specifications and standards
+- **Best Practices**: Industry best practices and patterns
+- **Troubleshooting**: Common issues and solutions
+
+### Step 4: Risk Assessment (30 minutes)
+**Identify and Categorize Risks**:
+
+**High Risk (Blocking)**:
+- Data structure mismatches
+- Complex integration dependencies
+- Performance bottlenecks
+- Security vulnerabilities
+
+**Medium Risk (Impacting)**:
+- UI/UX complexity
+- Error handling edge cases
+- Testing complexity
+- Third-party API changes
+
+**Low Risk (Manageable)**:
+- Minor feature implementations
+- Styling and presentation
+- Performance optimizations
+- Documentation updates
+
+**For Each Risk**:
+- [ ] Describe the risk clearly
+- [ ] Assess potential impact
+- [ ] Develop mitigation strategy
+- [ ] Create contingency plan
+
+### Step 5: Time Estimation (20 minutes)
+**Estimation Guidelines**:
+- **Simple Tasks**: 0.5-2 hours
+- **Medium Tasks**: 2-4 hours
+- **Complex Tasks**: 4-8 hours
+- **Integration Tasks**: 4-6 hours
+- **Testing Tasks**: 2-3 hours per feature
+- **Documentation Tasks**: 1-2 hours per feature
+
+**Buffer Time Calculation**:
+- **Add 20% buffer** for unexpected issues
+- **Critical Path**: Identify longest dependency chain
+- **Parallel Work**: Account for parallelizable tasks
+- **Context Switching**: Add time for task switching
+
+### Step 6: Validation Strategy (20 minutes)
+**Design Validation Checkpoints**:
+
+**After Each Phase**:
+- [ ] Functional validation
+- [ ] Performance validation
+- [ ] Security validation
+- [ ] Integration validation
+
+**Mid-Implementation**:
+- [ ] Architecture review
+- [ ] Data flow validation
+- [ ] Error handling review
+- [ ] Performance baseline
+
+**Pre-Deployment**:
+- [ ] Full functionality test
+- [ ] Performance test
+- [ ] Security audit
+- [ ] Documentation review
+
+### Step 7: Rollback Planning (15 minutes)
+**Design Rollback Procedures**:
+
+**Immediate Rollback**:
+- Git commit reversion
+- Configuration restoration
+- State cleanup
+- Team communication
+
+**Phase-Specific Rollback**:
+- Early phases: File restoration
+- Middle phases: Feature disabling
+- Late phases: Graceful degradation
+
+**Emergency Rollback**:
+- Complete system restoration
+- Incident documentation
+- Post-mortem planning
+
+## Project-Specific Context Integration
+
+### OpenCTI IOC Submission Integration Context
+This rule is specifically designed for the OpenCTI IOC submission integration project and incorporates:
+
+#### Project Structure Understanding
+- **Backend**: Server-side logic for API integration and data processing
+- **Frontend**: Ember.js components with Handlebars templates
+- **Testing**: Manual UI testing with comprehensive scenario coverage
+- **Documentation**: Comprehensive plan documentation with overlap prevention
+
+#### Key Integration Patterns
+- **Data Flow**: External API → Backend Processing → Data Transformation → Frontend Display
+- **State Management**: Independent submission state objects
+- **Error Handling**: OpenCTI-specific error types and user-friendly messages
+- **Permission System**: UI rendering based on user permissions
+
+### Workflow Pattern Recognition
+Based on analysis of existing plans in the project, common workflow patterns include:
+
+#### Pattern 1: UI Development Workflow
+1. **Mock Analysis**: Examine existing mock UI files for structure
+2. **Data Mapping**: Map API responses to UI data structures
+3. **Component Implementation**: Update templates and component logic
+4. **Testing Integration**: Manual UI testing with edge cases
+5. **Validation**: Comprehensive testing before deployment
+
+#### Pattern 2: API Integration Workflow
+1. **API Analysis**: Understand external API structure and requirements
+2. **Backend Integration**: Implement API calls and data transformation
+3. **Error Handling**: Comprehensive error handling for API failures
+4. **State Management**: Proper state synchronization between components
+5. **Real-time Updates**: OnMessage patterns for live updates
+
+#### Pattern 3: Testing and Validation Workflow
+1. **Test Planning**: Define comprehensive test scenarios
+2. **Manual Testing**: Step-by-step manual testing approach
+3. **Edge Case Testing**: Error scenarios and boundary conditions
+4. **Performance Testing**: Load testing and performance optimization
+5. **Deployment Validation**: Pre-deployment validation checkpoints
+
+## Enhanced Plan Generation Process
+
+### Step 1: Context Analysis (15 minutes)
+**Analyze ALL provided context before asking questions:**
+
+#### [ ] 1.1 Message Analysis
+- Extract all file paths mentioned
+- Identify explicit goals and constraints
+- Note specific context provided
+
+#### [ ] 1.2 File Content Analysis
+- Read all referenced files completely
+- Extract answers to potential questions
+- Identify implementation patterns
+
+#### [ ] 1.3 Existing Plans Review
+- Check `/Users/jonp/code/projects/integrations/opencti-ioc-submission/.cursor/docs/plans`
+- Identify previous approaches
+- Note potential overlap areas
+
+### Step 2: Intelligent Question Generation (10 minutes)
+**Only ask questions that cannot be answered from context:**
+
+#### [ ] 2.1 Essential Questions Only
+- Skip questions answered in provided context
+- Focus on missing implementation details
+- Prioritize questions that significantly impact plan quality
+
+#### [ ] 2.2 Question Quality Validation
+- Ensure each question adds unique value
+- Avoid redundancy with provided information
+- Focus on actionable implementation details
+
+### Step 3: Plan Generation (45 minutes)
+**Generate comprehensive plan with overlap awareness:**
+
+#### [ ] 3.1 Unique Plan Development
+- Build upon existing plans rather than repeating
+- Focus on complementary aspects
+- Ensure plan adds unique value to project
+
+#### [ ] 3.2 Quality Criteria Implementation
+- Implement all 10 quality criteria
+- Include comprehensive validation checkpoints
+- Provide detailed rollback procedures
+
+### Step 4: Overlap Analysis and Recommendations (15 minutes)
+**Post-generation overlap review:**
+
+#### [ ] 4.1 Overlap Detection
+- Compare with existing plans in detail
+- Identify specific areas of duplication
+- Note complementary aspects
+
+#### [ ] 4.2 Improvement Recommendations
+- Suggest specific duplication removal
+- Offer plan consolidation options
+- Recommend integration approaches
+
+## Post-Generation Validation
+
+### Overlap Review Template
+After generating any plan, ALWAYS provide:
+
+```markdown
+## Plan Overlap Analysis
+
+### Existing Plans Reviewed:
+- **[Plan Name]**: [Brief description and overlap assessment]
+- **[Plan Name]**: [Brief description and overlap assessment]
+
+### Identified Overlaps:
+- **[Specific overlap]**: Found in [plan name] at [section/step]
+- **[Specific overlap]**: Found in [plan name] at [section/step]
+
+### Duplication Removal Recommendations:
+- **Remove**: [Specific sections/steps to remove]
+- **Consolidate**: [Specific sections to merge]
+- **Redirect**: [References to existing plans instead of duplication]
+
+### Unique Value Proposition:
+This plan adds unique value by:
+- [Specific unique aspect 1]
+- [Specific unique aspect 2]
+- [Specific unique aspect 3]
+
+**Would you like me to remove the identified duplications and optimize the plan for uniqueness?**
+```
+
+## Integration with Framework Planning
+
+**For integration-specific planning, reference**: @integration-framework-planning.mdc
+
+**Auto-Reference Triggers:**
+- When plan involves API integration
+- When plan involves Polarity framework
+- When plan involves real-time data updates
+- When plan involves entity type handling
+- When plan involves OpenCTI-specific patterns
+
+## Quality Assurance Checklist
+
+### Before Plan Completion
+- [ ] All 10 quality criteria maximized
+- [ ] External links verified and accessible
+- [ ] Time estimates include buffer time
+- [ ] Risk assessment complete with mitigation strategies
+- [ ] Rollback procedures documented
+- [ ] Validation checkpoints defined
+- [ ] Success criteria measurable and specific
+
+### Plan Review Process
+- [ ] Technical accuracy verified
+- [ ] Implementation feasibility confirmed
+- [ ] Dependencies clearly mapped
+- [ ] Risks appropriately assessed
+- [ ] Timeline realistic and achievable
+- [ ] Rollback procedures tested conceptually
+
+### Post-Implementation Review
+- [ ] Plan accuracy assessment
+- [ ] Time estimate validation
+- [ ] Risk mitigation effectiveness
+- [ ] Rollback procedure validation
+- [ ] Success criteria achievement
+- [ ] Lessons learned documentation
+
+## Common Pitfalls to Avoid
+
+1. **Insufficient Requirements Gathering**: Ask comprehensive questions upfront
+2. **Overly Optimistic Time Estimates**: Always include buffer time
+3. **Missing Risk Assessment**: Identify risks before they become issues
+4. **Inadequate Rollback Planning**: Plan for failure scenarios
+5. **Vague Success Criteria**: Make criteria specific and measurable
+6. **Missing External Documentation**: Include comprehensive reference links
+7. **Flat Task Structure**: Use nested checkboxes for complex tasks
+8. **Ignoring Dependencies**: Map dependencies carefully
+9. **Skipping Validation**: Include validation at every stage
+10. **Poor Documentation**: Document everything thoroughly
+
+## Success Patterns
+
+**High-quality plans typically demonstrate:**
+- Intelligent use of provided context without redundant questions
+- Clear uniqueness compared to existing plans
+- Comprehensive overlap analysis and removal recommendations
+- Project-specific workflow pattern recognition
+- Actionable implementation steps with specific file paths
+- Realistic time estimates based on project complexity
+- Multi-tier validation and rollback strategies
+
+**Remember**: The goal is to create plans that are intelligent, unique, and build upon existing work rather than duplicating it. Always analyze context thoroughly before asking questions and provide comprehensive overlap analysis after generation.
+description:
+globs:
+alwaysApply: false
+---

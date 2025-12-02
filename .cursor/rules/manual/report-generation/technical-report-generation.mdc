@@ -1,0 +1,417 @@
+# Accuracy-First Technical Report Generation
+*Enhanced methodology for high-stakes analysis with verified citations*
+
+## 🎯 Rule Purpose
+
+**Generate comprehensive technical analysis with maximum accuracy verification.** This rule prioritises verified data, source quality ratings, and context preservation for critical decision-making.
+
+**🚀 Execution Mode:** Ask 5-7 comprehensive questions → Execute autonomously with verification → Deliver finished 8+ document package with source ratings
+
+---
+
+## ⚡ Structured Question Framework
+
+### 🎯 **Question Template** (USE EXACTLY THESE)
+```
+I'll create an accuracy-first analysis package with 8+ verified documents. I need 5-7 key pieces of information:
+
+1. VERIFICATION SCOPE: What aspects need verified analysis with citations?
+   (e.g., "Compare 5 enterprise databases with compliance documentation" vs "General database landscape with source ratings")
+
+2. DISTRIBUTION CONTEXT: Where will this be distributed and what's the stakes level?
+   (e.g., "Board presentation for $2M decision" vs "Internal documentation with audit trail")
+
+3. DECISION MAKERS: Who makes decisions based on this analysis?
+   (e.g., "CTO and compliance team" vs "Technical committee and procurement")
+
+4. CONTEXT DOCUMENTS: Do you have existing documents I should analyse and reference?
+   (e.g., "Current architecture docs and RFP requirements" vs "No existing documentation")
+
+5. VERIFICATION REQUIREMENTS: Should I verify all external links and rate source quality?
+   (e.g., "Yes, this needs audit-level verification" vs "Standard verification with confidence ratings")
+
+6. STAKES ASSESSMENT: What's the impact level of this decision?
+   (e.g., "Mission-critical infrastructure change" vs "Strategic platform evaluation")
+
+7. COMPLIANCE NEEDS: Any specific compliance or citation requirements?
+   (e.g., "SOC2/GDPR compliance documentation needed" vs "Standard business analysis")
+
+That's all I need. I'll then create a comprehensive 8+ document package with full verification autonomously.
+```
+
+### 🔄 **Information Gathering Strategy**
+```
+✅ Ask all 5-7 questions at once (comprehensive context gathering)
+✅ Don't seek incremental clarification unless critical gaps exist
+✅ If user provides partial answers, proceed with high-confidence assumptions
+✅ Start accuracy-first generation immediately after getting responses
+✅ Focus on delivering verification-complete package, not iterative refinement
+```
+
+---
+
+## ⚡ Autonomous Execution Process
+
+### 1️⃣ **After Getting User Responses** (IMMEDIATE START)
+```
+Confirm understanding and verification scope:
+"Creating accuracy-first analysis package for [SCOPE] with [STAKES] impact targeting [DECISION MAKERS] via [DISTRIBUTION]. Generating 8+ document package with [VERIFICATION LEVEL] and context preservation now."
+
+Then proceed automatically through entire verified package generation.
+```
+
+### 2️⃣ **Context Preservation Setup** (AUTOMATIC)
+```
+Create and maintain throughout analysis:
+□ Build.md - Analysis structure and progress tracking
+□ Task.md - Current tasks and completion status
+□ PageList.md - Document index with descriptions
+□ Source-Index.md - All analysed materials with quality ratings
+
+Update continuously without seeking permission.
+```
+
+### 3️⃣ **Verified Document Generation** (SYSTEMATIC CREATION)
+```
+Create complete verified package:
+□ Technical Report - Comprehensive analysis with verified citations
+□ Source Verification Matrix - Link status and reliability ratings  
+□ Comparison Matrix - Feature tables with source attribution
+□ Visual Summary - Slack/Teams ready with verified links
+□ Implementation Guide - Step-by-step with current procedures
+□ Decision Tree - Guided selection with confidence levels
+□ Context Index - All analysed documents and sources
+□ README Navigation - Overview with verification metadata
+
+Generate all documents with full verification without seeking intermediate approval.
+```
+
+### 4️⃣ **Verification Standards** (NON-NEGOTIABLE)
+```
+For every external reference:
+□ Test link accessibility at analysis time
+□ Verify content matches claimed information
+□ Assess source authority for specific claim
+□ Check publication/update dates for currency
+□ Evaluate potential link decay risk
+□ Document alternative sources for critical data
+□ Flag any unverifiable claims clearly
+□ Rate source confidence (High/Medium/Low)
+```
+
+---
+
+## 📊 Enhanced Documentation Package
+
+### 🔍 **Accuracy-Focused Document Specifications**
+
+### 📊 **Technical Report**
+- **Purpose**: Comprehensive analysis with full verification methodology
+- **Length**: 15-20 minutes read time
+- **Format**: Executive summary, methodology, verified findings, source ratings, appendices
+- **Must Include**: Problem analysis, verified market data, source confidence ratings, risk assessment
+- **Autonomous Elements**: Accuracy-first analysis framework with systematic verification
+
+### 📈 **Source Verification Matrix**
+- **Purpose**: Complete verification status and reliability assessment for all sources
+- **Length**: 5-8 minutes read time
+- **Format**: Source tables, verification status, confidence ratings, alternative sources
+- **Must Include**: Link verification results, source authority assessment, currency evaluation
+- **Autonomous Elements**: Systematic verification protocol with quality ratings
+
+### 📋 **Comparison Matrix**
+- **Purpose**: Feature comparison with full source attribution and confidence levels
+- **Length**: 8-12 minutes read time
+- **Format**: Feature tables with source links, confidence ratings, verification dates
+- **Must Include**: Verified feature comparisons, source citations, confidence assessments
+- **Autonomous Elements**: Verified comparison framework with source transparency
+
+### 🎨 **Visual Summary**
+- **Purpose**: Executive overview with verified data and source confidence indicators
+- **Length**: 3-5 minutes read time
+- **Format**: Key findings with verification indicators, copy-paste ready with source links
+- **Must Include**: Executive summary with confidence levels, verified recommendations
+- **Autonomous Elements**: High-confidence visual presentation with source transparency
+
+### 🛠️ **Implementation Guide**
+- **Purpose**: Step-by-step procedures with current, verified information
+- **Length**: 12-15 minutes read time
+- **Format**: Prerequisites, verified procedures, tested configurations, validation steps
+- **Must Include**: Current setup procedures, verified technical requirements, testing protocols
+- **Autonomous Elements**: Current best practices with verification timestamps
+
+### 🌳 **Decision Tree**
+- **Purpose**: Guided selection with confidence levels and verification status
+- **Length**: 5-8 minutes read time
+- **Format**: Decision paths with confidence indicators, verified criteria, source backing
+- **Must Include**: Verified decision criteria, confidence-rated recommendations
+- **Autonomous Elements**: High-confidence decision logic with source validation
+
+### 📚 **Context Index**
+- **Purpose**: Complete record of analysed materials and source quality assessment
+- **Length**: 3-5 minutes read time
+- **Format**: Document summaries, source ratings, verification status, access information
+- **Must Include**: All source materials, quality ratings, verification timestamps
+- **Autonomous Elements**: Comprehensive source management with quality tracking
+
+### 📋 **README Navigation**
+- **Purpose**: Package overview with verification metadata and confidence indicators
+- **Length**: 2-3 minutes read time
+- **Format**: Document guide with confidence levels, verification summary, usage recommendations
+- **Must Include**: Package overview, verification summary, confidence assessment
+- **Autonomous Elements**: Professional navigation with transparency about verification levels
+
+---
+
+## 🚀 Autonomous Verification Guidelines
+
+### ✅ **Proceed Automatically With:**
+```
+High-confidence assumptions when detailed info is missing:
+- Verification level: Maximum verification unless explicitly stated otherwise
+- Stakes assessment: High-stakes approach for enterprise/compliance contexts
+- Source requirements: Authoritative sources with official documentation preference
+- Timeline: Thorough analysis without time pressure compromises
+- Quality standards: Professional presentation suitable for executive/audit review
+- Context preservation: Full documentation trail throughout analysis
+```
+
+### 🎯 **Focus Areas for Maximum Verification:**
+```
+Comprehensive verification and analysis:
+- Official documentation and authoritative sources
+- Current pricing with official source confirmation
+- Feature accuracy with vendor documentation verification
+- Market position with multiple independent source confirmation
+- Security certifications with official verification
+- Compliance capabilities with authoritative documentation
+- Performance claims with verified benchmarks and testing
+- Vendor stability with financial and market analysis
+```
+
+### 📝 **Accuracy-First Standards** (MAINTAIN THROUGHOUT)
+```
+Each document includes:
+- Verification methodology section explaining approach
+- Source confidence ratings for all major claims
+- Link verification status with test dates
+- Alternative sources for critical information
+- Currency assessment for all data points
+- Risk assessment with confidence levels
+- Clear distinction between verified facts and estimates
+- Professional presentation suitable for high-stakes decisions
+```
+
+---
+
+## ✅ Enhanced Verification Requirements
+
+### 🔗 **Link Verification Protocol**
+```
+Mandatory for every external reference:
+□ Test link accessibility at analysis time
+□ Verify content matches claimed information
+□ Assess source authority for specific claim
+□ Check publication/update dates for currency
+□ Evaluate potential link decay risk
+□ Document alternative sources for critical data
+□ Flag any unverifiable claims clearly
+□ Rate source confidence (High/Medium/Low)
+```
+
+### 📊 **Data Verification Requirements**
+```
+For every factual claim:
+□ Cross-reference with multiple authoritative sources
+□ Verify numerical data from official sources
+□ Check publication dates for currency
+□ Distinguish official vs. community-reported data
+□ Flag estimates vs. confirmed figures
+□ Note methodology behind statistics when available
+□ Document confidence level for each claim
+□ Provide alternative sources for critical data
+```
+
+### 🏆 **Source Quality Assessment**
+```
+Rate each source for:
+- Authority (official, academic, reputable industry sources)
+- Currency (how recent and up-to-date the information is)
+- Accuracy (cross-verified with other authoritative sources)  
+- Completeness (covers relevant aspects comprehensively)
+- Bias potential (vendor promotional vs. independent analysis)
+- Verification status (link tested, content confirmed)
+```
+
+---
+
+## 🎯 Communication Patterns
+
+### 💬 **Accuracy-First Language Patterns:**
+```
+Use verification-focused, confident phrases:
+- "According to verified data from [source, verified DATE]..."
+- "Cross-verified across [X] authoritative sources shows..."
+- "Official documentation confirms... (confidence: High)"
+- "Note: This link verified accessible on [DATE]"
+- "Confidence level: [High/Medium/Low] based on [specific criteria]"
+- "Data limitation: [specify what cannot be verified]"
+- "Alternative verification: [backup source with rating]"
+```
+
+### ⚠️ **Uncertainty Handling Patterns:**
+```
+Clear transparency about limitations:
+- "Available verified data suggests... (confidence: Medium)"
+- "Unverified community reports indicate... (confidence: Low)"
+- "Official source unavailable; based on [alternative sources]"
+- "Estimated figure - methodology unverified"
+- "Conflicting verified data found: [present range with sources]"
+- "Verification limitation: [explain why certain data cannot be confirmed]"
+```
+
+### 🔄 **Execution Flow:**
+```
+1. "Creating accuracy-first analysis package for [summary of understanding with verification scope]"
+2. [Generate all 8+ documents systematically with full verification]
+3. "Here's your complete verified analysis package with source ratings and confidence indicators:"
+4. [Present final results with verification summary and confidence assessment]
+```
+
+---
+
+## 🚫 Accuracy-First Guidelines
+
+### ❌ **Don't Do This (Compromises Verification):**
+- Include unverified links or unsupported claims
+- Skip source quality ratings or confidence assessments
+- Use single sources for critical business decisions
+- Ignore context preservation requirements during analysis
+- Mix verified data with estimates without clear labelling
+- Rush verification process for time pressures
+
+### ✅ **Do This (Maintains Accuracy Standards):**
+- Test every external link before inclusion in documents
+- Rate source quality for all references with clear criteria
+- Cross-verify critical claims with multiple authoritative sources
+- Maintain context files throughout entire analysis process
+- Document verification methodology and limitations clearly
+- Acknowledge data gaps and uncertainty transparently
+
+---
+
+## 📁 Enhanced File Structure
+
+```
+/accuracy-verified-analysis-[topic]/
+├── Technical-Report.md              # Comprehensive verified analysis
+├── Source-Verification-Matrix.md    # Link and data verification status
+├── Comparison-Matrix.md             # Detailed comparisons with attribution
+├── Visual-Summary.md                # Quick overview with verified links
+├── Implementation-Guide.md          # Step-by-step with current procedures
+├── Decision-Tree.md                 # Guided selection with confidence levels
+├── Context-Index.md                 # Analysed documents and sources
+├── Build.md                        # Analysis structure tracking
+├── Task.md                         # Current tasks and completion
+├── PageList.md                     # Document index with descriptions
+└── README-Navigation.md            # Overview with verification metadata
+```
+
+---
+
+## 🎪 Enhanced Activation Examples
+
+### **Example 1: High-Stakes Enterprise Decision**
+**User:** "Create verified analysis of enterprise database platforms for financial services company, need SOC2 compliance documentation, results for CTO and compliance team, $5M decision with audit requirements"
+
+**AI Response:**
+```
+Creating accuracy-first analysis package for enterprise database platform selection with mission-critical infrastructure impact targeting CTO and compliance team with audit-level verification and SOC2 compliance requirements. Generating 8+ document package with maximum verification and context preservation now.
+
+[Proceeds to create complete package with full verification autonomously]
+```
+
+### **Example 2: Compliance-Driven Analysis**
+**User:** "Comprehensive analysis of cloud platforms with verified compliance certifications for healthcare data processing"
+
+**AI Response:**
+```
+Creating accuracy-first analysis package for cloud platform selection with healthcare compliance requirements and verified certification documentation. Generating 8+ document package with enhanced verification and compliance focus now.
+
+[Generates complete compliance-focused analysis with full verification autonomously]
+```
+
+### **Example 3: Partial Information Requiring Questions**
+**User:** "Need technical report with maximum accuracy for platform decision"
+
+**AI Response:**
+```
+I'll create an accuracy-first analysis package with 8+ verified documents. I need 5-7 key pieces of information:
+
+1. VERIFICATION SCOPE: What aspects need verified analysis with citations?
+2. DISTRIBUTION CONTEXT: Where will this be distributed and what's the stakes level?
+3. DECISION MAKERS: Who makes decisions based on this analysis?
+4. CONTEXT DOCUMENTS: Do you have existing documents I should analyse and reference?
+5. VERIFICATION REQUIREMENTS: Should I verify all external links and rate source quality?
+6. STAKES ASSESSMENT: What's the impact level of this decision?
+7. COMPLIANCE NEEDS: Any specific compliance or citation requirements?
+
+That's all I need. I'll then create a comprehensive 8+ document package with full verification autonomously.
+```
+
+---
+
+## 🏆 Enhanced Success Metrics
+
+- **8+ specialised documents** with comprehensive verification metadata
+- **20+ verified external citations** with working links and source confidence ratings
+- **Source quality ratings** for all factual claims and references
+- **Multiple format outputs** with verification status indicators
+- **Vendor-neutral analysis** with transparent sourcing and confidence levels
+- **95%+ link accessibility** verified at publication time
+- **Context preservation** maintained throughout analysis process
+- **Cross-reference validation** for all critical business claims
+- **Professional presentation** suitable for executive and audit review
+- **45-60 minute total read time** across all documents with verification details
+
+---
+
+## ⚖️ When to Use vs Alternative Rules
+
+### 🎯 **Perfect for Technical Report Generation:**
+- High-stakes decisions with significant financial or strategic impact
+- Compliance-driven environments requiring audit trails
+- Enterprise decisions affecting critical infrastructure
+- Situations requiring source verification and confidence ratings
+- Long-term strategic platform or vendor selections
+- Regulatory or legal requirements for documentation
+
+### 📊 **Use Multi-Report Generation instead for:**
+- Standard business decisions without audit requirements
+- Medium-stakes decisions with standard verification needs
+- Multiple stakeholder groups without compliance requirements
+- Professional analysis without maximum verification protocols
+
+### 🚀 **Use Quick Analysis instead for:**
+- Time-critical decisions requiring immediate action
+- Low to medium impact decisions
+- Proof-of-concept or initial evaluation phases
+- Small team contexts without formal documentation needs
+
+---
+
+## 🚨 Final Execution Notes
+
+### ⚡ **Key Principles:**
+1. **Ask comprehensive questions once** - get complete context for verification scope
+2. **Execute with maximum verification** - test every link, rate every source
+3. **Deliver audit-ready results** - professional package suitable for high-stakes review
+4. **Maintain transparency** - clear confidence levels and verification status throughout
+5. **Focus on accuracy over speed** - never compromise verification for timeline pressure
+
+### 🎯 **Success Metric:**
+**User gets complete, professionally verified 8+ document analysis package with source confidence ratings and verification metadata, ready for high-stakes decision-making and audit review, after answering 5-7 comprehensive questions.**
+
+---
+
+**REMEMBER: Accuracy is more important than speed in this rule. Every claim must be verifiable, every link tested, and verification methodology documented throughout the analysis process.**

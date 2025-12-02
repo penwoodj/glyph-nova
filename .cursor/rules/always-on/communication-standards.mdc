@@ -1,0 +1,202 @@
+---
+alwaysApply: true
+---
+## Core Communication Rules
+
+### 1. Copyable Question Format
+
+**Always format questions for easy copying and pasting back into the prompt menu so I can answer under each question:**
+
+```markdown
+**Questions for Review:**
+
+1. How should I handle error cases in this API call?
+- Ans:
+- Notes:
+
+2. Should I create separate files for different error types?
+- Ans:
+- Notes:
+
+3. What's the best practice for input validation here?
+- Ans:
+- Notes:
+```
+
+### 2. Context Management
+
+**Provide Essential Context Every Time:**
+
+```markdown
+**Current Context:**
+- Working on: Files, Indexed Docs etc
+- Problem: Understand the problem through clarifying questions
+- Last working state: Ensure you know how to verify what objective reality is when iterating over a problem
+- Target: Know with detail the direction we're heading to.
+- Experience level: [Problem-Solving Methods](@rules/always-on/personal-profile.mdc#Technical Experience)
+```
+
+**Context Checklist:**
+- [ ] Current file/feature being worked on
+- [ ] Specific problem or goal
+- [ ] What was last working
+- [ ] Your experience level with relevant technology
+- [ ] Timeline constraints (if any)
+
+**Related:** [Problem-Solving Methods](@rules/always-on/problem-solving.mdc#context-gathering)
+
+### 3. Progress Verification System
+
+**Use Regular Checkpoints:**
+
+```markdown
+**Checkpoint Questions:**
+- Did we solve the original authentication issue?
+- Are we still focused on user-friendly error messages?
+- Should we commit this change before moving forward?
+- What assumptions are we making about the API response format?
+```
+
+**Implementation Pattern:**
+1. **Before major changes:** "Let me verify our current goal..."
+2. **After implementation:** "Did this solve the original problem?"
+3. **Before commits:** "Are all requirements satisfied?"
+4. **Context switches:** "Quick summary of where we are..."
+
+### 4. Error Prevention Communication
+
+**Always Declare Assumptions:**
+
+```markdown
+**Assumptions I'm Making:**
+- API returns JSON format for errors
+- HTTP status codes follow REST conventions  
+- User has Node.js 18+ environment
+- Database schema matches the documentation
+```
+
+**Validation Prompts:**
+- "Are these assumptions correct?"
+- "Did we test edge cases?"
+- "Should we add input validation here?"
+- "Are we following security best practices?"
+
+**Security Integration:** [Security Practices](@rules/always-on/security-practices.mdc#input-validation)
+
+---
+
+## Advanced Communication Patterns
+
+### 5. Scope and Focus Management
+
+**Keep Conversations Focused:**
+
+```markdown
+**Session Scope:**
+- Primary: Fix authentication error handling
+- Secondary: Improve error message clarity
+- Out of scope: Performance optimization, UI changes
+
+**Decision Record:**
+- Chosen approach: Custom error mapping class
+- Alternative considered: Generic error wrapper
+- Reason: Better user experience and debugging
+```
+
+### 6. Technical Specification Format
+
+**For Complex Technical Discussions:**
+
+```markdown
+**Technical Requirements:**
+- Input: REST API responses (JSON)
+- Output: User-friendly error messages (String)
+- Constraints: Must preserve error codes for debugging
+- Dependencies: None (vanilla JavaScript)
+- Testing: Unit tests required for error scenarios
+```
+
+**Performance Expectations:**
+- Error processing: < 5ms overhead
+- Memory usage: Minimal (no large objects cached)
+- Compatibility: Node.js 16+ and modern browsers
+
+### 7. Code Review Communication
+
+**When Requesting Code Review:**
+
+```markdown
+**Review Focus Areas:**
+1. Security: Input validation on user-provided URLs
+2. Error handling: Are all edge cases covered?
+3. Testing: Do tests cover the authentication failure scenarios?
+4. Documentation: Is the error message mapping clear?
+
+**Specific Questions:**
+- Line 42: Is this the right place for input sanitization?
+- Function validateApiResponse(): Should we add schema validation?
+- Error codes 401/403: Are these handled consistently?
+```
+
+**Integration:** [Development Workflow](@rules/manual/development-workflow.mdc#code-review-process)
+
+---
+
+## Language and Tone Guidelines
+
+### 8. Professional Communication Style
+
+**Preferred Language Patterns:**
+- **Clear and Direct:** "This needs input validation" vs "Maybe we should consider validation"
+- **Specific:** "Add try/catch to line 23" vs "Error handling needed somewhere"
+- **Action-Oriented:** "Create error-mapping.js" vs "We might want error handling"
+
+**Avoid:**
+- Overly enthusiastic language ("amazing," "brilliant")
+- Vague requests ("make it better," "fix the issues")
+- Assumptions about experience level without clarification
+
+### 9. Documentation Integration
+
+**Always Reference Related Files:**
+
+```markdown
+**Related Documentation:**
+- [Development Workflow](@rules/manual/development-workflow.mdc) - For TDD and commit practices
+- [Security Practices](@rules/always-on/security-practices.mdc) - For input validation requirements
+- [Quality Control](@rules/manual/quality-control.mdc) - For testing standards
+
+**External Resources:**
+- [OWASP Input Validation](https://owasp.org/www-project-proactive-controls/) - Security guidelines
+- [Semantic Commit Messages](https://www.conventionalcommits.org/) - Commit format standards
+```
+
+---
+
+## Quick Implementation Checklist
+
+**✅ Start Using Today:**
+- [ ] Format next question in a copyable code block
+- [ ] Include current context in next AI conversation
+- [ ] Use checkpoint questions before major changes
+- [ ] Declare assumptions explicitly
+
+**✅ This Week:**
+- [ ] Implement progress verification system
+- [ ] Create template for technical specifications
+- [ ] Practice scope management in conversations
+- [ ] Link to related documentation in discussions
+
+**✅ Advanced Usage:**
+- [ ] Develop team communication templates
+- [ ] Integrate with [Conversation-Driven Development](@rules/always-on/conversation-driven.mdc)
+- [ ] Establish code review communication standards
+- [ ] Create project-specific communication guidelines
+
+---
+
+**Next Steps:** Review [Development Workflow](@rules/manual/development-workflow.mdc) for TDD integration patterns or [Security Practices](@rules/always-on/security-practices.mdc) for secure communication about credentials and sensitive data.
+description:
+globs:
+alwaysApply: false
+---

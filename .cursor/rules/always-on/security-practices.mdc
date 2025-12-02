@@ -1,0 +1,539 @@
+---
+alwaysApply: true
+---
+## Critical Security Rules
+
+### 1. Credential Detection and Protection
+
+**MANDATORY: Scan for sensitive patterns before any file operations:**
+
+```markdown
+**Credential Patterns to Detect:**
+
+🔑 API Keys & Tokens:
+- `api_key`, `apikey`, `api-key` followed by `=`, `:`, or `"`
+- `token`, `bearer`, `jwt` followed by `=`, `:`, or `"`
+- `secret`, `password`, `pwd` followed by `=`, `:`, or `"`
+- `private_key`, `client_secret`, `auth_token`
+- Base64 encoded strings > 32 characters in config contexts
+
+🗄️ Database & Infrastructure:
+- Connection strings: `mongodb://`, `postgres://`, `mysql://`, `redis://`
+- Database passwords: `DB_PASSWORD`, `DATABASE_URL`
+- Cloud credentials: `AWS_ACCESS_KEY`, `AZURE_`, `GCP_`
+- SSH keys: `-----BEGIN`, `ssh-rsa`, `ssh-ed25519`
+```
+
+**Credential Management Workflow:**
+
+```markdown
+**When credentials detected in files:**
+
+🔴 STOP IMMEDIATELY - Do not proceed with file operations
+
+**For NEW files with credentials:**
+1. Create template version with placeholders
+2. Replace credentials with `YOUR_API_KEY_HERE`
+3. Add template to git: `git add config.template.js`
+4. Ignore original: `git update-index --skip-worktree config.js`
+5. Add to .gitignore: `echo "config.js" >> .gitignore`
+
+**For EXISTING files:**
+- Use: `git update-index --skip-worktree filename`
+- Notify team about credential exposure risk
+```
+
+**Template Creation:**
+
+```javascript
+// ✅ GOOD: config.template.js
+module.exports = {
+  apiKey: 'YOUR_API_KEY_HERE',
+  databaseUrl: 'YOUR_DATABASE_URL_HERE',
+  jwtSecret: 'YOUR_JWT_SECRET_HERE'
+};
+
+// ❌ NEVER COMMIT: config.js  
+module.exports = {
+  apiKey: 'sk-1234567890abcdef...',
+  databaseUrl: 'mongodb://user:pass@host:port/db',
+  jwtSecret: 'super-secret-key-12345'
+};
+```
+
+### 2. Input Validation
+
+**Validate All External Input:**
+
+```markdown
+**Input Validation Checklist:**
+
+🔍 Data Type Validation:
+- [ ] Check data types (string, number, boolean)
+- [ ] Validate required fields are present
+- [ ] Check field length limits
+- [ ] Validate format patterns (email, URL, etc.)
+
+🚫 Sanitization:
+- [ ] Remove potentially dangerous characters
+- [ ] Encode special characters for output context
+- [ ] Validate against allowlists when possible
+- [ ] Reject known malicious patterns
+```
+
+**Example Input Validation:**
+
+```javascript
+// ✅ GOOD: Comprehensive input validation
+function validateUserInput(userData) {
+  const errors = [];
+  
+  // Type and presence validation
+  if (!userData.email || typeof userData.email !== 'string') {
+    errors.push('Email is required and must be a string');
+  }
+  
+  // Format validation
+  if (userData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+    errors.push('Email format is invalid');
+  }
+  
+  // Length validation
+  if (userData.name && userData.name.length > 100) {
+    errors.push('Name must be less than 100 characters');
+  }
+  
+  // Sanitization
+  if (userData.bio) {
+    userData.bio = userData.bio.replace(/<script.*?>.*?<\/script>/gi, '');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    sanitizedData: userData
+  };
+}
+```
+
+**Integration:** [Development Workflow](development-workflow.mdc#code-quality-maintenance)
+
+### 3. Secure Error Handling
+
+**Never Expose Internal Details:**
+
+```markdown
+**Error Handling Guidelines:**
+
+✅ GOOD Error Messages:
+- "Invalid email format. Please check your input."
+- "Authentication failed. Please verify your credentials."  
+- "Resource not found. Please check the ID and try again."
+- "Service temporarily unavailable. Please try again later."
+
+❌ AVOID Exposing:
+- Database error messages
+- File system paths
+- API keys or credentials
+- Internal server details
+- Stack traces in production
+```
+
+**Error Handling Pattern:**
+
+```javascript
+// ✅ GOOD: Secure error handling
+function handleApiError(error, userContext) {
+  // Log detailed error for debugging (server-side only)
+  logger.error('API Error Details', {
+    error: error.message,
+    stack: error.stack,
+    userId: userContext.userId,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Return safe message to user
+  if (error.code === 'AUTH_FAILED') {
+    return { 
+      success: false, 
+      message: 'Authentication failed. Please check your credentials.',
+      code: 'AUTH_ERROR'
+    };
+  }
+  
+  if (error.code === 'VALIDATION_ERROR') {
+    return {
+      success: false,
+      message: 'Invalid input data. Please check your submission.',
+      code: 'INPUT_ERROR'
+    };
+  }
+  
+  // Generic fallback for unknown errors
+  return {
+    success: false,
+    message: 'An unexpected error occurred. Please try again later.',
+    code: 'GENERAL_ERROR'
+  };
+}
+```
+
+---
+
+## Advanced Security Patterns
+
+### 4. Secure Logging Practices
+
+**Log Security Events Appropriately:**
+
+```markdown
+**Logging Security Guidelines:**
+
+🔒 ALWAYS LOG:
+- Authentication attempts (success/failure)
+- Authorization failures
+- Input validation failures
+- Security-relevant configuration changes
+- Suspicious activity patterns
+
+🚫 NEVER LOG:
+- Passwords or API keys
+- Full request/response bodies with sensitive data
+- Credit card numbers or personal identifiers
+- Session tokens or authentication credentials
+```
+
+**Secure Logging Implementation:**
+
+```javascript
+// ✅ GOOD: Secure logging
+function logSecurityEvent(eventType, details) {
+  // Sanitize sensitive data before logging
+  const sanitizedDetails = {
+    ...details,
+    password: '[REDACTED]',
+    apiKey: '[REDACTED]',
+    token: '[REDACTED]'
+  };
+  
+  securityLogger.info(`Security Event: ${eventType}`, {
+    event: eventType,
+    timestamp: new Date().toISOString(),
+    userId: details.userId || 'anonymous',
+    ipAddress: details.ipAddress,
+    userAgent: details.userAgent,
+    details: sanitizedDetails
+  });
+}
+
+// Usage examples
+logSecurityEvent('LOGIN_ATTEMPT', { 
+  userId: '12345', 
+  ipAddress: '192.168.1.1',
+  success: false,
+  reason: 'invalid_password'
+});
+
+logSecurityEvent('INPUT_VALIDATION_FAILURE', {
+  field: 'email',
+  value: '[SANITIZED]',
+  expectedFormat: 'email',
+  source: 'user_registration'
+});
+```
+
+### 5. Dependency Security
+
+**Secure Third-Party Dependencies:**
+
+```markdown
+**Dependency Security Checklist:**
+
+📦 Before Adding Dependencies:
+- [ ] Check package reputation and maintenance status
+- [ ] Review security audit results
+- [ ] Verify package source and author
+- [ ] Check for known vulnerabilities
+
+🔄 Regular Maintenance:
+- [ ] Run security audits weekly: `npm audit` or equivalent
+- [ ] Update dependencies regularly
+- [ ] Monitor security advisories
+- [ ] Remove unused dependencies
+
+⚠️ Risk Assessment:
+- [ ] Avoid packages with recent security issues
+- [ ] Prefer established, well-maintained packages
+- [ ] Review packages with excessive permissions
+- [ ] Validate packages that access file system or network
+```
+
+**Dependency Audit Script:**
+
+```bash
+#!/bin/bash
+# Security audit script for dependencies
+
+echo "🔍 Running security audit..."
+
+# Check for vulnerabilities
+npm audit --audit-level moderate
+
+# Check for outdated packages
+npm outdated
+
+# List packages with unusual permissions
+echo "📋 Checking package permissions..."
+npm ls --depth=0
+
+echo "✅ Security audit complete"
+```
+
+### 6. API Security
+
+**Secure External API Interactions:**
+
+```markdown
+**API Security Guidelines:**
+
+🌐 HTTPS Everywhere:
+- [ ] Always use HTTPS for API calls
+- [ ] Validate SSL/TLS certificates
+- [ ] Never disable certificate validation
+- [ ] Use proper certificate pinning if available
+
+🔑 Authentication:
+- [ ] Use secure authentication methods (OAuth, JWT)
+- [ ] Rotate API keys regularly
+- [ ] Implement proper token storage
+- [ ] Use least-privilege access principles
+
+⏱️ Rate Limiting:
+- [ ] Implement client-side rate limiting
+- [ ] Handle rate limit responses gracefully
+- [ ] Use exponential backoff for retries
+- [ ] Monitor API usage patterns
+```
+
+**Secure API Client Example:**
+
+```javascript
+// ✅ GOOD: Secure API client
+class SecureApiClient {
+  constructor(config) {
+    this.baseUrl = config.baseUrl;
+    this.apiKey = process.env.API_KEY; // From environment
+    this.timeout = config.timeout || 10000;
+    this.retryAttempts = 3;
+  }
+  
+  async makeRequest(endpoint, options = {}) {
+    // Input validation
+    if (!endpoint || typeof endpoint !== 'string') {
+      throw new Error('Invalid endpoint provided');
+    }
+    
+    // Secure request configuration
+    const requestConfig = {
+      method: options.method || 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'MyApp/1.0'
+      },
+      timeout: this.timeout,
+      // Always validate certificates
+      rejectUnauthorized: true
+    };
+    
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, requestConfig);
+      
+      // Handle rate limiting
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After') || 60;
+        throw new Error(`Rate limited. Retry after ${retryAfter} seconds`);
+      }
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      // Log error securely (no sensitive data)
+      logger.error('API request failed', {
+        endpoint,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+      throw error;
+    }
+  }
+}
+```
+
+---
+
+## Security Testing
+
+### 7. Security Test Patterns
+
+**Test Security Controls:**
+
+```markdown
+**Security Testing Checklist:**
+
+🧪 Input Validation Tests:
+- [ ] Test with empty/null inputs
+- [ ] Test with oversized inputs
+- [ ] Test with special characters and injection attempts
+- [ ] Test with malformed data types
+
+🔐 Authentication Tests:
+- [ ] Test with invalid credentials
+- [ ] Test with expired tokens
+- [ ] Test with missing authentication
+- [ ] Test privilege escalation attempts
+
+🛡️ Error Handling Tests:
+- [ ] Verify no sensitive data in error responses
+- [ ] Test error message consistency
+- [ ] Verify proper HTTP status codes
+- [ ] Test error logging functionality
+```
+
+**Example Security Tests:**
+
+```javascript
+// Security test examples
+describe('Security Tests', () => {
+  describe('Input Validation', () => {
+    test('should reject malicious script injection', () => {
+      const maliciousInput = '<script>alert("xss")</script>';
+      const result = validateUserInput({ name: maliciousInput });
+      
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Invalid characters detected');
+    });
+    
+    test('should handle extremely long inputs', () => {
+      const longInput = 'a'.repeat(10000);
+      const result = validateUserInput({ bio: longInput });
+      
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Input too long');
+    });
+  });
+  
+  describe('Error Handling', () => {
+    test('should not expose sensitive data in errors', () => {
+      const error = new Error('Database connection failed: password123');
+      const userError = handleApiError(error, { userId: '123' });
+      
+      expect(userError.message).not.toContain('password123');
+      expect(userError.message).not.toContain('Database');
+    });
+  });
+});
+```
+
+**Integration:** [Quality Control](quality-control.mdc#security-testing)
+
+---
+
+## Incident Response
+
+### 8. Security Incident Handling
+
+**When Security Issues Are Discovered:**
+
+```markdown
+**Immediate Response (First 10 minutes):**
+
+🚨 CRITICAL Actions:
+1. Stop deployment of affected code
+2. Revoke compromised credentials immediately
+3. Document exact time and scope of discovery
+4. Notify security team/stakeholders
+
+📋 Assessment (Next 30 minutes):
+1. Determine scope of potential exposure
+2. Identify affected systems and data
+3. Check logs for evidence of exploitation
+4. Estimate timeline of vulnerability existence
+
+🔧 Remediation:
+1. Fix vulnerability in code
+2. Deploy security patches
+3. Rotate all potentially affected credentials
+4. Update security tests to prevent recurrence
+5. Document lessons learned
+```
+
+**Post-Incident Documentation:**
+
+```markdown
+**Security Incident Report Template:**
+
+**Incident ID:** SEC-2025-001
+**Date/Time:** 2025-01-15 14:30 UTC
+**Severity:** High/Medium/Low
+**Status:** Resolved
+
+**Summary:**
+Brief description of the security issue and impact.
+
+**Timeline:**
+- 14:30 - Issue discovered during code review
+- 14:35 - Credentials rotated
+- 14:45 - Fix deployed
+- 15:00 - Verification complete
+
+**Root Cause:**
+API key was accidentally committed to repository.
+
+**Impact:**
+Potential unauthorized access to external API for 2 hours.
+
+**Resolution:**
+- Rotated API key
+- Added pre-commit hooks for credential detection
+- Updated .gitignore patterns
+- Enhanced security training
+
+**Prevention:**
+- Implement automated credential scanning
+- Enhanced code review checklist
+- Regular security audit schedule
+```
+
+---
+
+## Quick Implementation Guide
+
+**✅ Start Today:**
+- [ ] Scan current codebase for hardcoded credentials
+- [ ] Add input validation to user-facing functions
+- [ ] Review error messages for sensitive data exposure
+- [ ] Set up environment variables for configuration
+
+**✅ This Week:**
+- [ ] Implement comprehensive input validation
+- [ ] Set up secure logging practices
+- [ ] Add security tests to test suite
+- [ ] Create credential detection pre-commit hooks
+
+**✅ Advanced Implementation:**
+- [ ] Integrate with [Quality Control](quality-control.mdc) for security testing
+- [ ] Establish security incident response procedures
+- [ ] Create security audit schedule
+- [ ] Develop team security training program
+
+---
+
+**Next Steps:** Review [Quality Control](quality-control.mdc) for security testing integration or [Problem-Solving](problem-solving.mdc) for systematic security issue investigation.
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,109 @@
+---
+description: Transcript formatting standards and quality requirements for consistent documentation across all project transcripts. Apply when creating, updating, or formatting any transcript file to ensure professional documentation standards, proper metadata tracking, and structured conversation capture.
+globs: 
+alwaysApply: false
+---
+
+# Transcript Formatting Standards
+
+## Critical Transcript Quality Requirements
+
+- **MANDATORY COPYABLE QUESTION FORMATTING:** ALL questions must ALWAYS be formatted as ONE copyable block containing ALL questions
+- **File Metadata:** Include file path, date, session times, model, context window, and status in header
+- **Scoped Summaries:** Provide skimmable 5-minute summaries highlighting major points
+- **Professional Standards:** Maintain Slack Canvas style formatting with clear visual hierarchy
+- **Verification Checkpoints:** Include "VERIFICATION PAUSE POINT" sections with numbered questions
+- **Context Documentation:** Capture exact messages, metadata, reasoning steps, and file changes
+- **Decision Tracking:** Document all critical decision points with timestamps and rationale
+
+## Required Header Format
+
+```
+# [Project/Phase] - [Brief Description]
+**File:** `[full-file-path]`  
+**Date:** [YYYY-MM-DD] ([Day])  
+**Session Start:** [time] [timezone]  
+**Last Updated:** [YYYY-MM-DD HH:MM:SS] [timezone]  
+**Model:** [model-name]  
+**Context Window:** [token-count] tokens  
+**Status:** [current-status]  
+```
+
+## Question Block Format
+
+**CRITICAL RULE:** Never format questions as separate blocks. Always combine ALL questions into ONE single copyable block:
+
+```
+[Optional: Context header like "🛑 VERIFICATION PAUSE POINT 1:" or question category]
+
+1. [First question]?
+- Me:
+- Side Notes:
+
+2. [Second question]?
+- Me:
+- Side Notes:
+
+3. [Third question]?
+- Me:
+- Side Notes:
+
+[Continue for all questions...]
+```
+
+## Content Structure Requirements
+
+- **Scoped Summaries Section:** Complete overview readable in 5 minutes max
+- **Progress Tracking:** Clear status indicators and completion percentages
+- **Decision Documentation:** Critical choices with context and rationale
+- **Technical Details:** File changes under 300 lines verbatim, summarize larger changes
+- **External References:** Verified links with brief (<500 word) summaries
+- **Verification Questions:** Ask verification at each step to catch mistakes
+
+## Examples
+
+<example>
+**Verification Questions Block:**
+```
+🛑 VERIFICATION PAUSE POINT 1: TDD Environment Setup Complete
+
+1. Directory Structure: Do you see both `server/` and `test-new/` directories created?
+- Me:
+- Side Notes:
+
+2. Backup Safety: Does `integration-original.js` exist and contain an exact copy?
+- Me:
+- Side Notes:
+
+3. Test Independence: Does `npm test` still run successfully with all existing tests passing?
+- Me: 
+- Side Notes: 
+```
+</example>
+
+<example type="invalid">
+**NEVER format questions as separate blocks:**
+```
+1. First question?
+- Me:
+- Side Notes:
+```
+
+```
+2. Second question?
+- Me:
+- Side Notes:
+```
+</example>
+
+## Conversation Documentation Standards
+
+- **Exact Messages:** Include typos/formatting from original messages
+- **Internal Reasoning:** Log behind-the-scenes thought processes
+- **Metadata Tracking:** Timestamps, model changes, context window expansions
+- **File Change Documentation:** Individual changes under 300 lines verbatim
+- **Change Summary:** Larger changes get structured summaries
+- **Time Tracking:** Number of iterations and duration
+- **Verbosity Control:** Maintain limits per addition to prevent bloat
+
+**REMEMBER: Transcripts serve as project memory and must be comprehensive, accurate, and professionally formatted for future reference and analysis.**

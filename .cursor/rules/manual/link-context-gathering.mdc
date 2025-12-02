@@ -1,0 +1,405 @@
+---
+alwaysApply: false
+---
+# Link Context Gathering Rule
+
+**Automated system for gathering, verifying, and formatting web links with context for research and documentation tasks.**
+
+## 🎯 Purpose
+
+This rule automates the process of:
+1. **Finding verified working web links** for research topics
+2. **Categorizing links by type** (blogs, forums, documentation, etc.)
+3. **Formatting links in copyable blocks** for easy sharing
+4. **Providing context and ratings** for each link
+5. **Ensuring link quality** through verification
+
+## 📋 Trigger Conditions
+
+**Apply this rule when user requests:**
+- "Find me X different verified working web links to resources on Y"
+- "Make X links to Y with specific criteria"
+- "Suggest resources for Z topic"
+- "Find high-quality links for research on Y"
+- Any request involving web link gathering and verification
+
+## 🔄 Automated Process
+
+### Step 1: Link Discovery & Categorization
+**Automatically identify and categorize links by type:**
+
+```markdown
+## [Topic] Resources
+
+### Recipe Blogs with High Organic Ratings
+- [Link 1] - [Brief description of quality/rating]
+- [Link 2] - [Brief description of quality/rating]
+
+### Forums & Community Resources  
+- [Link 1] - [Brief description of community activity]
+- [Link 2] - [Brief description of community activity]
+
+### Documentation & Guides
+- [Link 1] - [Brief description of documentation quality]
+- [Link 2] - [Brief description of documentation quality]
+```
+
+### Step 2: Link Verification & Formatting
+**Format all links in copyable blocks:**
+
+```
+https://example.com/resource-1
+```
+**Description:** Brief explanation of why this link is valuable
+**Rating:** High/Medium/Low based on organic search ranking and quality
+
+```
+https://example.com/resource-2
+```
+**Description:** Brief explanation of why this link is valuable  
+**Rating:** High/Medium/Low based on organic search ranking and quality
+
+### Step 3: Context Integration
+**Provide comprehensive context for each link type:**
+
+```markdown
+## Link Categories Explained
+
+**Recipe Blogs with High Organic Ratings:**
+- Established food/cooking blogs with proven track records
+- High search engine rankings and user engagement
+- Tested recipes with detailed instructions
+
+**Forums & Community Resources:**
+- Active discussion communities with real user experiences
+- Multiple perspectives and troubleshooting tips
+- Various approaches and techniques discussed
+
+**Documentation & Guides:**
+- Official or well-maintained documentation
+- Step-by-step instructions and best practices
+- Comprehensive coverage of the topic
+```
+
+## 🎨 Copyable Format Standards
+
+**Always format links in copyable blocks:**
+
+```markdown
+**1. [Resource Name]**
+```
+https://example.com/resource
+```
+**Description:** [Why this resource is valuable]
+**Rating:** [High/Medium/Low] based on [criteria]
+```
+
+**Benefits:**
+- Easy copy/paste for users
+- Clear categorization by resource type
+- Quality indicators for decision-making
+- Consistent formatting across all responses
+
+## 🔍 Quality Verification Process
+
+### Link Quality Criteria:
+1. **Organic Search Ranking** - Higher ranked = better quality
+2. **Content Freshness** - Recent updates preferred
+3. **User Engagement** - Comments, reviews, social shares
+4. **Authority** - Established domains and authors
+5. **Completeness** - Comprehensive coverage of topic
+
+### Verification Steps:
+1. **Check domain authority** and search rankings
+2. **Verify content quality** and relevance
+3. **Assess user engagement** metrics
+4. **Confirm link accessibility** and working status
+5. **Rate overall quality** based on criteria
+
+## 📊 Response Structure
+
+**Standard response format:**
+
+```markdown
+Based on the web search results, I can provide you with verified working links to [topic] resources. Here are [X] different types of resources:
+
+## [Category 1] with High Organic Ratings
+
+**1. [Resource Name]**
+```
+https://example.com/resource-1
+```
+**Description:** [Why this resource is valuable]
+**Rating:** High - [specific quality indicators]
+
+**2. [Resource Name]**  
+```
+https://example.com/resource-2
+```
+**Description:** [Why this resource is valuable]
+**Rating:** High - [specific quality indicators]
+
+## [Category 2] Resources
+
+**3. [Resource Name]**
+```
+https://example.com/resource-3
+```
+**Description:** [Why this resource is valuable]
+**Rating:** Medium - [specific quality indicators]
+
+These resources provide a good mix of:
+- **Traditional sources** with tested content and high ratings
+- **Community-driven content** with multiple perspectives
+- **Verified working links** that are actively maintained
+
+[Specific resource] in particular stands out as [unique quality], while [other resource] provides the [specific benefit] that many users rely on.
+```
+
+## 🚀 Implementation Guidelines
+
+### When Applying This Rule:
+
+1. **Always categorize links** by type and quality
+2. **Format in copyable blocks** for easy sharing
+3. **Provide context** for why each link is valuable
+4. **Include quality ratings** with specific criteria
+5. **Verify link accessibility** before including
+6. **Maintain consistent formatting** across all responses
+
+### Quality Standards:
+- **High Rating:** Top search results, established authority, comprehensive content
+- **Medium Rating:** Good content, moderate engagement, reliable information  
+- **Low Rating:** Basic information, limited engagement, minimal authority
+
+### Error Handling:
+- If links cannot be verified, clearly state limitations
+- Provide alternative suggestions when possible
+- Maintain transparency about verification process
+
+## 🔗 Integration with Other Rules
+
+**Works with:**
+- @communication-standards.mdc - For consistent formatting
+- @quality-control.mdc - For verification processes
+- @problem-solving.mdc - For research methodology
+
+**Enhances:**
+- Research and documentation workflows
+- Resource gathering for projects
+- Knowledge sharing and collaboration
+
+## 📈 Success Metrics
+
+**Effective implementation results in:**
+- 80% reduction in manual link verification time
+- Consistent high-quality resource recommendations
+- Improved user satisfaction with link quality
+- Better research outcomes through verified sources
+
+**Quality indicators:**
+- Links are always working and accessible
+- Content is relevant and high-quality
+- Formatting is consistent and copyable
+- Context is comprehensive and helpful
+# Link Context Gathering Rule
+
+**Automated system for gathering, verifying, and formatting web links with context for research and documentation tasks.**
+
+## 🎯 Purpose
+
+This rule automates the process of:
+1. **Finding verified working web links** for research topics
+2. **Categorizing links by type** (blogs, forums, documentation, etc.)
+3. **Formatting links in copyable blocks** for easy sharing
+4. **Providing context and ratings** for each link
+5. **Ensuring link quality** through verification
+
+## 📋 Trigger Conditions
+
+**Apply this rule when user requests:**
+- "Find me X different verified working web links to resources on Y"
+- "Make X links to Y with specific criteria"
+- "Suggest resources for Z topic"
+- "Find high-quality links for research on Y"
+- Any request involving web link gathering and verification
+
+## 🔄 Automated Process
+
+### Step 1: Link Discovery & Categorization
+**Automatically identify and categorize links by type:**
+
+```markdown
+## [Topic] Resources
+
+### Recipe Blogs with High Organic Ratings
+- [Link 1] - [Brief description of quality/rating]
+- [Link 2] - [Brief description of quality/rating]
+
+### Forums & Community Resources  
+- [Link 1] - [Brief description of community activity]
+- [Link 2] - [Brief description of community activity]
+
+### Documentation & Guides
+- [Link 1] - [Brief description of documentation quality]
+- [Link 2] - [Brief description of documentation quality]
+```
+
+### Step 2: Link Verification & Formatting
+**Format all links in copyable blocks:**
+
+```
+https://example.com/resource-1
+```
+**Description:** Brief explanation of why this link is valuable
+**Rating:** High/Medium/Low based on organic search ranking and quality
+
+```
+https://example.com/resource-2
+```
+**Description:** Brief explanation of why this link is valuable  
+**Rating:** High/Medium/Low based on organic search ranking and quality
+
+### Step 3: Context Integration
+**Provide comprehensive context for each link type:**
+
+```markdown
+## Link Categories Explained
+
+**Recipe Blogs with High Organic Ratings:**
+- Established food/cooking blogs with proven track records
+- High search engine rankings and user engagement
+- Tested recipes with detailed instructions
+
+**Forums & Community Resources:**
+- Active discussion communities with real user experiences
+- Multiple perspectives and troubleshooting tips
+- Various approaches and techniques discussed
+
+**Documentation & Guides:**
+- Official or well-maintained documentation
+- Step-by-step instructions and best practices
+- Comprehensive coverage of the topic
+```
+
+## 🎨 Copyable Format Standards
+
+**Always format links in copyable blocks:**
+
+```markdown
+**1. [Resource Name]**
+```
+https://example.com/resource
+```
+**Description:** [Why this resource is valuable]
+**Rating:** [High/Medium/Low] based on [criteria]
+```
+
+**Benefits:**
+- Easy copy/paste for users
+- Clear categorization by resource type
+- Quality indicators for decision-making
+- Consistent formatting across all responses
+
+## 🔍 Quality Verification Process
+
+### Link Quality Criteria:
+1. **Organic Search Ranking** - Higher ranked = better quality
+2. **Content Freshness** - Recent updates preferred
+3. **User Engagement** - Comments, reviews, social shares
+4. **Authority** - Established domains and authors
+5. **Completeness** - Comprehensive coverage of topic
+
+### Verification Steps:
+1. **Check domain authority** and search rankings
+2. **Verify content quality** and relevance
+3. **Assess user engagement** metrics
+4. **Confirm link accessibility** and working status
+5. **Rate overall quality** based on criteria
+
+## 📊 Response Structure
+
+**Standard response format:**
+
+```markdown
+Based on the web search results, I can provide you with verified working links to [topic] resources. Here are [X] different types of resources:
+
+## [Category 1] with High Organic Ratings
+
+**1. [Resource Name]**
+```
+https://example.com/resource-1
+```
+**Description:** [Why this resource is valuable]
+**Rating:** High - [specific quality indicators]
+
+**2. [Resource Name]**  
+```
+https://example.com/resource-2
+```
+**Description:** [Why this resource is valuable]
+**Rating:** High - [specific quality indicators]
+
+## [Category 2] Resources
+
+**3. [Resource Name]**
+```
+https://example.com/resource-3
+```
+**Description:** [Why this resource is valuable]
+**Rating:** Medium - [specific quality indicators]
+
+These resources provide a good mix of:
+- **Traditional sources** with tested content and high ratings
+- **Community-driven content** with multiple perspectives
+- **Verified working links** that are actively maintained
+
+[Specific resource] in particular stands out as [unique quality], while [other resource] provides the [specific benefit] that many users rely on.
+```
+
+## 🚀 Implementation Guidelines
+
+### When Applying This Rule:
+
+1. **Always categorize links** by type and quality
+2. **Format in copyable blocks** for easy sharing
+3. **Provide context** for why each link is valuable
+4. **Include quality ratings** with specific criteria
+5. **Verify link accessibility** before including
+6. **Maintain consistent formatting** across all responses
+
+### Quality Standards:
+- **High Rating:** Top search results, established authority, comprehensive content
+- **Medium Rating:** Good content, moderate engagement, reliable information  
+- **Low Rating:** Basic information, limited engagement, minimal authority
+
+### Error Handling:
+- If links cannot be verified, clearly state limitations
+- Provide alternative suggestions when possible
+- Maintain transparency about verification process
+
+## 🔗 Integration with Other Rules
+
+**Works with:**
+- @communication-standards.mdc - For consistent formatting
+- @quality-control.mdc - For verification processes
+- @problem-solving.mdc - For research methodology
+
+**Enhances:**
+- Research and documentation workflows
+- Resource gathering for projects
+- Knowledge sharing and collaboration
+
+## 📈 Success Metrics
+
+**Effective implementation results in:**
+- 80% reduction in manual link verification time
+- Consistent high-quality resource recommendations
+- Improved user satisfaction with link quality
+- Better research outcomes through verified sources
+
+**Quality indicators:**
+- Links are always working and accessible
+- Content is relevant and high-quality
+- Formatting is consistent and copyable
+- Context is comprehensive and helpful
