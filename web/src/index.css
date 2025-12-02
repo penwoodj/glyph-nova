@@ -9,6 +9,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Vditor markdown editor styles */
+@import "vditor/dist/index.css";
+
 /* VSCode Dark Theme Base Styles */
 :root {
   --vscode-bg: #1e1e1e;
