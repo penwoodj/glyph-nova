@@ -11,8 +11,8 @@ import {
   writeFile as writeFileService,
   pathExists,
   getFileStats,
-  FileEntry,
   DirectoryContents,
+  type FileEntry,
 } from 'src/services/files/files'
 
 interface FileContent {

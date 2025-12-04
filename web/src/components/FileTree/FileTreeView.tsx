@@ -12,6 +12,7 @@ import { gql, useLazyQuery } from '@apollo/client'
 import { FileTreeItem } from './FileTreeItem'
 import { FileTreeNode } from './types'
 import { ContextMenu } from './ContextMenu'
+import { useAppStore } from 'src/state/store'
 
 interface FileEntry {
   name: string
@@ -59,8 +60,15 @@ export const FileTreeView = ({
   rootPath,
   onFileClick,
   onFileRightClick,
-  selectedPath,
+  selectedPath: selectedPathProp,
 }: FileTreeViewProps) => {
+  // Get selected file from store
+  const selectedFilePath = useAppStore((state) => state.selectedFilePath)
+  const setSelectedFile = useAppStore((state) => state.setSelectedFile)
+
+  // Use prop or store value for selected path
+  const selectedPath = selectedPathProp ?? selectedFilePath
+
   const [tree, setTree] = useState<FileTreeNode[]>(() => {
     // Initialize tree with root level files and folders
     const nodes: FileTreeNode[] = [
@@ -217,7 +225,12 @@ export const FileTreeView = ({
               expandedPaths={expandedPaths}
               selectedPath={selectedPath}
               onToggleExpand={toggleExpand}
-              onFileClick={onFileClick}
+              onFileClick={(path) => {
+                // Update store with selected file
+                setSelectedFile(path)
+                // Call original handler if provided
+                onFileClick?.(path)
+              }}
               onFileRightClick={handleFileRightClick}
             />
           ))

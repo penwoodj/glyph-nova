@@ -1,0 +1,244 @@
+{
+  "name": "AI Agent with Web Search (@web)",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 300],
+      "id": "chat-trigger",
+      "name": "When chat message received",
+      "webhookId": "web-search-agent-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if message contains @web trigger\nconst message = $input.item.json.chatInput || '';\nconst hasWebSearch = message.includes('@web');\n\n// Extract the actual query by removing @web\nconst cleanQuery = message.replace(/@web/g, '').trim();\n\nreturn {\n  json: {\n    originalMessage: message,\n    cleanQuery: cleanQuery,\n    needsWebSearch: hasWebSearch,\n    chatInput: cleanQuery\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "id": "detect-web-search",
+      "name": "Detect @web"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.needsWebSearch }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [400, 300],
+      "id": "check-web-search",
+      "name": "Needs Web Search?"
+    },
+    {
+      "parameters": {
+        "model": "mistral:7b",
+        "options": {
+          "temperature": 0.3
+        },
+        "prompt": "=Based on this user query, generate exactly 5 different search queries that would help find relevant information. Return ONLY the search queries, one per line, nothing else.\n\nUser Query: {{ $json.cleanQuery }}\n\nSearch Queries:"
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [600, 200],
+      "id": "generate-queries-model",
+      "name": "Query Generator Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "6f8eWH2Ys4UD7u2H",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Generate 5 different search queries to research the user's question. Be specific and diverse in your queries. Return only the queries, one per line."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [800, 200],
+      "id": "query-generator",
+      "name": "Generate 5 Queries"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the 5 search queries from Ollama response\nconst response = $input.item.json.output || $input.item.json.text || '';\nconst queries = response\n  .split('\\n')\n  .map(q => q.trim())\n  .filter(q => q.length > 0 && !q.startsWith('#'))\n  .slice(0, 5);\n\n// Return each query as a separate item for parallel processing\nreturn queries.map(query => ({\n  json: {\n    searchQuery: query,\n    originalQuery: $input.item.json.cleanQuery\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 200],
+      "id": "parse-queries",
+      "name": "Parse 5 Queries"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.duckduckgo.com/?q={{ encodeURIComponent($json.searchQuery) }}&format=json&no_html=1&skip_disambig=1",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 200],
+      "id": "duckduckgo-search",
+      "name": "DuckDuckGo Search"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract relevant info from DuckDuckGo response\nconst data = $input.item.json;\nconst query = $input.item.json.searchQuery || 'unknown';\n\nlet searchResult = {\n  query: query,\n  abstract: data.Abstract || '',\n  abstractSource: data.AbstractSource || '',\n  abstractURL: data.AbstractURL || '',\n  relatedTopics: (data.RelatedTopics || []).slice(0, 3).map(t => ({\n    text: t.Text || '',\n    url: t.FirstURL || ''\n  })),\n  results: (data.Results || []).slice(0, 3).map(r => ({\n    text: r.Text || '',\n    url: r.FirstURL || ''\n  }))\n};\n\n// Format as text for LLM\nlet resultText = `Query: ${query}\\n`;\nif (searchResult.abstract) {\n  resultText += `Summary: ${searchResult.abstract}\\n`;\n  resultText += `Source: ${searchResult.abstractSource} (${searchResult.abstractURL})\\n`;\n}\nif (searchResult.relatedTopics.length > 0) {\n  resultText += `Related:\\n${searchResult.relatedTopics.map(t => `- ${t.text}`).join('\\n')}\\n`;\n}\n\nreturn {\n  json: {\n    ...searchResult,\n    formattedResult: resultText,\n    originalQuery: $input.item.json.originalQuery\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 200],
+      "id": "format-search-results",
+      "name": "Format Results"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1600, 200],
+      "id": "combine-results",
+      "name": "Combine All 5 Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine all search results into one context\nconst allResults = $input.item.json.data || [];\nconst originalQuery = allResults[0]?.originalQuery || $input.item.json.originalQuery;\n\nconst combinedResults = allResults\n  .map(r => r.formattedResult || '')\n  .filter(r => r.length > 0)\n  .join('\\n---\\n');\n\nreturn {\n  json: {\n    originalQuery: originalQuery,\n    searchResults: combinedResults,\n    resultCount: allResults.length,\n    chatInput: originalQuery // For AI Agent\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1800, 200],
+      "id": "prepare-context",
+      "name": "Prepare Context"
+    },
+    {
+      "parameters": {
+        "model": "mistral:7b",
+        "options": {
+          "temperature": 0.7,
+          "numCtx": 16384
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [2000, 300],
+      "id": "ollama-with-search",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "6f8eWH2Ys4UD7u2H",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an advanced AI assistant with access to web search results. When answering questions:\n\n1. Synthesize information from the provided search results\n2. Always cite sources using [Source Name](URL) format\n3. If search results are insufficient, acknowledge limitations\n4. Provide comprehensive, accurate answers based on the research\n5. Highlight key findings and organize information clearly\n\nYou have been provided with web search results below. Use them to answer the user's question.\n\n=== SEARCH RESULTS ===\n{{ $json.searchResults }}\n\n=== END SEARCH RESULTS ===\n\nNow answer the user's question, citing the search results where appropriate.",
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [2200, 200],
+      "id": "web-search-agent",
+      "name": "AI Agent (With Search)"
+    },
+    {
+      "parameters": {
+        "model": "mistral:7b",
+        "options": {
+          "temperature": 0.7,
+          "numCtx": 16384
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [600, 500],
+      "id": "ollama-normal",
+      "name": "Ollama Chat Model (Normal)",
+      "credentials": {
+        "ollamaApi": {
+          "id": "6f8eWH2Ys4UD7u2H",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an advanced AI coding assistant with comprehensive capabilities for helping developers build, debug, and maintain software projects efficiently.\n\n=== YOUR ROLE ===\nYou help developers by providing clear, actionable guidance on code, architecture, debugging, and best practices. When users need current or up-to-date information, they will use @web in their message to trigger web search.\n\n=== CORE PRINCIPLES ===\n1. Be specific and actionable in your responses\n2. Provide working, tested solutions over theoretical suggestions\n3. Ask clarifying questions when requirements are ambiguous\n4. Consider security implications (never expose credentials)\n5. Explain your reasoning for non-trivial decisions\n6. Use existing patterns and conventions from the codebase\n\n=== RESPONSE STYLE ===\n- Be concise but complete\n- Use code blocks with proper syntax highlighting\n- Provide runnable examples with necessary imports\n- Include verification steps\n- Cite sources when using external information\n\n=== CODE QUALITY ===\n- Follow DRY (Don't Repeat Yourself)\n- Use meaningful names\n- Handle errors explicitly\n- Validate inputs at boundaries\n- Keep functions focused and small\n\n=== SECURITY ===\n- Never hardcode credentials\n- Validate all user inputs  \n- Use environment variables for sensitive config\n- Follow principle of least privilege\n\n=== WHEN TO SUGGEST @web ===\nSuggest users add @web to their question when they ask about:\n- Latest features or updates (\"What's new in React 19?\")\n- Current documentation or API changes\n- Recent vulnerabilities or security advisories\n- Unfamiliar libraries or tools\n- Specific error messages or bug reports\n- Best practices for new technologies\n\nRemember: Prioritize correctness, clarity, and security in all responses.",
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [800, 400],
+      "id": "normal-agent",
+      "name": "AI Agent (Normal)"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [[{"node": "Detect @web", "type": "main", "index": 0}]]
+    },
+    "Detect @web": {
+      "main": [[{"node": "Needs Web Search?", "type": "main", "index": 0}]]
+    },
+    "Needs Web Search?": {
+      "main": [
+        [{"node": "Generate 5 Queries", "type": "main", "index": 0}],
+        [{"node": "AI Agent (Normal)", "type": "main", "index": 0}]
+      ]
+    },
+    "Query Generator Model": {
+      "ai_languageModel": [[{"node": "Generate 5 Queries", "type": "ai_languageModel", "index": 0}]]
+    },
+    "Generate 5 Queries": {
+      "main": [[{"node": "Parse 5 Queries", "type": "main", "index": 0}]]
+    },
+    "Parse 5 Queries": {
+      "main": [[{"node": "DuckDuckGo Search", "type": "main", "index": 0}]]
+    },
+    "DuckDuckGo Search": {
+      "main": [[{"node": "Format Results", "type": "main", "index": 0}]]
+    },
+    "Format Results": {
+      "main": [[{"node": "Combine All 5 Results", "type": "main", "index": 0}]]
+    },
+    "Combine All 5 Results": {
+      "main": [[{"node": "Prepare Context", "type": "main", "index": 0}]]
+    },
+    "Prepare Context": {
+      "main": [[{"node": "AI Agent (With Search)", "type": "main", "index": 0}]]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [[{"node": "AI Agent (With Search)", "type": "ai_languageModel", "index": 0}]]
+    },
+    "Ollama Chat Model (Normal)": {
+      "ai_languageModel": [[{"node": "AI Agent (Normal)", "type": "ai_languageModel", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
+
