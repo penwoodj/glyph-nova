@@ -85,12 +85,13 @@ describe('File System Service', () => {
 
   describe('readFile', () => {
     it('should read file contents', async () => {
-      const content = await readFile({ filePath: testFilePath })
-      expect(content).toBe('test content')
+      const result = await readFile({ path: testFilePath })
+      expect(result.content).toBe('test content')
+      expect(result.path).toBe(testFilePath)
     })
 
     it('should reject paths outside allowed directories', async () => {
-      await expect(readFile({ filePath: '/etc/passwd' })).rejects.toThrow(
+      await expect(readFile({ path: '/etc/passwd' })).rejects.toThrow(
         'Path not allowed'
       )
     })
@@ -101,20 +102,20 @@ describe('File System Service', () => {
       const writePath = path.join(testDir, 'write-test.txt')
       const content = 'new content'
 
-      await writeFile({ filePath: writePath, content })
-      const readBack = await readFile({ filePath: writePath })
+      await writeFile({ path: writePath, content })
+      const readBack = await readFile({ path: writePath })
 
-      expect(readBack).toBe(content)
+      expect(readBack.content).toBe(content)
     })
 
     it('should create parent directories if needed', async () => {
       const nestedPath = path.join(testDir, 'new', 'nested', 'file.txt')
       const content = 'nested content'
 
-      await writeFile({ filePath: nestedPath, content })
-      const readBack = await readFile({ filePath: nestedPath })
+      await writeFile({ path: nestedPath, content })
+      const readBack = await readFile({ path: nestedPath })
 
-      expect(readBack).toBe(content)
+      expect(readBack.content).toBe(content)
     })
   })
 

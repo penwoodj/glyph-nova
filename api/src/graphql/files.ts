@@ -12,8 +12,9 @@ import {
   pathExists,
   getFileStats,
   DirectoryContents,
-  type FileEntry,
 } from 'src/services/files/files'
+import type { FileEntry } from 'src/services/files/files'
+import { logger } from 'src/lib/logger'
 
 interface FileContent {
   path: string
@@ -41,7 +42,48 @@ export const Query = {
     _: unknown,
     { path }: { path: string }
   ): Promise<DirectoryContents> => {
-    return await getDirectoryContents({ directoryPath: path })
+    // TEMPORARY: Return hardcoded data to test if resolver is called
+    console.log('🔍🔍🔍 directoryContents resolver CALLED - RETURNING HARDCODED DATA', { path, contextKeys: Object.keys(context || {}) })
+    logger.info('🔍 directoryContents resolver CALLED - RETURNING HARDCODED DATA', { path })
+
+    // Also log to stderr to ensure it's visible
+    process.stderr.write(`🔍🔍🔍 directoryContents resolver CALLED with path: ${path}\n`)
+
+    return {
+      files: [
+        { name: 'test.txt', path: '/home/jon/code/llm-ui/test.txt', type: 'file' as const, extension: '.txt', size: 100, modified: new Date() }
+      ],
+      folders: [
+        { name: 'api', path: '/home/jon/code/llm-ui/api', type: 'directory' as const, size: 0, modified: new Date() }
+      ]
+    }
+
+    // Original code commented out for testing
+    /*
+    try {
+      logger.info('🔍 Calling getDirectoryContents service', { path })
+      const result = await getDirectoryContents({ directoryPath: path })
+      logger.info('✅ directoryContents success', {
+        path,
+        fileCount: result.files.length,
+        folderCount: result.folders.length,
+        firstFile: result.files[0]?.name,
+        firstFolder: result.folders[0]?.name
+      })
+      console.log('✅✅✅ directoryContents SUCCESS', { fileCount: result.files.length, folderCount: result.folders.length })
+      return result
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
+      console.error('❌❌❌ directoryContents ERROR', { path, error: errorMessage, stack: errorStack })
+      logger.error('❌ directoryContents error', {
+        path,
+        error: errorMessage,
+        stack: errorStack
+      })
+      throw error
+    }
+    */
   },
 
   readFile: async (
@@ -81,25 +123,13 @@ export const Mutation = {
     _: unknown,
     { path, content }: { path: string; content: string }
   ): Promise<WriteFileResult> => {
-    try {
-      await writeFileService({ filePath: path, content })
-      return {
-        success: true,
-        path,
-        message: 'File written successfully',
-      }
-    } catch (error) {
-      return {
-        success: false,
-        path,
-        message: error instanceof Error ? error.message : String(error),
-      }
-    }
+    // Service function now returns WriteFileResult directly
+    return await writeFileService({ path, content })
   },
 }
 
 // Type resolvers for Date serialization
-export const FileEntry = {
+export const FileEntryResolver = {
   modified: (parent: FileEntry) => {
     return parent.modified instanceof Date
       ? parent.modified.toISOString()
@@ -107,7 +137,7 @@ export const FileEntry = {
   },
 }
 
-export const FileStats = {
+export const FileStatsResolver = {
   modified: (parent: FileStats) => {
     return parent.modified instanceof Date
       ? parent.modified.toISOString()

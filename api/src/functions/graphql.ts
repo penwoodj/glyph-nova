@@ -7,11 +7,16 @@ import services from 'src/services/**/*.{js,ts}'
 import { db } from 'src/lib/db'
 import { logger } from 'src/lib/logger'
 
+
 export const handler = createGraphQLHandler({
   loggerConfig: { logger, options: {} },
   directives,
   sdls,
   services,
+  cors: {
+    origin: ['http://localhost:8912', 'http://192.168.1.137:8912'],
+    credentials: true,
+  },
   onException: () => {
     // Disconnect from your database with an unhandled exception.
     db.$disconnect()

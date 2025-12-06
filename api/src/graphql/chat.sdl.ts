@@ -5,6 +5,8 @@
  * Reference: Report 05 (Ollama Integration Patterns)
  */
 
+import gql from 'graphql-tag'
+
 export const schema = gql`
   type Query {
     ollamaModels: [OllamaModel!]! @skipAuth

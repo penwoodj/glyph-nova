@@ -63,7 +63,7 @@ Users cannot log in using valid credentials. Expected: Successful login and redi
 
 **Technical Details:**
 - Environment: Production
-- Error: "Authentication failed: invalid credentials" 
+- Error: "Authentication failed: invalid credentials"
 - HTTP Status: 401 Unauthorized
 - First Reported: 2025-01-15 14:30 UTC
 - Affected Users: ~15% of login attempts
@@ -187,75 +187,75 @@ Users cannot log in using valid credentials. Expected: Successful login and redi
 function debugUserAuthentication(credentials) {
   // Add correlation ID for tracking
   const correlationId = generateCorrelationId();
-  
+
   // Log entry point with context
-  logger.debug('Authentication attempt', { 
+  logger.debug('Authentication attempt', {
     correlationId,
     username: credentials.username,
     timestamp: new Date().toISOString(),
     userAgent: request.headers['user-agent']
   });
-  
+
   try {
     // Step 1: Validate input format
     const validationResult = validateCredentials(credentials);
-    logger.debug('Credential validation', { 
-      correlationId, 
+    logger.debug('Credential validation', {
+      correlationId,
       isValid: validationResult.isValid,
-      errors: validationResult.errors 
+      errors: validationResult.errors
     });
-    
+
     if (!validationResult.isValid) {
       return { success: false, error: 'Invalid credential format' };
     }
-    
+
     // Step 2: Database lookup
     const userRecord = await findUserByUsername(credentials.username);
-    logger.debug('User lookup', { 
-      correlationId, 
+    logger.debug('User lookup', {
+      correlationId,
       userFound: !!userRecord,
-      userId: userRecord?.id 
+      userId: userRecord?.id
     });
-    
+
     if (!userRecord) {
       return { success: false, error: 'User not found' };
     }
-    
+
     // Step 3: Password verification
     const passwordValid = await verifyPassword(credentials.password, userRecord.passwordHash);
-    logger.debug('Password verification', { 
-      correlationId, 
+    logger.debug('Password verification', {
+      correlationId,
       userId: userRecord.id,
-      passwordValid 
+      passwordValid
     });
-    
+
     if (!passwordValid) {
       // Log security event
-      securityLogger.warn('Failed login attempt', { 
+      securityLogger.warn('Failed login attempt', {
         correlationId,
         userId: userRecord.id,
         username: credentials.username,
-        ipAddress: request.ip 
+        ipAddress: request.ip
       });
       return { success: false, error: 'Invalid credentials' };
     }
-    
+
     // Step 4: Generate token
     const token = generateJWT({ userId: userRecord.id });
-    logger.info('Successful authentication', { 
-      correlationId, 
-      userId: userRecord.id 
+    logger.info('Successful authentication', {
+      correlationId,
+      userId: userRecord.id
     });
-    
+
     return { success: true, token };
-    
+
   } catch (error) {
     // Log unexpected errors with full context
-    logger.error('Authentication error', { 
+    logger.error('Authentication error', {
       correlationId,
       error: error.message,
       stack: error.stack,
-      username: credentials.username 
+      username: credentials.username
     });
     throw error;
   }
@@ -325,213 +325,6 @@ function debugUserAuthentication(credentials) {
 - Load balancing changes
 ```
 
-### 5. Performance Problem-Solving
-
-**Systematic Performance Investigation:**
-
-```markdown
-**Performance Debugging Framework:**
-
-⏱️ Timing Analysis:
-- [ ] Identify slow operations (>100ms)
-- [ ] Profile CPU usage patterns
-- [ ] Analyze memory allocation/garbage collection
-- [ ] Monitor I/O wait times
-
-🔍 Bottleneck Identification:
-- [ ] Database query analysis (execution plans)
-- [ ] Network latency measurement
-- [ ] External API response times
-- [ ] Algorithm complexity review
-
-📊 Load Testing:
-- [ ] Reproduce under similar load
-- [ ] Identify breaking point
-- [ ] Test with realistic data volumes
-- [ ] Monitor resource utilization
-```
-
-**Performance Debugging Example:**
-
-```javascript
-// ✅ GOOD: Performance debugging with measurements
-async function debugSlowApiEndpoint(userId) {
-  const startTime = performance.now();
-  
-  try {
-    // Measure database query time
-    const dbStartTime = performance.now();
-    const userData = await getUserById(userId);
-    const dbDuration = performance.now() - dbStartTime;
-    
-    logger.debug('Database query performance', { 
-      userId, 
-      duration: dbDuration,
-      operation: 'getUserById' 
-    });
-    
-    // Measure external API call time
-    const apiStartTime = performance.now();
-    const permissions = await fetchUserPermissions(userId);
-    const apiDuration = performance.now() - apiStartTime;
-    
-    logger.debug('External API performance', { 
-      userId, 
-      duration: apiDuration,
-      operation: 'fetchUserPermissions' 
-    });
-    
-    // Measure data processing time
-    const processingStartTime = performance.now();
-    const processedData = processUserData(userData, permissions);
-    const processingDuration = performance.now() - processingStartTime;
-    
-    logger.debug('Data processing performance', { 
-      userId, 
-      duration: processingDuration,
-      operation: 'processUserData' 
-    });
-    
-    const totalDuration = performance.now() - startTime;
-    
-    // Log performance summary
-    logger.info('API endpoint performance', {
-      userId,
-      totalDuration,
-      breakdown: {
-        database: dbDuration,
-        externalApi: apiDuration,
-        processing: processingDuration
-      }
-    });
-    
-    // Alert if performance is degraded
-    if (totalDuration > 1000) {
-      logger.warn('Slow API response detected', { 
-        userId, 
-        duration: totalDuration 
-      });
-    }
-    
-    return processedData;
-    
-  } catch (error) {
-    const totalDuration = performance.now() - startTime;
-    logger.error('API endpoint error', { 
-      userId, 
-      duration: totalDuration,
-      error: error.message 
-    });
-    throw error;
-  }
-}
-```
-
-### 6. Error Pattern Analysis
-
-**Identify Recurring Issues:**
-
-```markdown
-**Error Pattern Detection:**
-
-📈 Frequency Analysis:
-- Track error occurrence rates over time
-- Identify peaks and correlations with deployments
-- Analyze error distribution across users/features
-- Compare error rates between environments
-
-🏷️ Error Categorization:
-- Group by error type (validation, authentication, system)
-- Classify by severity (critical, warning, info)
-- Tag by component or service
-- Associate with user actions or features
-
-🔗 Correlation Analysis:
-- Link errors to specific code changes
-- Connect to infrastructure events
-- Associate with user behavior patterns
-- Relate to external service outages
-```
-
-**Error Analysis Tools:**
-
-```javascript
-// Error pattern analysis utility
-class ErrorAnalyzer {
-  constructor() {
-    this.errorLog = [];
-    this.patterns = new Map();
-  }
-  
-  logError(error, context) {
-    const errorData = {
-      timestamp: new Date().toISOString(),
-      message: error.message,
-      stack: error.stack,
-      type: error.constructor.name,
-      context,
-      fingerprint: this.generateFingerprint(error)
-    };
-    
-    this.errorLog.push(errorData);
-    this.updatePatterns(errorData);
-    
-    // Alert if error pattern is detected
-    if (this.isPatternDetected(errorData.fingerprint)) {
-      this.alertTeam(errorData);
-    }
-  }
-  
-  generateFingerprint(error) {
-    // Create unique identifier for similar errors
-    return crypto
-      .createHash('md5')
-      .update(error.message + error.stack.split('\n')[0])
-      .digest('hex');
-  }
-  
-  updatePatterns(errorData) {
-    const { fingerprint } = errorData;
-    const pattern = this.patterns.get(fingerprint) || {
-      count: 0,
-      firstSeen: errorData.timestamp,
-      lastSeen: errorData.timestamp,
-      contexts: []
-    };
-    
-    pattern.count++;
-    pattern.lastSeen = errorData.timestamp;
-    pattern.contexts.push(errorData.context);
-    
-    this.patterns.set(fingerprint, pattern);
-  }
-  
-  isPatternDetected(fingerprint) {
-    const pattern = this.patterns.get(fingerprint);
-    return pattern && pattern.count >= 5; // Alert after 5 occurrences
-  }
-  
-  generateReport() {
-    const topErrors = Array.from(this.patterns.entries())
-      .sort(([,a], [,b]) => b.count - a.count)
-      .slice(0, 10);
-      
-    return {
-      totalErrors: this.errorLog.length,
-      uniqueErrors: this.patterns.size,
-      topErrors: topErrors.map(([fingerprint, pattern]) => ({
-        fingerprint,
-        count: pattern.count,
-        firstSeen: pattern.firstSeen,
-        lastSeen: pattern.lastSeen,
-        affectedContexts: pattern.contexts.length
-      }))
-    };
-  }
-}
-```
-
----
 
 ## Problem-Solving Tools and Techniques
 
@@ -651,3 +444,19 @@ description:
 globs:
 alwaysApply: false
 ---
+
+Important: try to fix things at the cause, not the symptom.
+
+- When a fault, error, failure, or unexpected output is experienced:
+  - Attempt a maximum of one fix at a time
+  - Validate if that fix has resolved the issue
+  - If that fix failed to resolve the issue, undo the fix, and reset the fix counter
+  - Reevaluate the issue ensuring you make use of detailed line-by-line analysis
+  - Continue to iterate on the above steps as required until the issue is resolved.
+
+
+- Avoid premature optimization: Don't build complex features for scenarios you think might happen; build them when a real need arises.
+- Focus on immediate value: Prioritize features that deliver business value now, not later.
+- Simplicity: It encourages simpler, more focused code that's easier to understand and debug.
+- Reduces technical debt: Unnecessary code adds to maintenance costs, complexity, and potential bugs (technical debt).
+- Aligns with Agile: It supports iterative development by emphasizing small, valuable increments and responding to change

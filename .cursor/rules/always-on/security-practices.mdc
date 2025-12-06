@@ -53,7 +53,7 @@ module.exports = {
   jwtSecret: 'YOUR_JWT_SECRET_HERE'
 };
 
-// ❌ NEVER COMMIT: config.js  
+// ❌ NEVER COMMIT: config.js
 module.exports = {
   apiKey: 'sk-1234567890abcdef...',
   databaseUrl: 'mongodb://user:pass@host:port/db',
@@ -81,41 +81,6 @@ module.exports = {
 - [ ] Reject known malicious patterns
 ```
 
-**Example Input Validation:**
-
-```javascript
-// ✅ GOOD: Comprehensive input validation
-function validateUserInput(userData) {
-  const errors = [];
-  
-  // Type and presence validation
-  if (!userData.email || typeof userData.email !== 'string') {
-    errors.push('Email is required and must be a string');
-  }
-  
-  // Format validation
-  if (userData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
-    errors.push('Email format is invalid');
-  }
-  
-  // Length validation
-  if (userData.name && userData.name.length > 100) {
-    errors.push('Name must be less than 100 characters');
-  }
-  
-  // Sanitization
-  if (userData.bio) {
-    userData.bio = userData.bio.replace(/<script.*?>.*?<\/script>/gi, '');
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors,
-    sanitizedData: userData
-  };
-}
-```
-
 **Integration:** [Development Workflow](development-workflow.mdc#code-quality-maintenance)
 
 ### 3. Secure Error Handling
@@ -127,7 +92,7 @@ function validateUserInput(userData) {
 
 ✅ GOOD Error Messages:
 - "Invalid email format. Please check your input."
-- "Authentication failed. Please verify your credentials."  
+- "Authentication failed. Please verify your credentials."
 - "Resource not found. Please check the ID and try again."
 - "Service temporarily unavailable. Please try again later."
 
@@ -138,47 +103,6 @@ function validateUserInput(userData) {
 - Internal server details
 - Stack traces in production
 ```
-
-**Error Handling Pattern:**
-
-```javascript
-// ✅ GOOD: Secure error handling
-function handleApiError(error, userContext) {
-  // Log detailed error for debugging (server-side only)
-  logger.error('API Error Details', {
-    error: error.message,
-    stack: error.stack,
-    userId: userContext.userId,
-    timestamp: new Date().toISOString()
-  });
-  
-  // Return safe message to user
-  if (error.code === 'AUTH_FAILED') {
-    return { 
-      success: false, 
-      message: 'Authentication failed. Please check your credentials.',
-      code: 'AUTH_ERROR'
-    };
-  }
-  
-  if (error.code === 'VALIDATION_ERROR') {
-    return {
-      success: false,
-      message: 'Invalid input data. Please check your submission.',
-      code: 'INPUT_ERROR'
-    };
-  }
-  
-  // Generic fallback for unknown errors
-  return {
-    success: false,
-    message: 'An unexpected error occurred. Please try again later.',
-    code: 'GENERAL_ERROR'
-  };
-}
-```
-
----
 
 ## Advanced Security Patterns
 
@@ -215,7 +139,7 @@ function logSecurityEvent(eventType, details) {
     apiKey: '[REDACTED]',
     token: '[REDACTED]'
   };
-  
+
   securityLogger.info(`Security Event: ${eventType}`, {
     event: eventType,
     timestamp: new Date().toISOString(),
@@ -227,8 +151,8 @@ function logSecurityEvent(eventType, details) {
 }
 
 // Usage examples
-logSecurityEvent('LOGIN_ATTEMPT', { 
-  userId: '12345', 
+logSecurityEvent('LOGIN_ATTEMPT', {
+  userId: '12345',
   ipAddress: '192.168.1.1',
   success: false,
   reason: 'invalid_password'
@@ -315,66 +239,6 @@ echo "✅ Security audit complete"
 - [ ] Monitor API usage patterns
 ```
 
-**Secure API Client Example:**
-
-```javascript
-// ✅ GOOD: Secure API client
-class SecureApiClient {
-  constructor(config) {
-    this.baseUrl = config.baseUrl;
-    this.apiKey = process.env.API_KEY; // From environment
-    this.timeout = config.timeout || 10000;
-    this.retryAttempts = 3;
-  }
-  
-  async makeRequest(endpoint, options = {}) {
-    // Input validation
-    if (!endpoint || typeof endpoint !== 'string') {
-      throw new Error('Invalid endpoint provided');
-    }
-    
-    // Secure request configuration
-    const requestConfig = {
-      method: options.method || 'GET',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'MyApp/1.0'
-      },
-      timeout: this.timeout,
-      // Always validate certificates
-      rejectUnauthorized: true
-    };
-    
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, requestConfig);
-      
-      // Handle rate limiting
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After') || 60;
-        throw new Error(`Rate limited. Retry after ${retryAfter} seconds`);
-      }
-      
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      // Log error securely (no sensitive data)
-      logger.error('API request failed', {
-        endpoint,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-      throw error;
-    }
-  }
-}
-```
-
----
-
 ## Security Testing
 
 ### 7. Security Test Patterns
@@ -401,41 +265,6 @@ class SecureApiClient {
 - [ ] Test error message consistency
 - [ ] Verify proper HTTP status codes
 - [ ] Test error logging functionality
-```
-
-**Example Security Tests:**
-
-```javascript
-// Security test examples
-describe('Security Tests', () => {
-  describe('Input Validation', () => {
-    test('should reject malicious script injection', () => {
-      const maliciousInput = '<script>alert("xss")</script>';
-      const result = validateUserInput({ name: maliciousInput });
-      
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Invalid characters detected');
-    });
-    
-    test('should handle extremely long inputs', () => {
-      const longInput = 'a'.repeat(10000);
-      const result = validateUserInput({ bio: longInput });
-      
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Input too long');
-    });
-  });
-  
-  describe('Error Handling', () => {
-    test('should not expose sensitive data in errors', () => {
-      const error = new Error('Database connection failed: password123');
-      const userError = handleApiError(error, { userId: '123' });
-      
-      expect(userError.message).not.toContain('password123');
-      expect(userError.message).not.toContain('Database');
-    });
-  });
-});
 ```
 
 **Integration:** [Quality Control](quality-control.mdc#security-testing)

@@ -1,12 +1,11 @@
+/* Vditor markdown editor styles - must be imported first */
+@import "vditor/dist/index.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Vditor markdown editor styles */
-@import "vditor/dist/index.css";
 
 /* VSCode Dark Theme Base Styles */
 :root {

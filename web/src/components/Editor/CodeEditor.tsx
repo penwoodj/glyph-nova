@@ -7,7 +7,7 @@
  * Reference: Report 06 (Code syntax highlighting section)
  */
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { detectLanguage } from 'src/lib/fileUtils'
@@ -35,14 +35,19 @@ export const CodeEditor = ({
 }: CodeEditorProps) => {
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  // Local state for edited content - initialized from prop, updated when user types
+  const [editedContent, setEditedContent] = useState(content)
   const contentRef = useRef<string>(content)
 
   // Detect language from file path or use provided language
   const language = propLanguage || (filePath ? detectLanguage(filePath) : 'text')
 
-  // Update content ref when prop changes
+  // Update local state when content prop changes (e.g., new file loaded)
   useEffect(() => {
-    contentRef.current = content
+    if (content !== contentRef.current) {
+      contentRef.current = content
+      setEditedContent(content)
+    }
   }, [content])
 
   // Handle save shortcut (Ctrl/Cmd+S)
@@ -50,8 +55,8 @@ export const CodeEditor = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault()
-        if (onSave && editorRef.current) {
-          onSave(editorRef.current.value)
+        if (onSave) {
+          onSave(editedContent)
         }
       }
     }
@@ -60,12 +65,13 @@ export const CodeEditor = ({
       document.addEventListener('keydown', handleKeyDown)
       return () => document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onSave, readonly])
+  }, [onSave, readonly, editedContent])
 
   // Handle content change
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newContent = e.target.value
+      setEditedContent(newContent)
       contentRef.current = newContent
       onChange?.(newContent)
     },
@@ -114,7 +120,7 @@ export const CodeEditor = ({
             background: '#1e1e1e',
           }}
         >
-          {content || placeholder}
+          {editedContent || placeholder}
         </SyntaxHighlighter>
       </div>
     )
@@ -130,7 +136,7 @@ export const CodeEditor = ({
     >
       <textarea
         ref={editorRef}
-        value={content}
+        value={editedContent}
         onChange={handleChange}
         placeholder={placeholder}
         spellCheck={false}

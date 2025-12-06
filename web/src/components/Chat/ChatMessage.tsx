@@ -37,6 +37,9 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
         <span className="text-xs opacity-50">
           {new Date(message.timestamp).toLocaleTimeString()}
         </span>
+        {message.isStreaming && (
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-vscode-fg-secondary"></span>
+        )}
       </div>
 
       {/* Message Content */}
@@ -50,13 +53,15 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
             remarkPlugins={[remarkGfm]}
             components={{
               // Code blocks with syntax highlighting
-              code({ node, inline, className, children, ...props }) {
+              code(props) {
+                const { node, className, children, ...rest } = props
                 const match = /language-(\w+)/.exec(className || '')
                 const language = match ? match[1] : ''
+                const inline = !match
 
                 return !inline && language ? (
                   <SyntaxHighlighter
-                    style={vscDarkPlus}
+                    style={vscDarkPlus as any}
                     language={language}
                     PreTag="div"
                     customStyle={{
@@ -64,14 +69,12 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
                       borderRadius: '0.375rem',
                       fontSize: '0.875rem',
                     }}
-                    {...props}
                   >
                     {String(children).replace(/\n$/, '')}
                   </SyntaxHighlighter>
                 ) : (
                   <code
-                    className={`${className} rounded bg-black/30 px-1.5 py-0.5 text-sm`}
-                    {...props}
+                    className={`${className || ''} rounded bg-black/30 px-1.5 py-0.5 text-sm`}
                   >
                     {children}
                   </code>

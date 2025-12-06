@@ -2,7 +2,7 @@ mod redwood_server;
 
 use redwood_server::RedwoodServer;
 use std::sync::Mutex;
-use tauri::Manager;
+use tauri::Listener;
 
 // Global server instance to manage lifecycle
 static REDWOOD_SERVER: Mutex<Option<RedwoodServer>> = Mutex::new(None);

@@ -23,22 +23,9 @@
     "core:window:allow-set-size",
     "core:window:allow-set-skip-taskbar",
     "core:window:allow-set-title",
-    "core:window:allow-set-visible",
+    "core:window:allow-show",
+    "core:window:allow-hide",
     "core:window:allow-start-dragging",
-    "fs:allow-read-file",
-    "fs:allow-write-file",
-    "fs:allow-read-dir",
-    "fs:scope-read",
-    "fs:scope-write",
-    "fs:allow-exists",
-    "fs:allow-copy-file",
-    "fs:allow-create-dir",
-    "fs:allow-remove",
-    "fs:allow-rename",
-    "fs:allow-stat",
-    "clipboard:allow-write-text",
-    "clipboard:allow-read-text",
-    "dialog:allow-open",
-    "dialog:allow-save"
+    "log:default"
   ]
 }

@@ -1,0 +1,62 @@
+---
+description: Testing requirements before task completion
+globs:
+alwaysApply: true
+---
+
+# Test Before Complete
+
+## Rule: Test Then Claim, Never Claim Then Test
+
+### Verification Order (Do in sequence)
+
+1. **Write Code**
+2. **Verify Build**: `yarn rw build`
+3. **Run Tests**: `yarn rw test --no-watch`
+4. **Manual Test**: Start app if needed
+5. **THEN Mark Complete**
+
+### Test Types by Priority
+
+**For Backend Services/APIs:**
+- Unit tests: Test individual functions
+- Run: `yarn rw test api --no-watch`
+- Check GraphQL: Open http://localhost:8911/graphql
+
+**For Frontend Components:**
+- Build test: Does it compile?
+- Integration: Does it render in app?
+- Manual: Open browser, verify visually
+
+**For Full Features:**
+- Start app: `yarn rw dev`
+- Test actual user workflow
+- Verify no console errors
+- Check network requests succeed
+
+### Quick Test Commands
+
+```bash
+# Run all tests
+yarn rw test --no-watch
+
+# Run specific suite
+yarn rw test api --no-watch
+yarn rw test web --no-watch
+
+# Check types
+yarn rw type-check
+
+# Lint check
+# Use read_lints tool in Cursor
+```
+
+### Evidence Required
+
+When marking complete, include:
+- Command run: `yarn rw build`
+- Result: Exit code 0, time 14s
+- Test output: 10 passing, 0 failing
+- Manual: Opened at localhost:8912, feature works
+
+**No verification = Not complete**

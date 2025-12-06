@@ -8,7 +8,6 @@
  */
 
 use std::process::{Command, Child};
-use std::path::PathBuf;
 use std::env;
 
 pub struct RedwoodServer {

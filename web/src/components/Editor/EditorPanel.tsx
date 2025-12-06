@@ -9,6 +9,7 @@
 
 import { useCallback } from 'react'
 import { useMutation } from '@redwoodjs/web'
+import { gql } from '@apollo/client'
 import { useAppStore } from 'src/state/store'
 import FileEditorCell from './FileEditorCell'
 import { UnifiedEditor } from './UnifiedEditor'

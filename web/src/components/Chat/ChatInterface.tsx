@@ -8,10 +8,13 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useQuery, useMutation, useApolloClient } from '@redwoodjs/web'
+import { useQuery } from '@redwoodjs/web'
+import { gql } from '@apollo/client'
+import { useApolloClient } from '@apollo/client'
 import { ChatMessage } from './ChatMessage'
 import { useAppStore } from 'src/state/store'
 import { loadFileContexts, clearFileCache } from 'src/services/context'
+import { streamChatResponseDirect } from 'src/services/chat'
 
 const OLLAMA_MODELS_QUERY = gql`
   query OllamaModelsQuery {
@@ -22,16 +25,6 @@ const OLLAMA_MODELS_QUERY = gql`
       digest
     }
     ollamaHealth
-  }
-`
-
-const SEND_CHAT_MESSAGE_MUTATION = gql`
-  mutation SendChatMessageMutation($input: SendMessageInput!) {
-    sendChatMessage(input: $input) {
-      content
-      model
-      done
-    }
   }
 `
 
@@ -62,7 +55,6 @@ export const ChatInterface = () => {
     }
   )
 
-  const [sendMessage] = useMutation(SEND_CHAT_MESSAGE_MUTATION)
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -128,26 +120,64 @@ export const ChatInterface = () => {
         content: userMessage,
       })
 
-      // Send message to Ollama with file context
-      const result = await sendMessage({
-        variables: {
-          input: {
-            model: currentModel,
-            messages: apiMessages,
-            fileContext: fileContexts.length > 0 ? fileContexts : undefined,
-          },
-        },
+      // Create placeholder for streaming assistant message
+      const assistantMessageId = (Date.now() + 1).toString()
+      addChatMessage({
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+        isStreaming: true,
       })
 
-      if (result.data?.sendChatMessage) {
-        // Add assistant response to chat
-        addChatMessage({
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: result.data.sendChatMessage.content,
-          timestamp: new Date(),
-        })
-      }
+      // Stream response from Ollama
+      let accumulatedContent = ''
+      await streamChatResponseDirect({
+        model: currentModel,
+        messages: apiMessages,
+        fileContext: fileContexts.length > 0 ? fileContexts : undefined,
+        onChunk: (chunk: string) => {
+          accumulatedContent += chunk
+          // Update the assistant message with accumulated content
+          const currentMessages = useAppStore.getState().chatMessages
+          const updatedMessages = currentMessages.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: accumulatedContent, isStreaming: true }
+              : msg
+          )
+          // Update store with streaming content
+          useAppStore.setState({ chatMessages: updatedMessages })
+          // Auto-scroll during streaming
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+          }, 0)
+        },
+        onError: (error: Error) => {
+          console.error('Streaming error:', error)
+          // Update message with error
+          const currentMessages = useAppStore.getState().chatMessages
+          const updatedMessages = currentMessages.map((msg) =>
+            msg.id === assistantMessageId
+              ? {
+                  ...msg,
+                  content: `Error: ${error.message}`,
+                  isStreaming: false,
+                }
+              : msg
+          )
+          useAppStore.setState({ chatMessages: updatedMessages })
+        },
+        onComplete: () => {
+          // Mark streaming as complete
+          const currentMessages = useAppStore.getState().chatMessages
+          const updatedMessages = currentMessages.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, isStreaming: false }
+              : msg
+          )
+          useAppStore.setState({ chatMessages: updatedMessages })
+        },
+      })
     } catch (error) {
       console.error('Failed to send message:', error)
       // Add error message to chat
@@ -169,7 +199,6 @@ export const ChatInterface = () => {
     loadingContext,
     chatMessages,
     addChatMessage,
-    sendMessage,
     apolloClient,
   ])
 

@@ -1,0 +1,79 @@
+---
+description: Mandatory verification steps before claiming task completion
+globs:
+alwaysApply: true
+---
+
+# Verification Requirements
+
+## Core Rule: NEVER Claim Complete Without Verification
+
+**Before marking ANY task as complete, perform 1-3 verification steps:**
+
+### Verification Hierarchy (closest to user experience wins)
+
+1. **End-User Testing** (BEST)
+   - Run the application locally: `yarn rw dev`
+   - Access in terminal: `curl http://localhost:8912` or browser test
+   - Verify actual functionality works as user would experience it
+   - Check console output, network requests, actual rendering
+
+2. **Integration Testing** (GOOD)
+   - Run `yarn rw build` - verify builds successfully
+   - Test API endpoints via GraphQL playground
+   - Check component integration in running app
+   - Verify cross-component communication
+
+3. **Component Testing** (ACCEPTABLE)
+   - Run test suite: `yarn rw test`
+   - Check linter: `read_lints` tool
+   - Verify TypeScript compilation: `yarn rw type-check`
+   - Review generated output files
+
+4. **Code Review** (MINIMUM)
+   - Read created files to verify content matches claims
+   - Check imports/exports are correct
+   - Verify no placeholder TODOs or incomplete code
+
+### Examples
+
+❌ **WRONG**:
+- "Created ChatInterface component" → Marked complete
+- No verification that it actually renders
+- No verification that it connects to Ollama
+- No verification that messages display
+
+✅ **CORRECT**:
+- Created ChatInterface component
+- Verified build succeeds: `yarn rw build` ✅
+- Checked for linter errors: No errors ✅
+- Read rendered component to verify GraphQL queries present ✅
+- Status: Verified complete
+
+### For Plan Execution
+
+When executing plans:
+- Each phase marked ✅ must have verification evidence
+- Document verification method used
+- If verification fails, mark as ⚠️ with issue description
+- Never skip verification to save time
+
+### Verification Commands Reference
+
+```bash
+# Build verification
+yarn rw build
+
+# Type checking
+yarn rw type-check
+
+# Run tests
+yarn rw test --no-watch
+
+# Start app (manual testing)
+yarn rw dev
+
+# Check specific endpoint
+curl http://localhost:8912
+curl http://localhost:8911/graphql
+```

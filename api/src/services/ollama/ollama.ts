@@ -72,7 +72,7 @@ export const checkOllamaHealth = async (): Promise<boolean> => {
 export const listOllamaModels = async (): Promise<OllamaModel[]> => {
   // Check cache first
   const now = Date.now()
-  if (modelListCache && now - modelListCacheTime < MODEL_CACHE_TTL) {
+  if (modelListCache && Array.isArray(modelListCache) && now - modelListCacheTime < MODEL_CACHE_TTL) {
     return modelListCache
   }
 
@@ -91,11 +91,14 @@ export const listOllamaModels = async (): Promise<OllamaModel[]> => {
 
     const data: OllamaModelListResponse = await response.json()
 
+    // Ensure we have a valid models array
+    const models = data.models || []
+
     // Update cache
-    modelListCache = data.models
+    modelListCache = models
     modelListCacheTime = now
 
-    return data.models
+    return models
   } catch (error) {
     console.error('Failed to list Ollama models:', error)
     throw new Error(
@@ -225,5 +228,39 @@ export async function* streamChatCompletion({
 export const invalidateModelCache = (): void => {
   modelListCache = null
   modelListCacheTime = 0
+}
+
+/**
+ * GraphQL resolver wrapper - RedwoodJS maps ollamaModels query to this function
+ * This matches the GraphQL query name and ensures we always return an array
+ */
+export const ollamaModels = async (): Promise<OllamaModel[]> => {
+  try {
+    const models = await listOllamaModels()
+    // Ensure all models have required fields for GraphQL schema
+    return models.map((model) => ({
+      ...model,
+      // Ensure modified_at is always a string (never null/undefined)
+      modified_at: model.modified_at || '',
+    }))
+  } catch (error) {
+    // Ollama is unavailable - return empty array instead of throwing
+    console.warn('Ollama models unavailable in service, returning empty array:', error)
+    return []
+  }
+}
+
+/**
+ * GraphQL resolver wrapper - RedwoodJS maps ollamaHealth query to this function
+ * This matches the GraphQL query name and ensures we always return a boolean
+ */
+export const ollamaHealth = async (): Promise<boolean> => {
+  try {
+    return await checkOllamaHealth()
+  } catch (error) {
+    // Ollama is unavailable - return false instead of throwing
+    console.warn('Ollama health check failed in service, returning false:', error)
+    return false
+  }
 }
 

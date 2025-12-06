@@ -9,6 +9,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import * as os from 'os'
 import { logger } from 'src/lib/logger'
 
 export interface FileEntry {
@@ -92,9 +93,21 @@ export const getDirectoryContents = async ({
 }
 
 /**
- * Read file contents
+ * GraphQL resolver wrapper - RedwoodJS maps directoryContents query to this function
+ * This is a wrapper that matches the GraphQL query name
  */
-export const readFile = async ({
+export const directoryContents = async ({
+  path,
+}: {
+  path: string
+}): Promise<DirectoryContents> => {
+  return await getDirectoryContents({ directoryPath: path })
+}
+
+/**
+ * Read file contents (internal function - used by tests and other code)
+ */
+export const readFileInternal = async ({
   filePath,
   encoding = 'utf-8',
 }: {
@@ -118,9 +131,28 @@ export const readFile = async ({
 }
 
 /**
- * Write file contents
+ * GraphQL resolver wrapper - RedwoodJS maps readFile query to this function
+ * Returns an object matching the GraphQL FileContent type
  */
-export const writeFile = async ({
+export const readFile = async ({
+  path,
+  encoding = 'utf-8',
+}: {
+  path: string
+  encoding?: BufferEncoding
+}): Promise<{ path: string; content: string; encoding: string }> => {
+  const content = await readFileInternal({ filePath: path, encoding })
+  return {
+    path,
+    content,
+    encoding: encoding || 'utf-8',
+  }
+}
+
+/**
+ * Write file contents (internal function)
+ */
+const writeFileInternal = async ({
   filePath,
   content,
   encoding = 'utf-8',
@@ -150,6 +182,35 @@ export const writeFile = async ({
 }
 
 /**
+ * GraphQL resolver wrapper - RedwoodJS maps writeFile mutation to this function
+ * Returns WriteFileResult to match GraphQL schema
+ */
+export const writeFile = async ({
+  path,
+  content,
+  encoding = 'utf-8',
+}: {
+  path: string
+  content: string
+  encoding?: BufferEncoding
+}): Promise<{ success: boolean; path: string; message?: string }> => {
+  try {
+    await writeFileInternal({ filePath: path, content, encoding })
+    return {
+      success: true,
+      path,
+      message: 'File written successfully',
+    }
+  } catch (error) {
+    return {
+      success: false,
+      path,
+      message: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+/**
  * Check if file or directory exists
  */
 export const pathExists = async ({
@@ -175,7 +236,7 @@ export const getFileStats = async ({
   filePath,
 }: {
   filePath: string
-}): Promise<fs.Stats> => {
+}): Promise<import('fs').Stats> => {
   try {
     if (!isAllowedPath(filePath)) {
       throw new Error('Path not allowed')
@@ -194,9 +255,11 @@ export const getFileStats = async ({
 const getAllowedBaseDirectories = (): string[] => {
   const allowed: string[] = []
 
-  // Allow home directory
-  if (process.env.HOME) {
-    allowed.push(process.env.HOME)
+  // Allow home directory (with fallback to os.homedir())
+  const homeDir = process.env.HOME || os.homedir()
+  if (homeDir) {
+    allowed.push(homeDir)
+    logger.info('File system access: allowing home directory', { homeDir })
   }
 
   // Allow custom ALLOWED_DIRECTORIES from environment (comma-separated)
@@ -205,6 +268,11 @@ const getAllowedBaseDirectories = (): string[] => {
       dir.trim()
     )
     allowed.push(...customDirs)
+    logger.info('File system access: allowing custom directories', { customDirs })
+  }
+
+  if (allowed.length === 0) {
+    logger.warn('No allowed directories configured for file system access')
   }
 
   return allowed.filter((dir) => dir.length > 0)

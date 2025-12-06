@@ -43,6 +43,7 @@ export interface ChatMessage {
   content: string
   timestamp: Date
   fileContext?: FileContext[]
+  isStreaming?: boolean
 }
 
 // File context interface

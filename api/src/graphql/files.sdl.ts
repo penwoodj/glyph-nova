@@ -5,16 +5,18 @@
  * Reference: Report 03 (Desktop File System Integration)
  */
 
-export const schema = `
+import gql from 'graphql-tag'
+
+export const schema = gql`
   type Query {
-    directoryContents(path: String!): DirectoryContents
-    readFile(path: String!): FileContent
-    fileStats(path: String!): FileStats
-    pathExists(path: String!): Boolean!
+    directoryContents(path: String!): DirectoryContents @skipAuth
+    readFile(path: String!): FileContent @skipAuth
+    fileStats(path: String!): FileStats @skipAuth
+    pathExists(path: String!): Boolean! @skipAuth
   }
 
   type Mutation {
-    writeFile(path: String!, content: String!): WriteFileResult
+    writeFile(path: String!, content: String!): WriteFileResult @skipAuth
   }
 
   type DirectoryContents {
@@ -59,4 +61,3 @@ export const schema = `
 
   scalar DateTime
 `
-
