@@ -92,7 +92,13 @@ export const listOllamaModels = async (): Promise<OllamaModel[]> => {
     const data: OllamaModelListResponse = await response.json()
 
     // Ensure we have a valid models array
-    const models = data.models || []
+    const rawModels = data.models || []
+
+    // Normalize each model: ensure modified_at is always a non-null string
+    const models = rawModels.map((model) => ({
+      ...model,
+      modified_at: model.modified_at || '',
+    }))
 
     // Update cache
     modelListCache = models
@@ -234,18 +240,47 @@ export const invalidateModelCache = (): void => {
  * GraphQL resolver wrapper - RedwoodJS maps ollamaModels query to this function
  * This matches the GraphQL query name and ensures we always return an array
  */
-export const ollamaModels = async (): Promise<OllamaModel[]> => {
+export const ollamaModels = async (): Promise<any[]> => {
   try {
     const models = await listOllamaModels()
+    // Ensure all models have required fields for GraphQL schema
+    // GraphQL schema expects `modifiedAt` (camelCase), but API returns `modified_at` (snake_case)
+    // Transform to match GraphQL schema field names
+    return models.map((model) => ({
+      ...model,
+      // Ensure modified_at is always a string (never null/undefined)
+      modified_at: model.modified_at || '',
+      // Add camelCase version for GraphQL schema
+      modifiedAt: model.modified_at || '',
+    }))
+  } catch (error) {
+    // Ollama is unavailable - return empty array instead of throwing
+    console.warn('Ollama models unavailable in service, returning empty array:', error)
+    return []
+  }
+}
+
+/**
+ * GraphQL resolver wrapper for CLI-based model listing
+ * RedwoodJS maps ollamaModelsCLI query to this function
+ */
+export const ollamaModelsCLI = async (): Promise<any[]> => {
+  try {
+    // Import ollamaCLI directly (not dynamically) to ensure it's bundled correctly
+    const { ollamaCLI } = require('./ollama-cli')
+    const models = await ollamaCLI.listModelsCLI()
+
     // Ensure all models have required fields for GraphQL schema
     return models.map((model) => ({
       ...model,
       // Ensure modified_at is always a string (never null/undefined)
       modified_at: model.modified_at || '',
+      // Add camelCase version for GraphQL schema
+      modifiedAt: model.modified_at || '',
     }))
   } catch (error) {
-    // Ollama is unavailable - return empty array instead of throwing
-    console.warn('Ollama models unavailable in service, returning empty array:', error)
+    // CLI is unavailable - return empty array instead of throwing
+    console.warn('Ollama CLI models unavailable in service, returning empty array:', error)
     return []
   }
 }
@@ -261,6 +296,86 @@ export const ollamaHealth = async (): Promise<boolean> => {
     // Ollama is unavailable - return false instead of throwing
     console.warn('Ollama health check failed in service, returning false:', error)
     return false
+  }
+}
+
+/**
+ * GraphQL resolver wrapper for CLI-based health check
+ * RedwoodJS maps ollamaHealthCLI query to this function
+ */
+export const ollamaHealthCLI = async (): Promise<boolean> => {
+  try {
+    // Import ollamaCLI directly (not dynamically) to ensure it's bundled correctly
+    const { ollamaCLI } = require('./ollama-cli')
+    return await ollamaCLI.isAvailable()
+  } catch (error) {
+    // CLI is unavailable - return false instead of throwing
+    console.warn('Ollama CLI health check failed in service, returning false:', error)
+    return false
+  }
+}
+
+/**
+ * Send chat message via CLI
+ * RedwoodJS maps sendChatMessageCLI mutation to this function
+ */
+interface SendMessageInput {
+  model: string
+  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
+  fileContext?: Array<{ path: string; content: string }>
+}
+
+export const sendChatMessageCLI = async ({ input }: { input: SendMessageInput }): Promise<any> => {
+  try {
+    const { ollamaCLI } = require('./ollama-cli')
+
+    // Extract the last user message as the prompt
+    const lastUserMessage = input.messages
+      .filter((m) => m.role === 'user')
+      .pop()
+
+    if (!lastUserMessage) {
+      throw new Error('No user message found in input')
+    }
+
+    // Format prompt with file context if provided
+    let prompt = lastUserMessage.content
+    if (input.fileContext && input.fileContext.length > 0) {
+      const contextStr = formatFileContext(input.fileContext)
+      prompt = prompt + contextStr
+    }
+
+    // Execute CLI command to generate response
+    // Note: Using 'run' command which combines model loading and generation
+    // Skip argument validation for the prompt (last argument)
+    const result = await ollamaCLI.executeCommand(
+      'run',
+      [input.model, prompt],
+      120000, // 2 minute timeout
+      true // Skip validation for prompt argument
+    )
+
+    if (!result.success) {
+      throw new Error(result.stderr || 'Failed to generate response')
+    }
+
+    return {
+      content: result.stdout,
+      model: input.model,
+      done: true,
+    }
+  } catch (error) {
+    console.error('CLI chat message error:', error)
+    // Better error message formatting
+    if (error && typeof error === 'object') {
+      if ('type' in error) {
+        // This is an OllamaError
+        throw new Error(`Failed to send chat message via CLI: ${error.message || JSON.stringify(error)}`)
+      }
+    }
+    throw new Error(
+      `Failed to send chat message via CLI: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
 

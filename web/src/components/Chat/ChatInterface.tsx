@@ -28,10 +28,27 @@ const OLLAMA_MODELS_QUERY = gql`
   }
 `
 
+const OLLAMA_MODELS_CLI_QUERY = gql`
+  query OllamaModelsCLIQuery {
+    ollamaModelsCLI {
+      name
+      modifiedAt
+      size
+      digest
+    }
+    ollamaHealthCLI
+  }
+`
+
 export const ChatInterface = () => {
   const [inputValue, setInputValue] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [loadingContext, setLoadingContext] = useState(false)
+  const [useCliForModels, setUseCliForModels] = useState(() => {
+    // Load preference from localStorage
+    const saved = localStorage.getItem('ollama-use-cli-models')
+    return saved ? JSON.parse(saved) : false
+  })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const apolloClient = useApolloClient()
 
@@ -42,14 +59,20 @@ export const ChatInterface = () => {
   const setCurrentModel = useAppStore((state) => state.setCurrentModel)
   const selectedFilePath = useAppStore((state) => state.selectedFilePath)
 
-  // Fetch available models
+  // Save CLI preference to localStorage
+  useEffect(() => {
+    localStorage.setItem('ollama-use-cli-models', JSON.stringify(useCliForModels))
+  }, [useCliForModels])
+
+  // Fetch available models - use CLI or HTTP API based on preference
   const { data: modelsData, loading: modelsLoading } = useQuery(
-    OLLAMA_MODELS_QUERY,
+    useCliForModels ? OLLAMA_MODELS_CLI_QUERY : OLLAMA_MODELS_QUERY,
     {
       onCompleted: (data) => {
         // Set first model as default if none selected
-        if (!currentModel && data?.ollamaModels?.length > 0) {
-          setCurrentModel(data.ollamaModels[0].name)
+        const models = useCliForModels ? data?.ollamaModelsCLI : data?.ollamaModels
+        if (!currentModel && models?.length > 0) {
+          setCurrentModel(models[0].name)
         }
       },
     }
@@ -216,41 +239,71 @@ export const ChatInterface = () => {
     <div className="flex h-full flex-col bg-vscode-editor-bg">
       {/* Header with Model Selector */}
       <div className="flex items-center justify-between border-b border-vscode-border px-4 py-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-vscode-fg-secondary">Model:</span>
-          <select
-            value={currentModel || ''}
-            onChange={(e) => setCurrentModel(e.target.value)}
-            disabled={modelsLoading || isStreaming}
-            className="rounded border border-vscode-border bg-vscode-input-bg px-2 py-1 text-sm text-vscode-fg outline-none focus:border-vscode-focus-border"
-          >
-            {modelsLoading ? (
-              <option>Loading models...</option>
-            ) : modelsData?.ollamaModels?.length > 0 ? (
-              modelsData.ollamaModels.map((model) => (
-                <option key={model.name} value={model.name}>
-                  {model.name}
-                </option>
-              ))
-            ) : (
-              <option>No models available</option>
-            )}
-          </select>
+        <div className="flex items-center gap-4">
+          {/* Model Selection */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-vscode-fg-secondary">Model:</span>
+            <select
+              value={currentModel || ''}
+              onChange={(e) => setCurrentModel(e.target.value)}
+              disabled={modelsLoading || isStreaming}
+              className="rounded border border-vscode-border bg-vscode-input-bg px-2 py-1 text-sm text-vscode-fg outline-none focus:border-vscode-focus-border"
+            >
+              {modelsLoading ? (
+                <option>Loading models...</option>
+              ) : (() => {
+                const models = useCliForModels
+                  ? modelsData?.ollamaModelsCLI
+                  : modelsData?.ollamaModels
+                return models?.length > 0 ? (
+                  models.map((model) => (
+                    <option key={model.name} value={model.name}>
+                      {model.name}
+                    </option>
+                  ))
+                ) : (
+                  <option>No models available</option>
+                )
+              })()}
+            </select>
+          </div>
+
+          {/* CLI Toggle */}
+          <div className="flex items-center gap-2 text-xs">
+            <label className="flex items-center gap-1.5 cursor-pointer text-vscode-fg-secondary hover:text-vscode-fg">
+              <input
+                type="checkbox"
+                checked={useCliForModels}
+                onChange={(e) => setUseCliForModels(e.target.checked)}
+                disabled={isStreaming}
+                className="h-3 w-3"
+              />
+              <span>Use CLI</span>
+            </label>
+            <span className="text-vscode-fg-secondary opacity-50">
+              ({useCliForModels ? 'CLI' : 'HTTP'})
+            </span>
+          </div>
         </div>
 
-        {!modelsData?.ollamaHealth && (
-          <div className="flex items-center gap-2 text-xs text-red-400">
-            <span className="inline-block h-2 w-2 rounded-full bg-red-400"></span>
-            <span>Ollama offline</span>
-          </div>
-        )}
+        {/* Health Status */}
+        {(() => {
+          const health = useCliForModels
+            ? modelsData?.ollamaHealthCLI
+            : modelsData?.ollamaHealth
 
-        {modelsData?.ollamaHealth && (
-          <div className="flex items-center gap-2 text-xs text-green-400">
-            <span className="inline-block h-2 w-2 rounded-full bg-green-400"></span>
-            <span>Ollama connected</span>
-          </div>
-        )}
+          return !health ? (
+            <div className="flex items-center gap-2 text-xs text-red-400">
+              <span className="inline-block h-2 w-2 rounded-full bg-red-400"></span>
+              <span>Ollama offline</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-green-400">
+              <span className="inline-block h-2 w-2 rounded-full bg-green-400"></span>
+              <span>Ollama connected</span>
+            </div>
+          )
+        })()}
       </div>
 
       {/* Message List */}
@@ -296,7 +349,7 @@ export const ChatInterface = () => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message or file path... (Shift+Enter for new line)"
-            disabled={isStreaming || loadingContext || !modelsData?.ollamaHealth}
+            disabled={isStreaming || loadingContext || !(useCliForModels ? modelsData?.ollamaHealthCLI : modelsData?.ollamaHealth)}
             rows={3}
             className="flex-1 resize-none rounded border border-vscode-border bg-vscode-input-bg px-3 py-2 text-sm text-vscode-fg outline-none placeholder:text-vscode-fg-secondary placeholder:opacity-50 focus:border-vscode-focus-border disabled:opacity-50"
           />
@@ -306,7 +359,7 @@ export const ChatInterface = () => {
               !inputValue.trim() ||
               isStreaming ||
               loadingContext ||
-              !modelsData?.ollamaHealth ||
+              !(useCliForModels ? modelsData?.ollamaHealthCLI : modelsData?.ollamaHealth) ||
               !currentModel
             }
             className="rounded bg-vscode-button-bg px-4 py-2 text-sm text-vscode-button-fg transition-colors hover:bg-vscode-button-hover-bg disabled:cursor-not-allowed disabled:opacity-50"

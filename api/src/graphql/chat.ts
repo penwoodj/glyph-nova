@@ -2,17 +2,19 @@
  * GraphQL Resolvers for Chat Operations
  *
  * Maps GraphQL queries and mutations to Ollama service functions.
+ * Supports both HTTP API and CLI execution modes.
  * Reference: Report 05 (Ollama Integration Patterns)
  */
 
 import {
   checkOllamaHealth,
-  ollamaModels as getOllamaModels,
   streamChatCompletion,
-  type OllamaModel,
+  formatFileContext,
   type ChatMessage,
   type FileContext,
 } from 'src/services/ollama/ollama'
+
+import { ollamaCLI } from 'src/services/ollama/ollama-cli'
 
 interface SendMessageInput {
   model: string
@@ -28,40 +30,7 @@ interface ChatResponse {
 
 export const Query = {
   /**
-   * Get list of available Ollama models
-   * Returns empty array if Ollama is unavailable (graceful degradation)
-   * CRITICAL: Must always return an array, never null or undefined
-   * Uses the service function which normalizes modified_at to ensure it's always a string
-   */
-  ollamaModels: async (): Promise<OllamaModel[]> => {
-    // Use the service function which has the normalization for modified_at
-    const models = await getOllamaModels()
-
-    // CRITICAL FIX: GraphQL expects field names to match the schema
-    // Schema has `modifiedAt` (camelCase), but data has `modified_at` (snake_case)
-    // Type resolver should map this, but GraphQL validates BEFORE calling resolvers
-    // Solution: Transform data to match schema field names AND ensure values are non-null
-    return models.map((model) => {
-      // Get modified_at from snake_case field
-      const modifiedAtValue = model.modified_at
-      // Ensure it's always a non-null string
-      const normalizedModifiedAt =
-        modifiedAtValue === null || modifiedAtValue === undefined || modifiedAtValue === ''
-          ? ''
-          : String(modifiedAtValue)
-
-      // Return object with BOTH snake_case (for type resolver) AND camelCase (for direct access)
-      // This ensures GraphQL can find the field even if type resolver isn't called
-      return {
-        ...model,
-        modified_at: normalizedModifiedAt, // Keep for type resolver
-        modifiedAt: normalizedModifiedAt,  // Add camelCase for direct GraphQL access
-      } as any // Type assertion needed because OllamaModel interface has modified_at, not modifiedAt
-    })
-  },
-
-  /**
-   * Check if Ollama service is available
+   * Check if Ollama service is available (HTTP API)
    * Returns false if Ollama is unavailable (graceful degradation)
    */
   ollamaHealth: async (): Promise<boolean> => {
@@ -73,11 +42,42 @@ export const Query = {
       return false
     }
   },
+
+  /**
+   * List available Ollama models via CLI
+   * Returns empty array if CLI is unavailable (graceful degradation)
+   */
+  ollamaModelsCLI: async (): Promise<any[]> => {
+    try {
+      const models = await ollamaCLI.listModelsCLI()
+      // Ensure camelCase field names for GraphQL schema
+      return models.map((model) => ({
+        ...model,
+        modifiedAt: model.modified_at || '',
+      }))
+    } catch (error) {
+      console.warn('CLI model listing failed, returning empty array:', error)
+      return []
+    }
+  },
+
+  /**
+   * Check if Ollama CLI is available
+   * Returns false if CLI is not installed or not responding
+   */
+  ollamaHealthCLI: async (): Promise<boolean> => {
+    try {
+      return await ollamaCLI.isAvailable()
+    } catch (error) {
+      console.warn('Ollama CLI health check failed:', error)
+      return false
+    }
+  },
 }
 
 export const Mutation = {
   /**
-   * Send a chat message and get the complete response
+   * Send a chat message and get the complete response (HTTP API)
    *
    * Note: This collects the entire streaming response before returning.
    * For real-time streaming, use WebSocket subscriptions or direct API calls from frontend.
@@ -112,49 +112,74 @@ export const Mutation = {
       )
     }
   },
+
+  /**
+   * Send a chat message via CLI and get the response
+   *
+   * Executes `ollama run <model> <prompt>` command.
+   * Supports file context by appending it to the prompt.
+   */
+  sendChatMessageCLI: async (
+    _: unknown,
+    { input }: { input: SendMessageInput }
+  ): Promise<ChatResponse> => {
+    try {
+      // Extract the last user message as the prompt
+      const lastUserMessage = input.messages
+        .filter((m) => m.role === 'user')
+        .pop()
+
+      if (!lastUserMessage) {
+        throw new Error('No user message found in input')
+      }
+
+      // Format prompt with file context if provided
+      let prompt = lastUserMessage.content
+      if (input.fileContext && input.fileContext.length > 0) {
+        const contextStr = formatFileContext(input.fileContext)
+        prompt = prompt + contextStr
+      }
+
+      // Execute CLI command to generate response
+      const response = await ollamaCLI.generateResponse(
+        input.model,
+        prompt,
+        120000 // 2 minute timeout for generation
+      )
+
+      return {
+        content: response,
+        model: input.model,
+        done: true,
+      }
+    } catch (error) {
+      console.error('CLI chat message error:', error)
+      throw new Error(
+        `Failed to send chat message via CLI: ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
+  },
 }
 
-// Type resolver for OllamaModel to map API response to GraphQL schema
+// Type resolver for OllamaModel to map API response field names to GraphQL schema
+// RedwoodJS calls the service function directly, so the service returns objects with both
+// modified_at (snake_case from API) and modifiedAt (camelCase for GraphQL schema)
+// This type resolver ensures GraphQL can find the modifiedAt field
 export const OllamaModel = {
-  modifiedAt: (parent: OllamaModel) => {
-    // DEBUG: Log what we're receiving
-    console.log('🔍 OllamaModel.modifiedAt resolver called', {
-      hasParent: !!parent,
-      parentKeys: parent ? Object.keys(parent) : [],
-      modified_at: parent?.modified_at,
-      modified_atType: typeof parent?.modified_at,
-    })
-
-    // Handle null/undefined modified_at from Ollama API
-    // Return empty string as fallback to satisfy non-nullable GraphQL schema
-    // Also handle cases where parent might not have the property
+  modifiedAt: (parent: any) => {
+    // Service function adds both modified_at and modifiedAt fields
+    // Return the camelCase version if present, otherwise fall back to snake_case
     if (parent && typeof parent === 'object') {
-      // Check for modified_at (snake_case from API)
-      if ('modified_at' in parent) {
-        const value = parent.modified_at
-        if (value === null || value === undefined) {
-          console.warn('⚠️ OllamaModel.modifiedAt: modified_at is null/undefined, returning empty string')
-          return ''
-        }
-        return String(value)
-      }
-      // Check for modifiedAt (camelCase - in case it was already transformed)
       if ('modifiedAt' in parent) {
-        const value = (parent as any).modifiedAt
-        if (value === null || value === undefined) {
-          console.warn('⚠️ OllamaModel.modifiedAt: modifiedAt is null/undefined, returning empty string')
-          return ''
-        }
-        return String(value)
+        return parent.modifiedAt || ''
+      }
+      if ('modified_at' in parent) {
+        return parent.modified_at || ''
       }
     }
-    // Fallback: return empty string if modified_at is missing
-    console.error('❌ OllamaModel.modifiedAt: parent missing modified_at/modifiedAt property', {
-      parent,
-      parentType: typeof parent,
-      parentKeys: parent ? Object.keys(parent) : [],
-    })
+    // Final fallback to satisfy non-nullable schema requirement
     return ''
   },
 }
+
 

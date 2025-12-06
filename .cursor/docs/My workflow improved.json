@@ -84,21 +84,23 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "=https://api.duckduckgo.com/?q={{ encodeURIComponent($json.searchQuery) }}&format=json&no_html=1&skip_disambig=1",
-        "options": {
-          "timeout": 10000
+        "operation": "search",
+        "query": "={{ $json.searchQuery }}",
+        "webSearchOptions": {
+          "maxResults": 10,
+          "region": "us-en",
+          "safeSearch": 1
         }
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-duckduckgo-search.duckduckgoSearch",
+      "typeVersion": 1,
       "position": [1200, 200],
       "id": "duckduckgo-search",
       "name": "DuckDuckGo Search"
     },
     {
       "parameters": {
-        "jsCode": "// Extract relevant info from DuckDuckGo response\nconst data = $input.item.json;\nconst query = $input.item.json.searchQuery || 'unknown';\n\nlet searchResult = {\n  query: query,\n  abstract: data.Abstract || '',\n  abstractSource: data.AbstractSource || '',\n  abstractURL: data.AbstractURL || '',\n  relatedTopics: (data.RelatedTopics || []).slice(0, 3).map(t => ({\n    text: t.Text || '',\n    url: t.FirstURL || ''\n  })),\n  results: (data.Results || []).slice(0, 3).map(r => ({\n    text: r.Text || '',\n    url: r.FirstURL || ''\n  }))\n};\n\n// Format as text for LLM\nlet resultText = `Query: ${query}\\n`;\nif (searchResult.abstract) {\n  resultText += `Summary: ${searchResult.abstract}\\n`;\n  resultText += `Source: ${searchResult.abstractSource} (${searchResult.abstractURL})\\n`;\n}\nif (searchResult.relatedTopics.length > 0) {\n  resultText += `Related:\\n${searchResult.relatedTopics.map(t => `- ${t.text}`).join('\\n')}\\n`;\n}\n\nreturn {\n  json: {\n    ...searchResult,\n    formattedResult: resultText,\n    originalQuery: $input.item.json.originalQuery\n  }\n};"
+        "jsCode": "// Extract relevant info from DuckDuckGo Search community node response\nconst data = $input.item.json;\nconst query = $input.item.json.searchQuery || data.query || 'unknown';\n\n// Handle community node response structure\n// Response has: success, query, count, results array\nconst searchResults = data.results || [];\nconst success = data.success !== false; // Default to true if not specified\n\n// Format search results for LLM\nlet resultText = `Query: ${query}\\n`;\n\nif (!success || searchResults.length === 0) {\n  resultText += `No results found for this query.\\n`;\n} else {\n  resultText += `Found ${searchResults.length} result(s):\\n\\n`;\n  \n  // Format each result\n  searchResults.slice(0, 10).forEach((result, index) => {\n    const title = result.title || result.name || 'Untitled';\n    const url = result.url || result.link || '';\n    const description = result.description || result.snippet || result.text || '';\n    \n    resultText += `${index + 1}. ${title}\\n`;\n    if (url) {\n      resultText += `   URL: ${url}\\n`;\n    }\n    if (description) {\n      resultText += `   ${description}\\n`;\n    }\n    resultText += `\\n`;\n  });\n}\n\nreturn {\n  json: {\n    query: query,\n    success: success,\n    count: searchResults.length,\n    results: searchResults.slice(0, 10),\n    formattedResult: resultText,\n    originalQuery: $input.item.json.originalQuery || query\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
