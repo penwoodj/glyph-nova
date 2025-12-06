@@ -89,13 +89,25 @@
 - ✅ **Dual Server Implementation**: Modified redwood_server.rs to start both servers
 - ✅ **Tauri Config Fixed**: Removed invalid field, pointed window to http://localhost:8912
 - ✅ **Build Success**: Cargo builds without errors
-- 📋 **Status**: Ready for final manual verification testing
+- ⚠️ **Issue Found**: Still showing "page not found" despite both servers running
+
+**Root Cause Analysis** (2025-12-06 02:35):
+- 📋 **Problem**: Using `yarn rw serve api` and `yarn rw serve web` separately
+- 🔍 **Discovery**: Redwood's production pattern uses single server on one port
+- 📖 **Documentation**: Report 01 (lines 253-265) shows API should serve web files too
+- ✅ **Solution**: Use `yarn rw serve` (no subcommand) to serve both on port 8911
+
+**Corrected Implementation** (2025-12-06 02:40):
+- ✅ **Single Server**: Changed to `yarn rw serve --port 8911` (serves API + Web)
+- ✅ **Tauri Config**: Window points to http://localhost:8911
+- ✅ **Simplified Code**: Back to single process management
+- 📋 **Status**: Ready for rebuild and final testing
 
 **Files Modified**:
-- `/home/jon/code/llm-ui/src-tauri/src/redwood_server.rs` - Starts both API (8911) and Web (8912) servers with process group cleanup
+- `/home/jon/code/llm-ui/src-tauri/src/redwood_server.rs` - Single server serving both API and Web on port 8911
 - `/home/jon/code/llm-ui/src-tauri/Cargo.toml` - Added libc dependency for Unix signals
-- `/home/jon/code/llm-ui/src-tauri/tauri.conf.json` - Points window to http://localhost:8912
-- `/home/jon/code/llm-ui/final-rebuild-test.sh` - Created comprehensive test script
+- `/home/jon/code/llm-ui/src-tauri/tauri.conf.json` - Points window to http://localhost:8911
+- `/home/jon/code/llm-ui/final-rebuild-test.sh` - Test script (needs update)
 
 ---
 

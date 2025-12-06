@@ -14,16 +14,12 @@ use std::env;
 use std::os::unix::process::CommandExt;
 
 pub struct RedwoodServer {
-    api_process: Option<Child>,
-    web_process: Option<Child>,
+    process: Option<Child>,
 }
 
 impl RedwoodServer {
     pub fn new() -> Self {
-        Self {
-            api_process: None,
-            web_process: None,
-        }
+        Self { process: None }
     }
 
     pub fn start(&mut self) -> Result<(), String> {
@@ -53,7 +49,7 @@ impl RedwoodServer {
         }
 
         // Start the API server using yarn rw serve api
-        // This is the correct way to start Redwood API in production
+        // Tauri will serve the static web files from web/dist
         log::info!("Starting Redwood API server from: {}", current_dir.display());
         log::info!("Command: yarn rw serve api --port 8911 --host 0.0.0.0");
 
@@ -86,108 +82,50 @@ impl RedwoodServer {
         let child = cmd.spawn()
             .map_err(|e| format!("Failed to start Redwood API server: {}. Make sure yarn is in PATH.", e))?;
 
-        self.api_process = Some(child);
+        self.process = Some(child);
 
         // Wait for API server to start
         log::info!("Waiting for Redwood API server to start on http://localhost:8911...");
-        std::thread::sleep(std::time::Duration::from_secs(3));
+        std::thread::sleep(std::time::Duration::from_secs(5));
 
         log::info!("Redwood API server should now be running on http://localhost:8911");
         log::info!("GraphQL endpoint: http://localhost:8911/graphql");
-
-        // Start the web server on port 8912
-        log::info!("Starting Redwood Web server...");
-        log::info!("Command: yarn rw serve web --port 8912 --host 0.0.0.0");
-
-        let mut web_cmd = Command::new("yarn");
-        web_cmd.arg("rw")
-            .arg("serve")
-            .arg("web")
-            .arg("--port")
-            .arg("8912")
-            .arg("--host")
-            .arg("0.0.0.0")
-            .current_dir(&current_dir)
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit());
-
-        // Create process group for web server too
-        #[cfg(unix)]
-        {
-            unsafe {
-                web_cmd.pre_exec(|| {
-                    libc::setpgid(0, 0);
-                    Ok(())
-                });
-            }
-        }
-
-        let web_child = web_cmd.spawn()
-            .map_err(|e| format!("Failed to start Redwood Web server: {}. Make sure yarn is in PATH.", e))?;
-
-        self.web_process = Some(web_child);
-
-        // Wait for web server to start
-        log::info!("Waiting for Redwood Web server to start on http://localhost:8912...");
-        std::thread::sleep(std::time::Duration::from_secs(3));
-
-        log::info!("Redwood Web server should now be running on http://localhost:8912");
+        log::info!("Tauri will serve static web files from web/dist");
         Ok(())
     }
 
     pub fn stop(&mut self) {
-        // Stop web server first
-        if let Some(mut process) = self.web_process.take() {
-            log::info!("Stopping Redwood Web server...");
+        if let Some(mut process) = self.process.take() {
+            log::info!("Stopping Redwood server...");
 
             let pid = process.id();
 
+            // On Unix, kill the entire process group to ensure child processes are stopped
             #[cfg(unix)]
             {
-                log::info!("Killing web server process group for PID: {}", pid);
+                log::info!("Killing process group for PID: {}", pid);
                 unsafe {
+                    // Send SIGTERM to the entire process group (negative PID)
                     libc::kill(-(pid as i32), libc::SIGTERM);
                 }
+
+                // Wait a moment for graceful shutdown
                 std::thread::sleep(std::time::Duration::from_millis(500));
+
+                // Force kill if still running
                 unsafe {
                     libc::kill(-(pid as i32), libc::SIGKILL);
                 }
             }
 
+            // On non-Unix, just kill the main process
             #[cfg(not(unix))]
             {
                 let _ = process.kill();
             }
 
             let _ = process.wait();
-            log::info!("Redwood Web server stopped");
-        }
-
-        // Stop API server
-        if let Some(mut process) = self.api_process.take() {
-            log::info!("Stopping Redwood API server...");
-
-            let pid = process.id();
-
-            #[cfg(unix)]
-            {
-                log::info!("Killing API server process group for PID: {}", pid);
-                unsafe {
-                    libc::kill(-(pid as i32), libc::SIGTERM);
-                }
-                std::thread::sleep(std::time::Duration::from_millis(500));
-                unsafe {
-                    libc::kill(-(pid as i32), libc::SIGKILL);
-                }
-            }
-
-            #[cfg(not(unix))]
-            {
-                let _ = process.kill();
-            }
-
-            let _ = process.wait();
-            log::info!("Redwood API server stopped");
+            log::info!("Redwood server stopped");
         }
     }
 }

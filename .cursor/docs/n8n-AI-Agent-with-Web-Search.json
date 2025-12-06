@@ -84,23 +84,34 @@
     },
     {
       "parameters": {
-        "operation": "search",
-        "query": "={{ $json.searchQuery }}",
-        "webSearchOptions": {
-          "maxResults": 10,
-          "region": "us-en",
-          "safeSearch": 1
+        "method": "GET",
+        "url": "=https://api.duckduckgo.com/?q={{ encodeURIComponent($json.searchQuery) }}&format=json&no_html=1&skip_disambig=1",
+        "options": {
+          "timeout": 8000,
+          "retry": {
+            "maxRetries": 1,
+            "retryDelay": 1000
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (compatible; n8n-bot/1.0)"
+            }
+          ]
         }
       },
-      "type": "n8n-nodes-duckduckgo-search.duckDuckGo",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [1200, 200],
       "id": "duckduckgo-search",
       "name": "DuckDuckGo Search"
     },
     {
       "parameters": {
-        "jsCode": "// Extract relevant info from DuckDuckGo Search community node response\nconst data = $input.item.json;\nconst query = $input.item.json.searchQuery || data.query || 'unknown';\n\n// Handle community node response structure\n// Response has: success, query, count, results array\nconst searchResults = data.results || [];\nconst success = data.success !== false; // Default to true if not specified\n\n// Format search results for LLM\nlet resultText = `Query: ${query}\\n`;\n\nif (!success || searchResults.length === 0) {\n  resultText += `No results found for this query.\\n`;\n} else {\n  resultText += `Found ${searchResults.length} result(s):\\n\\n`;\n  \n  // Format each result\n  searchResults.slice(0, 10).forEach((result, index) => {\n    const title = result.title || result.name || 'Untitled';\n    const url = result.url || result.link || '';\n    const description = result.description || result.snippet || result.text || '';\n    \n    resultText += `${index + 1}. ${title}\\n`;\n    if (url) {\n      resultText += `   URL: ${url}\\n`;\n    }\n    if (description) {\n      resultText += `   ${description}\\n`;\n    }\n    resultText += `\\n`;\n  });\n}\n\nreturn {\n  json: {\n    query: query,\n    success: success,\n    count: searchResults.length,\n    results: searchResults.slice(0, 10),\n    formattedResult: resultText,\n    originalQuery: $input.item.json.originalQuery || query\n  }\n};"
+        "jsCode": "// Extract relevant info from DuckDuckGo API response\nconst data = $input.item.json;\nconst query = $input.item.json.searchQuery || data.Heading || 'unknown';\n\n// DuckDuckGo API structure: Abstract, AbstractText, RelatedTopics[], Results[]\nconst abstract = data.Abstract || data.AbstractText || '';\nconst abstractUrl = data.AbstractURL || '';\nconst abstractSource = data.AbstractSource || '';\n\n// Collect results from multiple sources\nconst searchResults = [];\n\n// Add abstract as primary result if available\nif (abstract) {\n  searchResults.push({\n    title: abstractSource || 'DuckDuckGo Instant Answer',\n    url: abstractUrl,\n    description: abstract\n  });\n}\n\n// Add RelatedTopics\nconst relatedTopics = data.RelatedTopics || [];\nrelatedTopics.forEach(topic => {\n  if (topic.Text && topic.FirstURL) {\n    searchResults.push({\n      title: topic.Text.split(' - ')[0],\n      url: topic.FirstURL,\n      description: topic.Text\n    });\n  }\n  // Handle nested topics\n  if (topic.Topics && Array.isArray(topic.Topics)) {\n    topic.Topics.forEach(subtopic => {\n      if (subtopic.Text && subtopic.FirstURL) {\n        searchResults.push({\n          title: subtopic.Text.split(' - ')[0],\n          url: subtopic.FirstURL,\n          description: subtopic.Text\n        });\n      }\n    });\n  }\n});\n\n// Add direct Results if available\nif (data.Results && Array.isArray(data.Results)) {\n  data.Results.forEach(result => {\n    if (result.Text && result.FirstURL) {\n      searchResults.push({\n        title: result.Text.split(' - ')[0],\n        url: result.FirstURL,\n        description: result.Text\n      });\n    }\n  });\n}\n\n// Format search results for LLM\nlet resultText = `Query: ${query}\\n`;\n\nif (searchResults.length === 0) {\n  resultText += `No results found for this query.\\n`;\n} else {\n  resultText += `Found ${searchResults.length} result(s):\\n\\n`;\n  \n  // Format each result (limit to 10)\n  searchResults.slice(0, 10).forEach((result, index) => {\n    resultText += `${index + 1}. ${result.title}\\n`;\n    if (result.url) {\n      resultText += `   URL: ${result.url}\\n`;\n    }\n    if (result.description) {\n      resultText += `   ${result.description}\\n`;\n    }\n    resultText += `\\n`;\n  });\n}\n\nreturn {\n  json: {\n    query: query,\n    success: searchResults.length > 0,\n    count: searchResults.length,\n    results: searchResults.slice(0, 10),\n    formattedResult: resultText,\n    originalQuery: $input.item.json.originalQuery || query\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
