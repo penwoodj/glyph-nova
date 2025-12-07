@@ -10,6 +10,7 @@
     "beforeBuildCommand": "yarn redwood build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "LLM UI",
@@ -20,7 +21,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "scope": ["$RESOURCE/**"],
+        "enable": true
+      }
     }
   },
   "bundle": {

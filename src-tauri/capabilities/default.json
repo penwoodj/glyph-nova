@@ -26,6 +26,9 @@
     "core:window:allow-show",
     "core:window:allow-hide",
     "core:window:allow-start-dragging",
-    "log:default"
+    "log:default",
+    "core:webview:allow-webview-position",
+    "core:webview:allow-webview-size",
+    "core:webview:allow-internal-toggle-devtools"
   ]
 }
