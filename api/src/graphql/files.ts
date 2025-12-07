@@ -51,10 +51,10 @@ export const Query = {
 
     return {
       files: [
-        { name: 'test.txt', path: '/home/jon/code/llm-ui/test.txt', type: 'file' as const, extension: '.txt', size: 100, modified: new Date() }
+        { name: 'test.txt', path: '/home/jon/code/glyph-nova/test.txt', type: 'file' as const, extension: '.txt', size: 100, modified: new Date() }
       ],
       folders: [
-        { name: 'api', path: '/home/jon/code/llm-ui/api', type: 'directory' as const, size: 0, modified: new Date() }
+        { name: 'api', path: '/home/jon/code/glyph-nova/api', type: 'directory' as const, size: 0, modified: new Date() }
       ]
     }
 

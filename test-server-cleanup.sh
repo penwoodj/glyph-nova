@@ -53,7 +53,7 @@ show_port_status
 echo ""
 
 echo "Step 2: Starting desktop app..."
-cd /home/jon/code/llm-ui
+cd /home/jon/code/glyph-nova
 ./src-tauri/target/release/app > /tmp/app-test.log 2>&1 &
 APP_PID=$!
 echo "App started with PID: $APP_PID"

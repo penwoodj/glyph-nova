@@ -516,10 +516,10 @@ All research reports are located in `.cursor/docs/reports/`:
 - [x] Navigate to Redwood.js project root
 - [x] Initialize Tauri in project
   ```bash
-  cargo tauri init --app-name llm-ui --window-title "LLM UI" --ci
+  cargo tauri init --app-name glyph-nova --window-title "LLM UI" --ci
   ```
 - [x] Configure Tauri options:
-  - [x] App name: `llm-ui`
+  - [x] App name: `glyph-nova`
   - [x] Window title: `LLM UI`
   - [x] Dist directory: `.redwood/build/web`
   - [x] Dev path: `http://localhost:8911`

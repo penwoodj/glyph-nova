@@ -90,7 +90,7 @@ export const useAppStore = create<AppState>()(
       setRightPanelWidth: (width) => set({ rightPanelWidth: width }),
     }),
     {
-      name: 'llm-ui-storage', // localStorage key
+      name: 'glyph-nova-storage', // localStorage key
       partialize: (state) => ({
         // Only persist UI preferences, not file/chat state
         leftPanelWidth: state.leftPanelWidth,

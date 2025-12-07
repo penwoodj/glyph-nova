@@ -34,7 +34,7 @@ Continue running this plan and complete all missing steps from 1.2.2 onward
 
 1. **Tauri Initialization:**
    ```bash
-   cargo tauri init --app-name llm-ui --window-title "LLM UI" --ci
+   cargo tauri init --app-name glyph-nova --window-title "LLM UI" --ci
    ```
    - Successfully initialized Tauri v2 project
    - Created `src-tauri/` directory structure
@@ -58,7 +58,7 @@ Continue running this plan and complete all missing steps from 1.2.2 onward
 **Key Decisions:**
 - Used Tauri v2 (latest version) instead of v1
 - Non-interactive initialization with `--ci` flag
-- App name: `llm-ui`, Window title: `LLM UI`
+- App name: `glyph-nova`, Window title: `LLM UI`
 
 ---
 

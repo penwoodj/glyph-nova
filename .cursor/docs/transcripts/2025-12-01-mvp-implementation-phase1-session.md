@@ -111,7 +111,7 @@ The implementation started with Phase 1.1: Project Initialization, which include
 
 **User Message:**
 ```
-@.cursor/rules/manual/tracking/plan-execute-verify.mdc Continue running this plan /home/jon/code/llm-ui/.cursor/docs/plans/02-mvp-implementation-plan.md and update the plan file with your current progress after
+@.cursor/rules/manual/tracking/plan-execute-verify.mdc Continue running this plan /home/jon/code/glyph-nova/.cursor/docs/plans/02-mvp-implementation-plan.md and update the plan file with your current progress after
 ```
 
 **AI Response Summary:**
@@ -258,7 +258,7 @@ The implementation started with Phase 1.1: Project Initialization, which include
    - Created by: `npx create-redwood-app@latest`
    - Structure:
      ```
-     llm-ui/
+     glyph-nova/
      ├── api/
      │   ├── src/
      │   │   ├── directives/
@@ -384,7 +384,7 @@ During this session, the following research reports were referenced:
 - Shell: /usr/bin/bash
 - Node.js: v20.19.5
 - npm: 10.8.2
-- Workspace: /home/jon/code/llm-ui
+- Workspace: /home/jon/code/glyph-nova
 
 **Project Configuration:**
 - Redwood.js Version: 8.9.0
@@ -636,7 +636,7 @@ EOF
 ### Appendix B: File Paths
 
 **Project Files:**
-- Project root: `/home/jon/code/llm-ui`
+- Project root: `/home/jon/code/glyph-nova`
 - Plan file: `.cursor/docs/plans/02-mvp-implementation-plan.md`
 - Research reports: `.cursor/docs/reports/`
 - Transcript: `.cursor/docs/transcripts/2025-12-01-mvp-implementation-phase1-session.md`
@@ -732,7 +732,7 @@ Following the initial Phase 1.1 completion, the session continued with additiona
 
 **User Request:**
 ```
-@.cursor/rules/manual/tracking/plan-execute-verify.mdc Continue running this plan /home/jon/code/llm-ui/.cursor/docs/plans/02-mvp-implementation-plan.md and update the plan file with your current progress after
+@.cursor/rules/manual/tracking/plan-execute-verify.mdc Continue running this plan /home/jon/code/glyph-nova/.cursor/docs/plans/02-mvp-implementation-plan.md and update the plan file with your current progress after
 ```
 
 **AI Response Summary:**
@@ -1139,7 +1139,7 @@ Continue running this plan and complete all missing steps from 1.2.2 onward
 
 1. **Tauri Initialization:**
    ```bash
-   cargo tauri init --app-name llm-ui --window-title "LLM UI" --ci
+   cargo tauri init --app-name glyph-nova --window-title "LLM UI" --ci
    ```
    - Successfully initialized Tauri v2 project
    - Created `src-tauri/` directory structure
@@ -1163,7 +1163,7 @@ Continue running this plan and complete all missing steps from 1.2.2 onward
 **Key Decisions:**
 - Used Tauri v2 (latest version) instead of v1
 - Non-interactive initialization with `--ci` flag
-- App name: `llm-ui`, Window title: `LLM UI`
+- App name: `glyph-nova`, Window title: `LLM UI`
 
 ---
 

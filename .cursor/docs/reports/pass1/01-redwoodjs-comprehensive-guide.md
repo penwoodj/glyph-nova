@@ -156,10 +156,10 @@ Redwood.js includes built-in authentication support:
 npm install -g @redwoodjs/cli
 
 # Create new project
-yarn create redwood-app llm-ui
+yarn create redwood-app glyph-nova
 
 # Or use specific options
-yarn create redwood-app llm-ui --template minimal
+yarn create redwood-app glyph-nova --template minimal
 ```
 
 ### Code Generation Commands

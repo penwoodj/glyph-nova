@@ -7,11 +7,11 @@
 **Context**: Based on pass2 reports (01-07) and current codebase analysis
 **Status**: ✅ **COMPLETE** - All phases implemented and tested
 **Related Reports**:
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/04-ollama-cli-command-reference.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/07-practical-implementation-guide.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/04-ollama-cli-command-reference.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/07-practical-implementation-guide.md`
 
 ## Current State Analysis
 

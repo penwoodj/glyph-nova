@@ -8,9 +8,9 @@ The Tauri desktop app has been successfully built! The application is ready for 
 ### Build Artifacts
 Build completed in ~149 seconds and created the following installers:
 
-1. **Debian Package**: `src-tauri/target/release/bundle/deb/llm-ui_0.1.0_amd64.deb`
-2. **RPM Package**: `src-tauri/target/release/bundle/rpm/llm-ui-0.1.0-1.x86_64.rpm`
-3. **AppImage**: `src-tauri/target/release/bundle/appimage/llm-ui_0.1.0_amd64.AppImage`
+1. **Debian Package**: `src-tauri/target/release/bundle/deb/glyph-nova_0.1.0_amd64.deb`
+2. **RPM Package**: `src-tauri/target/release/bundle/rpm/glyph-nova-0.1.0-1.x86_64.rpm`
+3. **AppImage**: `src-tauri/target/release/bundle/appimage/glyph-nova_0.1.0_amd64.AppImage`
 4. **Raw Binary**: `src-tauri/target/release/app`
 
 ### Progress Made
@@ -37,11 +37,11 @@ To test the desktop app:
 
 ```bash
 # Run the AppImage (easiest, no installation needed)
-cd /home/jon/code/llm-ui
-./src-tauri/target/release/bundle/appimage/llm-ui_0.1.0_amd64.AppImage
+cd /home/jon/code/glyph-nova
+./src-tauri/target/release/bundle/appimage/glyph-nova_0.1.0_amd64.AppImage
 
 # Or install the .deb package
-sudo dpkg -i src-tauri/target/release/bundle/deb/llm-ui_0.1.0_amd64.deb
+sudo dpkg -i src-tauri/target/release/bundle/deb/glyph-nova_0.1.0_amd64.deb
 
 # Or run the raw binary
 ./src-tauri/target/release/app
@@ -50,7 +50,7 @@ sudo dpkg -i src-tauri/target/release/bundle/deb/llm-ui_0.1.0_amd64.deb
 To rebuild:
 
 ```bash
-cd /home/jon/code/llm-ui
+cd /home/jon/code/glyph-nova
 yarn tauri build
 ```
 

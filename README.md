@@ -1,4 +1,4 @@
-# LLM UI - Desktop Chat Application
+# Glyph Nova - Desktop Chat Application
 
 A desktop application for chatting with local LLMs (via Ollama) with integrated file editing and automatic file context loading.
 
@@ -125,7 +125,7 @@ Storybook configuration is included but requires additional setup for Redwood.js
 ### Project Structure
 
 ```
-llm-ui/
+glyph-nova/
 ├── api/                      # Backend (GraphQL API)
 │   ├── src/
 │   │   ├── graphql/         # GraphQL schemas and resolvers

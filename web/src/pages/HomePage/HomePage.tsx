@@ -41,7 +41,7 @@ const DIRECTORY_QUERY = gql`
 const HomePage = () => {
   // Get initial folder path - use current project directory
   // This will be allowed by the backend's home directory whitelist
-  const defaultPath = '/home/jon/code/llm-ui'
+  const defaultPath = '/home/jon/code/glyph-nova'
   const [rootPath, setRootPath] = useState(defaultPath)
 
   // Get panel widths from store

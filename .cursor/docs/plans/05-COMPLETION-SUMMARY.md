@@ -239,7 +239,7 @@ web/src/components/Chat/ChatInterface.tsx      +35 lines (CLI toggle)
 
 1. **Start the application**:
    ```bash
-   cd /home/jon/code/llm-ui
+   cd /home/jon/code/glyph-nova
    yarn rw dev
    ```
 

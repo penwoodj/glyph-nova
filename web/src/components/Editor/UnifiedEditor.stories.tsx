@@ -114,7 +114,7 @@ if __name__ == '__main__':
 `
 
 const jsonContent = `{
-  "name": "llm-ui",
+  "name": "glyph-nova",
   "version": "1.0.0",
   "description": "Desktop application for LLM chat with file context",
   "scripts": {

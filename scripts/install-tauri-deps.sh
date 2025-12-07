@@ -14,6 +14,6 @@ sudo apt install -y \
 echo "✅ Dependencies installed successfully!"
 echo ""
 echo "Now you can build the Tauri app with:"
-echo "  cd /home/jon/code/llm-ui"
+echo "  cd /home/jon/code/glyph-nova"
 echo "  yarn tauri build"
 

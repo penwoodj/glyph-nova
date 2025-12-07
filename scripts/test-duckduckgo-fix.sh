@@ -26,7 +26,7 @@ echo ""
 # Test 2: Workflow JSON validity
 echo "Test 2: Workflow JSON Validity"
 echo "-------------------------------"
-if python3 -m json.tool "/home/jon/code/llm-ui/.cursor/docs/My workflow - NO HANG.json" > /dev/null 2>&1; then
+if python3 -m json.tool "/home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json" > /dev/null 2>&1; then
     echo "✅ Workflow JSON is valid"
 else
     echo "❌ Workflow JSON has syntax errors"
@@ -37,16 +37,16 @@ echo ""
 # Test 3: Check node type
 echo "Test 3: Verify Node Configuration"
 echo "----------------------------------"
-if grep -q '"type": "n8n-nodes-base.httpRequest"' "/home/jon/code/llm-ui/.cursor/docs/My workflow - NO HANG.json"; then
+if grep -q '"type": "n8n-nodes-base.httpRequest"' "/home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json"; then
     echo "✅ Using HTTP Request node (fast)"
 
-    if grep -q '"timeout": 8000' "/home/jon/code/llm-ui/.cursor/docs/My workflow - NO HANG.json"; then
+    if grep -q '"timeout": 8000' "/home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json"; then
         echo "✅ Timeout configured (8 seconds)"
     else
         echo "⚠️  Timeout not found"
     fi
 
-    if grep -q '"maxRetries": 1' "/home/jon/code/llm-ui/.cursor/docs/My workflow - NO HANG.json"; then
+    if grep -q '"maxRetries": 1' "/home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json"; then
         echo "✅ Retry logic configured"
     else
         echo "⚠️  Retry logic not found"
@@ -83,7 +83,7 @@ echo "  - Updated: Format Results to handle API structure"
 echo ""
 echo "Next Steps:"
 echo "  1. Open n8n: http://localhost:5678"
-echo "  2. Import: /home/jon/code/llm-ui/.cursor/docs/My workflow - NO HANG.json"
+echo "  2. Import: /home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json"
 echo "  3. Activate the workflow"
 echo "  4. Test with: '@web What is Node.js?'"
 echo ""

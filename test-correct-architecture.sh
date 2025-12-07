@@ -26,7 +26,7 @@ echo -e "${GREEN}✅ Ports clear${NC}"
 echo ""
 
 echo "Step 2: Rebuild Redwood..."
-cd /home/jon/code/llm-ui
+cd /home/jon/code/glyph-nova
 yarn rw build || exit 1
 echo -e "${GREEN}✅ Redwood built${NC}"
 echo ""
@@ -38,7 +38,7 @@ echo -e "${GREEN}✅ Tauri built${NC}"
 echo ""
 
 echo "Step 4: Testing..."
-cd /home/jon/code/llm-ui
+cd /home/jon/code/glyph-nova
 ./src-tauri/target/release/app &
 APP_PID=$!
 echo "App PID: $APP_PID"

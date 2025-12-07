@@ -92,7 +92,7 @@ const sampleCSS = `.container {
 `
 
 const sampleJSON = `{
-  "name": "llm-ui",
+  "name": "glyph-nova",
   "version": "1.0.0",
   "description": "Desktop application for local LLM interaction",
   "dependencies": {

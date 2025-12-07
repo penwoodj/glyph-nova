@@ -31,7 +31,7 @@ module.exports = {
     config.resolve = config.resolve || {}
     config.resolve.alias = {
       ...config.resolve.alias,
-      src: '/home/jon/code/llm-ui/web/src',
+      src: '/home/jon/code/glyph-nova/web/src',
     }
     return config
   },

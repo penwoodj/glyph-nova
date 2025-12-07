@@ -45,7 +45,7 @@ echo ""
 
 # Check workflow file
 echo "Checking workflow file..."
-WORKFLOW_FILE="/home/jon/code/llm-ui/.cursor/docs/My workflow improved.json"
+WORKFLOW_FILE="/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json"
 if [ -f "$WORKFLOW_FILE" ]; then
     if grep -q '"type": "n8n-nodes-duckduckgo-search.duckDuckGo"' "$WORKFLOW_FILE"; then
         echo "✅ Workflow uses correct node type: duckDuckGo"

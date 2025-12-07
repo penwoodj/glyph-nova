@@ -97,7 +97,7 @@ OLLAMA_BASE_URL=http://localhost:11434
     "bundle": {
       "active": true,
       "targets": ["deb", "appimage"],
-      "identifier": "com.example.llm-ui",
+      "identifier": "com.example.glyph-nova",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -143,18 +143,18 @@ Tauri automatically creates .deb packages when configured. The build process:
 
 ```bash
 # Create package structure
-mkdir -p llm-ui_1.0.0_amd64/DEBIAN
-mkdir -p llm-ui_1.0.0_amd64/usr/bin
-mkdir -p llm-ui_1.0.0_amd64/usr/share/applications
-mkdir -p llm-ui_1.0.0_amd64/usr/share/icons/hicolor
+mkdir -p glyph-nova_1.0.0_amd64/DEBIAN
+mkdir -p glyph-nova_1.0.0_amd64/usr/bin
+mkdir -p glyph-nova_1.0.0_amd64/usr/share/applications
+mkdir -p glyph-nova_1.0.0_amd64/usr/share/icons/hicolor
 
 # Copy application files
-cp target/release/llm-ui llm-ui_1.0.0_amd64/usr/bin/
-cp -r .redwood/build/web llm-ui_1.0.0_amd64/usr/share/llm-ui/
+cp target/release/glyph-nova glyph-nova_1.0.0_amd64/usr/bin/
+cp -r .redwood/build/web glyph-nova_1.0.0_amd64/usr/share/glyph-nova/
 
 # Create control file
-cat > llm-ui_1.0.0_amd64/DEBIAN/control <<EOF
-Package: llm-ui
+cat > glyph-nova_1.0.0_amd64/DEBIAN/control <<EOF
+Package: glyph-nova
 Version: 1.0.0
 Section: utils
 Priority: optional
@@ -167,17 +167,17 @@ Description: Local LLM Desktop Application
 EOF
 
 # Create .desktop file
-cat > llm-ui_1.0.0_amd64/usr/share/applications/llm-ui.desktop <<EOF
+cat > glyph-nova_1.0.0_amd64/usr/share/applications/glyph-nova.desktop <<EOF
 [Desktop Entry]
 Name=LLM UI
-Exec=/usr/bin/llm-ui
-Icon=llm-ui
+Exec=/usr/bin/glyph-nova
+Icon=glyph-nova
 Type=Application
 Categories=Utility;Development;
 EOF
 
 # Build package
-dpkg-deb --build llm-ui_1.0.0_amd64
+dpkg-deb --build glyph-nova_1.0.0_amd64
 ```
 
 ---
@@ -191,7 +191,7 @@ dpkg-deb --build llm-ui_1.0.0_amd64
 ```json
 {
   "build": {
-    "appId": "com.example.llm-ui",
+    "appId": "com.example.glyph-nova",
     "productName": "LLM UI",
     "linux": {
       "target": ["deb", "appimage"],
@@ -261,16 +261,16 @@ mkdir -p AppDir/usr/share/applications
 mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
 
 # Copy application files
-cp target/release/llm-ui AppDir/usr/bin/
-cp -r .redwood/build/web AppDir/usr/share/llm-ui/
-cp icon.png AppDir/usr/share/icons/hicolor/256x256/apps/llm-ui.png
+cp target/release/glyph-nova AppDir/usr/bin/
+cp -r .redwood/build/web AppDir/usr/share/glyph-nova/
+cp icon.png AppDir/usr/share/icons/hicolor/256x256/apps/glyph-nova.png
 
 # Create .desktop file
-cat > AppDir/llm-ui.desktop <<EOF
+cat > AppDir/glyph-nova.desktop <<EOF
 [Desktop Entry]
 Name=LLM UI
-Exec=llm-ui
-Icon=llm-ui
+Exec=glyph-nova
+Icon=glyph-nova
 Type=Application
 Categories=Utility;
 EOF
@@ -279,7 +279,7 @@ EOF
 cat > AppDir/AppRun <<EOF
 #!/bin/bash
 HERE="\$(dirname "\$(readlink -f "\${0}")")"
-"\${HERE}/usr/bin/llm-ui"
+"\${HERE}/usr/bin/glyph-nova"
 EOF
 chmod +x AppDir/AppRun
 
@@ -312,9 +312,9 @@ cd ppa
 dpkg-scanpackages . /dev/null | gzip -9c > dists/focal/main/binary-amd64/Packages.gz
 
 # Users can add PPA:
-# sudo add-apt-repository ppa:yourname/llm-ui
+# sudo add-apt-repository ppa:yourname/glyph-nova
 # sudo apt update
-# sudo apt install llm-ui
+# sudo apt install glyph-nova
 ```
 
 ### Flatpak Distribution
@@ -327,20 +327,20 @@ app-id: com.example.LLMUI
 runtime: org.freedesktop.Platform
 runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
-command: llm-ui
+command: glyph-nova
 finish-args:
   - --share=ipc
   - --socket=x11
   - --filesystem=home
 modules:
-  - name: llm-ui
+  - name: glyph-nova
     buildsystem: simple
     build-commands:
-      - install -Dm755 llm-ui /app/bin/llm-ui
-      - cp -r web /app/share/llm-ui/
+      - install -Dm755 glyph-nova /app/bin/glyph-nova
+      - cp -r web /app/share/glyph-nova/
     sources:
       - type: file
-        url: https://github.com/yourname/llm-ui/releases/download/v1.0.0/llm-ui.tar.gz
+        url: https://github.com/yourname/glyph-nova/releases/download/v1.0.0/glyph-nova.tar.gz
         sha256: ...
 ```
 
@@ -413,10 +413,10 @@ jobs:
 gpg --full-generate-key
 
 # Sign package
-dpkg-sig --sign builder llm-ui_1.0.0_amd64.deb
+dpkg-sig --sign builder glyph-nova_1.0.0_amd64.deb
 
 # Verify signature
-dpkg-sig --verify llm-ui_1.0.0_amd64.deb
+dpkg-sig --verify glyph-nova_1.0.0_amd64.deb
 ```
 
 ---
@@ -427,10 +427,10 @@ dpkg-sig --verify llm-ui_1.0.0_amd64.deb
 
 ```bash
 # Download .deb file
-wget https://github.com/yourname/llm-ui/releases/download/v1.0.0/llm-ui_1.0.0_amd64.deb
+wget https://github.com/yourname/glyph-nova/releases/download/v1.0.0/glyph-nova_1.0.0_amd64.deb
 
 # Install
-sudo dpkg -i llm-ui_1.0.0_amd64.deb
+sudo dpkg -i glyph-nova_1.0.0_amd64.deb
 
 # Fix dependencies if needed
 sudo apt-get install -f
@@ -440,7 +440,7 @@ sudo apt-get install -f
 
 ```bash
 # Download AppImage
-wget https://github.com/yourname/llm-ui/releases/download/v1.0.0/LLM-UI-x86_64.AppImage
+wget https://github.com/yourname/glyph-nova/releases/download/v1.0.0/LLM-UI-x86_64.AppImage
 
 # Make executable
 chmod +x LLM-UI-x86_64.AppImage
@@ -449,7 +449,7 @@ chmod +x LLM-UI-x86_64.AppImage
 ./LLM-UI-x86_64.AppImage
 
 # Optional: Install to system
-sudo mv LLM-UI-x86_64.AppImage /usr/local/bin/llm-ui
+sudo mv LLM-UI-x86_64.AppImage /usr/local/bin/glyph-nova
 ```
 
 ---

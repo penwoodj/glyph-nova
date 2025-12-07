@@ -1602,7 +1602,7 @@ curl http://localhost:11434/api/tags
 2. ✅ **File tree shows files - Click folder to expand**
    - Status: VERIFIED
    - `directoryContents` GraphQL query working correctly
-   - Returns files and folders from `/home/jon/code/llm-ui`
+   - Returns files and folders from `/home/jon/code/glyph-nova`
    - FileTreeView component integrated with Zustand store
    - Expand/collapse functionality implemented
 

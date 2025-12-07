@@ -179,7 +179,7 @@ This plan covers:
   - Document any issues found
 
 - [ ] **Test 7: Include file path in message - File context loads**
-  - Type message with file path (e.g., `/home/jon/code/llm-ui/README.md`)
+  - Type message with file path (e.g., `/home/jon/code/glyph-nova/README.md`)
   - Send message
   - Verify file context loads
   - Verify context appears in message UI

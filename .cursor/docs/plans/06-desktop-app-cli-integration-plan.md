@@ -8,11 +8,11 @@
 **Status**: 🔄 **IN PROGRESS** - Phase 1 Critical Fix Completed
 **Prerequisites**: Plan 05 (05-ollama-cli-integration-plan.md) should be completed first
 **Related Reports**:
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/02-rust-process-execution-patterns.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
-- `/home/jon/code/llm-ui/.cursor/docs/reports/pass2/06-error-handling-debugging.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/02-rust-process-execution-patterns.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
+- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/06-error-handling-debugging.md`
 
 ## Current State Analysis
 
@@ -104,10 +104,10 @@
 - 📋 **Status**: Ready for rebuild and final testing
 
 **Files Modified**:
-- `/home/jon/code/llm-ui/src-tauri/src/redwood_server.rs` - Single server serving both API and Web on port 8911
-- `/home/jon/code/llm-ui/src-tauri/Cargo.toml` - Added libc dependency for Unix signals
-- `/home/jon/code/llm-ui/src-tauri/tauri.conf.json` - Points window to http://localhost:8911
-- `/home/jon/code/llm-ui/final-rebuild-test.sh` - Test script (needs update)
+- `/home/jon/code/glyph-nova/src-tauri/src/redwood_server.rs` - Single server serving both API and Web on port 8911
+- `/home/jon/code/glyph-nova/src-tauri/Cargo.toml` - Added libc dependency for Unix signals
+- `/home/jon/code/glyph-nova/src-tauri/tauri.conf.json` - Points window to http://localhost:8911
+- `/home/jon/code/glyph-nova/final-rebuild-test.sh` - Test script (needs update)
 
 ---
 
@@ -187,9 +187,9 @@
   - [x] All code compiles successfully
 
 **Files Modified**:
-- `/home/jon/code/llm-ui/src-tauri/src/redwood_server.rs` - Dual server management
-- `/home/jon/code/llm-ui/src-tauri/Cargo.toml` - Added libc dependency
-- `/home/jon/code/llm-ui/src-tauri/tauri.conf.json` - Window URL configuration
+- `/home/jon/code/glyph-nova/src-tauri/src/redwood_server.rs` - Dual server management
+- `/home/jon/code/glyph-nova/src-tauri/Cargo.toml` - Added libc dependency
+- `/home/jon/code/glyph-nova/src-tauri/tauri.conf.json` - Window URL configuration
 
 #### Step 1.1: Test Current Implementation in Desktop App (⏳ NEXT - NEEDS MANUAL TESTING)
 **Context**: All fixes implemented and built successfully - need manual verification

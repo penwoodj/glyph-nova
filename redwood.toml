@@ -6,7 +6,7 @@
 # https://redwoodjs.com/docs/app-configuration-redwood-toml
 
 [web]
-  title = "LLM UI"
+  title = "Glyph Nova"
   port = 8912
   apiUrl = "http://localhost:8911"
   includeEnvironmentVariables = [
