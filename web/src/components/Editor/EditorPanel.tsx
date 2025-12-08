@@ -7,7 +7,7 @@
  * Reference: Report 09 (Desktop App Architecture - Cross-panel communication section)
  */
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useMutation } from '@redwoodjs/web'
 import { gql } from '@apollo/client'
 import { useAppStore } from 'src/state/store'
@@ -27,8 +27,24 @@ const WRITE_FILE_MUTATION = gql`
 export const EditorPanel = () => {
   const selectedFilePath = useAppStore((state) => state.selectedFilePath)
   const setUnsavedChanges = useAppStore((state) => state.setUnsavedChanges)
+  const lastFileEdit = useAppStore((state) => state.lastFileEdit)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const [writeFile] = useMutation(WRITE_FILE_MUTATION)
+
+  // Watch for file edits and refresh editor if current file was edited
+  useEffect(() => {
+    if (
+      lastFileEdit &&
+      selectedFilePath &&
+      lastFileEdit.filePath === selectedFilePath
+    ) {
+      // Force refresh by updating key, which will remount FileEditorCell and refetch
+      setRefreshKey((prev) => prev + 1)
+      // Clear unsaved changes since file was updated externally
+      setUnsavedChanges(false)
+    }
+  }, [lastFileEdit, selectedFilePath, setUnsavedChanges])
 
   const handleSave = useCallback(
     async (content: string) => {
@@ -76,8 +92,10 @@ export const EditorPanel = () => {
   }
 
   // File selected - load and display with FileEditorCell
+  // Use refreshKey to force remount when file is edited externally
   return (
     <FileEditorCell
+      key={`${selectedFilePath}-${refreshKey}`}
       path={selectedFilePath}
       onChange={handleChange}
       onSave={handleSave}

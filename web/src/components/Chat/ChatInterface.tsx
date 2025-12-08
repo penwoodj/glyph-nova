@@ -12,9 +12,16 @@ import { useQuery } from '@redwoodjs/web'
 import { gql } from '@apollo/client'
 import { useApolloClient } from '@apollo/client'
 import { ChatMessage } from './ChatMessage'
+import { EditConfirmationDialog } from './EditConfirmationDialog'
 import { useAppStore } from 'src/state/store'
 import { loadFileContexts, clearFileCache } from 'src/services/context'
 import { streamChatResponseDirect } from 'src/services/chat'
+import {
+  detectEditRequests,
+  parseEditRequest,
+  applyEdit,
+  type EditRequest,
+} from 'src/services/editor'
 
 const OLLAMA_MODELS_QUERY = gql`
   query OllamaModelsQuery {
@@ -49,6 +56,8 @@ export const ChatInterface = () => {
     const saved = localStorage.getItem('ollama-use-cli-models')
     return saved ? JSON.parse(saved) : false
   })
+  const [pendingEdits, setPendingEdits] = useState<EditRequest[]>([])
+  const [showEditConfirmation, setShowEditConfirmation] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const apolloClient = useApolloClient()
 
@@ -57,6 +66,7 @@ export const ChatInterface = () => {
   const addChatMessage = useAppStore((state) => state.addChatMessage)
   const currentModel = useAppStore((state) => state.currentModel)
   const setCurrentModel = useAppStore((state) => state.setCurrentModel)
+  const setLastFileEdit = useAppStore((state) => state.setLastFileEdit)
   const selectedFilePath = useAppStore((state) => state.selectedFilePath)
 
   // Save CLI preference to localStorage
@@ -193,12 +203,27 @@ export const ChatInterface = () => {
         onComplete: () => {
           // Mark streaming as complete
           const currentMessages = useAppStore.getState().chatMessages
-          const updatedMessages = currentMessages.map((msg) =>
-            msg.id === assistantMessageId
-              ? { ...msg, isStreaming: false }
-              : msg
-          )
-          useAppStore.setState({ chatMessages: updatedMessages })
+          const assistantMessage = currentMessages.find((msg) => msg.id === assistantMessageId)
+
+          if (assistantMessage) {
+            // Check if response contains edit requests
+            if (detectEditRequests(assistantMessage.content)) {
+              const editResult = parseEditRequest(assistantMessage.content)
+              if (editResult.requests.length > 0) {
+                // Show edit confirmation UI
+                setPendingEdits(editResult.requests)
+                setShowEditConfirmation(true)
+              }
+            }
+
+            // Update message to mark streaming as complete
+            const updatedMessages = currentMessages.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, isStreaming: false }
+                : msg
+            )
+            useAppStore.setState({ chatMessages: updatedMessages })
+          }
         },
       })
     } catch (error) {
@@ -368,6 +393,65 @@ export const ChatInterface = () => {
           </button>
         </div>
       </div>
+
+      {/* Edit Confirmation Dialog */}
+      {showEditConfirmation && (
+        <EditConfirmationDialog
+          edits={pendingEdits}
+          onConfirm={async () => {
+            // Apply each edit sequentially
+            const results = []
+            const editedFiles = new Set<string>()
+            for (const edit of pendingEdits) {
+              try {
+                const result = await applyEdit(edit, apolloClient)
+                results.push({ edit, result })
+                if (result.success) {
+                  editedFiles.add(edit.filePath)
+                  // Notify store that file was edited (triggers editor refresh)
+                  setLastFileEdit(edit.filePath)
+                } else {
+                  console.error('Failed to apply edit:', edit.filePath, result.error)
+                  // Show error message to user
+                  addChatMessage({
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: `Error applying edit to ${edit.filePath}: ${result.error}`,
+                    timestamp: new Date(),
+                  })
+                }
+              } catch (error) {
+                console.error('Error applying edit:', error)
+                addChatMessage({
+                  id: Date.now().toString(),
+                  role: 'assistant',
+                  content: `Error applying edit to ${edit.filePath}: ${error instanceof Error ? error.message : String(error)}`,
+                  timestamp: new Date(),
+                })
+              }
+            }
+
+            // Close dialog and clear pending edits
+            setShowEditConfirmation(false)
+            setPendingEdits([])
+
+            // Show success message if all edits succeeded
+            const allSucceeded = results.every((r) => r.result.success)
+            if (allSucceeded && results.length > 0) {
+              addChatMessage({
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content: `✅ Successfully applied ${results.length} edit${results.length > 1 ? 's' : ''} to ${editedFiles.size} file${editedFiles.size > 1 ? 's' : ''}.`,
+                timestamp: new Date(),
+              })
+            }
+          }}
+          onCancel={() => {
+            setShowEditConfirmation(false)
+            setPendingEdits([])
+          }}
+        />
+      )}
     </div>
   )
 }

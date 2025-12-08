@@ -16,6 +16,7 @@ interface AppState {
   selectedFilePath: string | null
   openFolderPath: string | null
   unsavedChanges: boolean
+  lastFileEdit: { filePath: string; timestamp: number } | null
 
   // Chat State
   chatMessages: ChatMessage[]
@@ -29,6 +30,7 @@ interface AppState {
   setSelectedFile: (path: string | null) => void
   setOpenFolder: (path: string | null) => void
   setUnsavedChanges: (hasChanges: boolean) => void
+  setLastFileEdit: (filePath: string) => void
   addChatMessage: (message: ChatMessage) => void
   clearChatMessages: () => void
   setCurrentModel: (model: string | null) => void
@@ -60,6 +62,7 @@ export const useAppStore = create<AppState>()(
       selectedFilePath: null,
       openFolderPath: null,
       unsavedChanges: false,
+      lastFileEdit: null,
       chatMessages: [],
       currentModel: null,
       leftPanelWidth: 300,
@@ -75,6 +78,11 @@ export const useAppStore = create<AppState>()(
         }),
 
       setUnsavedChanges: (hasChanges) => set({ unsavedChanges: hasChanges }),
+
+      setLastFileEdit: (filePath) =>
+        set({
+          lastFileEdit: { filePath, timestamp: Date.now() },
+        }),
 
       addChatMessage: (message) =>
         set((state) => ({
