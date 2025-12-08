@@ -1,6 +1,6 @@
 # VSCode Integration
 
-**Related:** [[index]] | [[editor-experience]] | [[technical-architecture]]
+**Related:** [index](./index.md) | [editor-experience](./editor-experience.md) | [technical-architecture](./technical-architecture.md)
 
 ---
 
@@ -75,4 +75,4 @@ Phase 4: Full VSCode Extension API compatibility
 
 ---
 
-**See also:** [[editor-experience]] for editor features, [[technical-architecture]] for implementation details
+**See also:** [editor-experience](./editor-experience.md) for editor features, [technical-architecture](./technical-architecture.md) for implementation details

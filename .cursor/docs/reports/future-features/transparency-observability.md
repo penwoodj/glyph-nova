@@ -1,6 +1,6 @@
 # Transparency & Observability
 
-**Related:** [[index]] | [[context-engineering]] | [[agentic-mode-system]] | [[self-improvement-system]]
+**Related:** [index](./index.md) | [context-engineering](./context-engineering.md) | [agentic-mode-system](./agentic-mode-system.md) | [self-improvement-system](./self-improvement-system.md)
 
 ---
 
@@ -50,12 +50,10 @@ interface PromptBreakdown {
 ### Logged Information
 
 - **Context selection**: Why each piece of context was chosen
-- **Chunking decisions**: How documents were split (see [[context-engineering]])
-- **Mode activations**: Which mode fired and why (see [[agentic-mode-system]])
+- **Chunking decisions**: How documents were split (see [context-engineering](./context-engineering.md))
+- **Mode activations**: Which mode fired and why (see [agentic-mode-system](./agentic-mode-system.md))
 - **Quality scores**: Self-evaluation of responses
 - **User feedback**: Explicit approval/rejection of outputs
-
-<ADD_SECTION>Chats are just parse formatted files.md files you can easily toggle between for different levels/views of editing, the chat box can move around and has modes like stick to the bottom mode or in line, or move around through dragging and dropping, but by default is just stuck to the bottom like in a normal chat, or like dropdowns for detail sections or split out views for different types of data in the chat or tree like or graph like structure views, or just a literal markdown file to edit and view. edit other relevant sections without removing any other tags or their corresponding prompts based on the changes made here
 
 ### Chat Interface Flexibility
 
@@ -110,4 +108,4 @@ interface DecisionLog {
 
 ---
 
-**See also:** [[context-engineering]] for how context is gathered, [[agentic-mode-system]] for mode-based behavior, [[self-improvement-system]] for how logs are analyzed
+**See also:** [context-engineering](./context-engineering.md) for how context is gathered, [agentic-mode-system](./agentic-mode-system.md) for mode-based behavior, [self-improvement-system](./self-improvement-system.md) for how logs are analyzed

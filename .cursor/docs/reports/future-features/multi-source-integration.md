@@ -1,6 +1,6 @@
 # Multi-Source Integration
 
-**Related:** [[index]] | [[context-engineering]] | [[agentic-mode-system]] | [[smart-chunking-memory]]
+**Related:** [index](./index.md) | [context-engineering](./context-engineering.md) | [agentic-mode-system](./agentic-mode-system.md) | [smart-chunking-memory](./smart-chunking-memory.md)
 
 ---
 
@@ -125,4 +125,4 @@ async function gatherContext(
 
 ---
 
-**See also:** [[context-engineering]] for how context is ranked, [[agentic-mode-system]] for how modes use MCP and RAG, [[smart-chunking-memory]] for learned context patterns
+**See also:** [context-engineering](./context-engineering.md) for how context is ranked, [agentic-mode-system](./agentic-mode-system.md) for how modes use MCP and RAG, [smart-chunking-memory](./smart-chunking-memory.md) for learned context patterns

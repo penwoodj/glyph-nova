@@ -1,6 +1,6 @@
 # Smart Chunking & Memory
 
-**Related:** [[index]] | [[context-engineering]] | [[self-improvement-system]] | [[transparency-observability]]
+**Related:** [index](./index.md) | [context-engineering](./context-engineering.md) | [self-improvement-system](./self-improvement-system.md) | [transparency-observability](./transparency-observability.md)
 
 ---
 
@@ -83,4 +83,4 @@ interface ContextOptimization {
 
 ---
 
-**See also:** [[context-engineering]] for chunking strategies, [[self-improvement-system]] for how patterns are learned, [[transparency-observability]] for decision logging
+**See also:** [context-engineering](./context-engineering.md) for chunking strategies, [self-improvement-system](./self-improvement-system.md) for how patterns are learned, [transparency-observability](./transparency-observability.md) for decision logging

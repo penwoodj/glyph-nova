@@ -1,6 +1,6 @@
 # Technical Architecture
 
-**Related:** [[index]] | [[implementation-roadmap]] | [[multi-machine-swarm]] | [[context-engineering]] | [[multi-source-integration]]
+**Related:** [index](./index.md) | [implementation-roadmap](./implementation-roadmap.md) | [multi-machine-swarm](./multi-machine-swarm.md) | [context-engineering](./context-engineering.md) | [multi-source-integration](./multi-source-integration.md)
 
 ---
 
@@ -87,4 +87,4 @@ User Input → Editor → State Management → API Layer
 
 ---
 
-**See also:** [[implementation-roadmap]] for phased development, [[multi-machine-swarm]] for swarm architecture, [[context-engineering]] for context processing
+**See also:** [implementation-roadmap](./implementation-roadmap.md) for phased development, [multi-machine-swarm](./multi-machine-swarm.md) for swarm architecture, [context-engineering](./context-engineering.md) for context processing

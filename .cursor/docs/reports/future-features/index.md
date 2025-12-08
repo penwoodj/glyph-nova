@@ -4,49 +4,49 @@
 
 > 📋 **Purpose:** Comprehensive specification of planned features, technical approaches, and implementation strategies.
 
-**Related:** [[project-vision]] provides the high-level vision and philosophy.
+**Related:** [project-vision](../project-vision.md) provides the high-level vision and philosophy.
 
 ---
 
 ## Table of Contents
 
-1. [[transparency-observability]] - Full prompt visibility and decision logging
-2. [[context-engineering]] - Smart chunking, relevance ranking, and budget management
-3. [[agentic-mode-system]] - Mode structure, selection, and composition
-4. [[smart-chunking-memory]] - Persistent memory and context patterns
-5. [[multi-source-integration]] - MCP, RAG, and context orchestration
-6. [[self-improvement-system]] - Log analysis and automatic mode improvement
-7. [[multi-machine-swarm]] - Distributed AI work across multiple machines
-8. [[editor-experience]] - Rich markdown editing and code editing features
-9. [[image-capabilities]] - Local image generation and editing
-10. [[vscode-integration]] - Configuration import and extension compatibility
-11. [[implementation-roadmap]] - Phased development plan
-12. [[technical-architecture]] - Technology stack and data flow
-13. [[open-questions]] - Considerations and clarifications needed
+1. [transparency-observability](./transparency-observability.md) - Full prompt visibility and decision logging
+2. [context-engineering](./context-engineering.md) - Smart chunking, relevance ranking, and budget management
+3. [agentic-mode-system](./agentic-mode-system.md) - Mode structure, selection, and composition
+4. [smart-chunking-memory](./smart-chunking-memory.md) - Persistent memory and context patterns
+5. [multi-source-integration](./multi-source-integration.md) - MCP, RAG, and context orchestration
+6. [self-improvement-system](./self-improvement-system.md) - Log analysis and automatic mode improvement
+7. [multi-machine-swarm](./multi-machine-swarm.md) - Distributed AI work across multiple machines
+8. [editor-experience](./editor-experience.md) - Rich markdown editing and code editing features
+9. [image-capabilities](./image-capabilities.md) - Local image generation and editing
+10. [vscode-integration](./vscode-integration.md) - Configuration import and extension compatibility
+11. [implementation-roadmap](./implementation-roadmap.md) - Phased development plan
+12. [technical-architecture](./technical-architecture.md) - Technology stack and data flow
+13. [open-questions](./open-questions.md) - Considerations and clarifications needed
 
 ---
 
 ## Quick Navigation
 
 ### Core Features
-- [[transparency-observability]] - See every AI decision
-- [[context-engineering]] - Intelligent context gathering
-- [[agentic-mode-system]] - Customizable AI workflows
+- [transparency-observability](./transparency-observability.md) - See every AI decision
+- [context-engineering](./context-engineering.md) - Intelligent context gathering
+- [agentic-mode-system](./agentic-mode-system.md) - Customizable AI workflows
 
 ### Advanced Capabilities
-- [[multi-source-integration]] - MCP + RAG integration
-- [[self-improvement-system]] - Learning from usage
-- [[multi-machine-swarm]] - Distributed processing
+- [multi-source-integration](./multi-source-integration.md) - MCP + RAG integration
+- [self-improvement-system](./self-improvement-system.md) - Learning from usage
+- [multi-machine-swarm](./multi-machine-swarm.md) - Distributed processing
 
 ### User Experience
-- [[editor-experience]] - Rich editing features
-- [[image-capabilities]] - Visual content generation
-- [[vscode-integration]] - Compatibility layer
+- [editor-experience](./editor-experience.md) - Rich editing features
+- [image-capabilities](./image-capabilities.md) - Visual content generation
+- [vscode-integration](./vscode-integration.md) - Compatibility layer
 
 ### Planning
-- [[implementation-roadmap]] - Development phases
-- [[technical-architecture]] - Technical details
-- [[open-questions]] - Open considerations
+- [implementation-roadmap](./implementation-roadmap.md) - Development phases
+- [technical-architecture](./technical-architecture.md) - Technical details
+- [open-questions](./open-questions.md) - Open considerations
 
 ---
 

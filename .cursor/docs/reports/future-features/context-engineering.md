@@ -1,6 +1,6 @@
 # Context Engineering
 
-**Related:** [[index]] | [[transparency-observability]] | [[agentic-mode-system]] | [[multi-source-integration]] | [[smart-chunking-memory]]
+**Related:** [index](./index.md) | [transparency-observability](./transparency-observability.md) | [agentic-mode-system](./agentic-mode-system.md) | [multi-source-integration](./multi-source-integration.md) | [smart-chunking-memory](./smart-chunking-memory.md)
 
 ---
 
@@ -14,13 +14,8 @@
 2. **Overlapping windows**: Maintain context between chunks through easy to change modes or settings
 3. **Hierarchy preservation**: Keep structural relationships
 4. **Adaptive sizing**: Adjust chunk size based on content density, and LLM context effective response results size metrics based on system and hardware, available memory, and model capabilities
-
-<ADD_MORE_ITEMS>I want an item for nested summary creation and navigation through context creation and navigation on a batch process agentic workflow on a cron job probably like rag with visualization in a hierachical graph database in files with good visualization tools. and another item for a sematic memory layer with visualizaition capabilities where there are ideas of what the file does in different sections based on line number the llms can read before looking at files, with smart modes of which level of abstration to read and when it needs to. edit other relevant sections without removing any other tags or their corresponding prompts based on the changes made here
-
-### Additional Chunking Features
-
-- **Nested summary creation**: Batch process agentic workflow on a cron job, similar to RAG with visualization in a hierarchical graph database in files with good visualization tools
-- **Semantic memory layer**: Visualization capabilities where there are ideas of what the file does in different sections based on line number. LLMs can read before looking at files, with smart modes of which level of abstraction to read and when it needs to
+5. **Nested summary creation**: Batch process agentic workflow on a cron job for creating and navigating summaries through context creation and navigation, similar to RAG with visualization in a hierarchical graph database in files with good visualization tools
+6. **Semantic memory layer**: Visualization capabilities where there are ideas of what the file does in different sections based on line number. LLMs can read these summaries before looking at files, with smart modes determining which level of abstraction to read and when it needs to
 
 ### Implementation
 
@@ -71,9 +66,11 @@ JSON/Config:
 
 **Goal:** Always include the most relevant context in the correct order in the prompt to maximize desired user outcome.
 
-<ASK_ME_QUESTIONS> Ask me 5 questions about how we want this to work after all file edit prompts are complete and you've paused.  once I've answered and you've integrated the information you can remove this prompt. I think your on the right track but missing the customizablity I'm looking for.  I want these to be controlled by agentic self improving workflow system on top of something like this.  Like I want n8n like config file with visualization modes, or just a markdown file with a consistent format with sections with how to decide what context to get when and where through descirbed source and behavior flows.
+Context relevance ranking is controlled by an agentic self-improving workflow system using n8n-like configuration agentic workflow files (specifics TBD). Decision logic for “what context to get when and where” is built as its own category of these workflow files. Each workflow format (agentic .md, chat .md, n8n-like config files) has its own visualizer with a markdown toggle and default file-type visualization. Self-improvement workflows use scoped summary workflows as part of the self-learning suite. Defaults are solid and fully editable/transparent, with workflows composing features.
 
-**Note:** This system is controlled by agentic self-improving workflow system. Configuration can be done via n8n-like config files with visualization modes, or markdown files with a consistent format with sections describing how to decide what context to get when and where through described source and behavior flows.
+**Note:** Configuration uses n8n-like config files with visualization modes (preferred) and markdown files with consistent format. Visualizers exist per file type (agentic .md workflows, chat .md, n8n-like configs, context memory navigation/foam-link visualizer for left panel). A future format may translate markdown into config dashboards while remaining human-readable.
+
+**Quality over Speed:** Quality output is measurably more important than speed. Responses taking 2-10 minutes are acceptable if output quality is high and minimal back-and-forth is needed.
 
 ### Ranking Factors
 
@@ -81,7 +78,7 @@ JSON/Config:
 - **Recency**: Recently viewed/edited files score higher
 - **Graph proximity**: Files close in dependency graph
 - **Explicit references**: Direct mentions in user query
-- **Historical success**: Patterns learned from past successful contexts (see [[smart-chunking-memory]])
+- **Historical success**: Patterns learned from past successful contexts (see [smart-chunking-memory](./smart-chunking-memory.md))
 
 ### Ranking Algorithm
 
@@ -126,16 +123,14 @@ Dynamic Allocations (remaining budget):
 └─ MCP data (10%): Live system queries
 ```
 
-<ADD_DETAIL_SECTION>Add a details section here with bullets or other formatted markdown to fit in this section that details out the meta system integration like with the customizable workflow .md documents or the agentic system config files. edit other relevant sections without removing any other tags or their corresponding prompts based on the changes made here
-
 ### Meta System Integration
 
 The context budget management integrates with:
 - **Customizable workflow .md documents**: Define context gathering strategies
 - **Agentic system config files**: Configure behavior flows for context selection
-- **Mode-based rules**: Each [[agentic-mode-system]] can define its own budget allocation
-- **Self-improvement workflows**: Learn optimal budget allocations over time (see [[self-improvement-system]])
+- **Mode-based rules**: Each [agentic-mode-system](./agentic-mode-system.md) can define its own budget allocation
+- **Self-improvement workflows**: Learn optimal budget allocations over time (see [self-improvement-system](./self-improvement-system.md))
 
 ---
 
-**See also:** [[multi-source-integration]] for MCP and RAG integration, [[smart-chunking-memory]] for persistent context patterns
+**See also:** [multi-source-integration](./multi-source-integration.md) for MCP and RAG integration, [smart-chunking-memory](./smart-chunking-memory.md) for persistent context patterns

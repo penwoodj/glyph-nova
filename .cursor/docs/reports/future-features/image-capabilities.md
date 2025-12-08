@@ -1,6 +1,6 @@
 # Image Capabilities
 
-**Related:** [[index]] | [[editor-experience]] | [[context-engineering]]
+**Related:** [index](./index.md) | [editor-experience](./editor-experience.md) | [context-engineering](./context-engineering.md)
 
 ---
 
@@ -84,4 +84,4 @@ function generateMockupFromComponent(componentPath: string) {
 
 ---
 
-**See also:** [[editor-experience]] for markdown integration, [[context-engineering]] for context-aware features
+**See also:** [editor-experience](./editor-experience.md) for markdown integration, [context-engineering](./context-engineering.md) for context-aware features

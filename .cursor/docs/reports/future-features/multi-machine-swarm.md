@@ -1,12 +1,16 @@
 # Multi-Machine Swarm
 
-**Related:** [[index]] | [[technical-architecture]] | [[context-engineering]]
+**Related:** [index](./index.md) | [technical-architecture](./technical-architecture.md) | [context-engineering](./context-engineering.md)
 
 ---
 
 ## Architecture
 
 **Goal:** Distribute AI work across multiple machines.
+
+**Strictly Local/Self-Hosted:** Strictly local/self-hosted machines. No cloud servers or third-party LLM APIs. No connection to server LLMs ever. No cloud-hosted nodes. No AWS/GCP. No third-party server LLMs. Everything runs on infrastructure you own and control.
+
+**Network Topology:** Start with star topology (one coordinator, multiple workers), evolve to mesh topology (peer-to-peer) over time as hardware expands.
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -108,4 +112,4 @@ Fallback 3: Notify user and ask to wait or use fast model
 
 ---
 
-**See also:** [[technical-architecture]] for infrastructure details, [[context-engineering]] for context distribution
+**See also:** [technical-architecture](./technical-architecture.md) for infrastructure details, [context-engineering](./context-engineering.md) for context distribution

@@ -51,7 +51,11 @@ Slow Tier (Background) →  Larger models, quality over speed
 ### 🎨 Obsidian Meets VSCode
 - **Rich markdown editor**: Notion/Obsidian-style WYSIWYG
 - **Toggleable text mode**: System-wide or per-document plain text
-- **VSCode compatibility**: Import configs, extensions (long-term)
+- **VSCode compatibility**: Eventually full compatibility desired but not required initially. Themes based on VSCode styles is fine. Extensions initially supplemented through agentic n8n-style workflows, eventually full compatibility.
+
+### 👥 Primary Audience
+- **Context engineers**: Trying to get quality output from local LLMs through easy-to-edit fully transparent simple local agentic workflows
+- **PKM focus**: This whole project is a PKM and tool builder for managing life notes to direct research and activity to building ideas
 
 ---
 
@@ -132,6 +136,8 @@ Local Server 2:       RAG indexing + search
 Local Server 3:       Background research tasks
 ```
 
+**Network Topology:** Start with star topology (one coordinator, multiple workers), evolve to mesh topology (peer-to-peer) over time as hardware expands.
+
 ---
 
 ## Image Capabilities (Long-Term)
@@ -157,15 +163,20 @@ Local Server 3:       Background research tasks
 - 🔄 RAG setup
 - 🔄 Smart chunking
 
-### Phase 3: Modes & Workflows
+### Phase 3: Modes, RAG & Multi-Machine
 - ⏭️ Agentic mode system
 - ⏭️ Default workflow library
 - ⏭️ Self-improvement from logs
-
-### Phase 4: Swarm & Scale
-- ⏭️ Multi-machine orchestration
-- ⏭️ Distributed task queue
-- ⏭️ Cross-machine context sharing
+- ⏭️ RAG indexing system
+- ⏭️ Multi-machine protocol
+- ⏭️ Context orchestration
+- ⏭️ Vector database integration
+- ⏭️ MCP server ecosystem
+- ⏭️ Performance monitoring
+- ⏭️ Advanced ranking algorithms
+- ⏭️ Task distribution system
+- ⏭️ Load balancing
+- ⏭️ Failover mechanisms
 
 ---
 

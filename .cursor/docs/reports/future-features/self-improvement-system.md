@@ -1,18 +1,31 @@
 # Self-Improvement System
 
-**Related:** [[index]] | [[agentic-mode-system]] | [[smart-chunking-memory]] | [[transparency-observability]] | [[context-engineering]]
+**Related:** [index](./index.md) | [agentic-mode-system](./agentic-mode-system.md) | [smart-chunking-memory](./smart-chunking-memory.md) | [transparency-observability](./transparency-observability.md) | [context-engineering](./context-engineering.md)
 
 ---
 
 ## Overview
 
-<REFACTOR_SECTION> Self-Improvement System is sort of correct and this will be one workflow, but I want the flow to be a bit different.  I want scoped summary workflows of both types to make this happen, so a combination of interlinked files. So I want there to be types of summaries it makes of logs based on a specific scope.  For example, we have the goal of making it so the response to chats is what the user desired behavior with minimal back and forth.  The scope of the summary would be to find interactions that took more than one prompting or multiple corrections, and that one scope serves that goal.  With those summaries we run workflows for creating great workflows of both types and context docs to serve the goal, like editing debug workflows and nested referenced workflows to have correct behavior.  this is just one example of using this summary method, but the general category of workflow called a self improvement workflow and there should be 2 -3 other examples in this section of workflow strategies to get behavior to fill the aims of the user more and more overtime with minimal work on the user to make alignment improve.  Another self improvement workflow could be around context feeding order, where it tests different combinations in the same prompt of context, then generates logs of behavior differences in responses, then summarizes those logs for another workflow to use to integrate into improving existing user context feeding backend reordering for better prompt fixing or interaction and automatic workflows.  Basically, I want to be able to run background expiriments using workflows to really flush this out but here are some ideas to start with.  I don't want this in code but in workflows of both types. edit other relevant sections without removing any other tags or their corresponding prompts based on the changes made here
-
-The Self-Improvement System uses **scoped summary workflows** of both types (workflow .md documents and agentic system config files) to improve behavior over time. This is a combination of interlinked files that work together.
+The Self-Improvement System uses **scoped summary workflows** of both types (workflow .md documents and agentic system config files) to improve behavior over time. This is a combination of interlinked files that work together - everything is workflow-based, not hardcoded logic.
 
 ### Core Concept
 
-The system makes types of summaries from logs based on specific scopes. Each scope serves a particular goal, and with those summaries, workflows create and improve workflows of both types and context docs to serve the goal.
+The system creates summaries from logs based on specific scopes. Each scope serves a particular goal. For example:
+- **Goal**: Minimize back-and-forth in chats
+- **Scope**: Find interactions requiring multiple corrections
+- **Action**: With those summaries, workflows create and improve workflows and context docs to address the issues
+
+This scoped summary approach allows the system to target specific improvement areas without requiring manual intervention. The summaries drive workflow creation and editing, which in turn improve behavior to better align with user aims over time.
+
+### How Scoped Summary Workflows Work
+
+1. **Define Scope**: Each self-improvement workflow defines a specific scope (e.g., multi-turn corrections, context ordering experiments)
+2. **Analyze Logs**: Workflows analyze logs based on that scope to find patterns
+3. **Generate Summaries**: Summaries capture key insights and patterns
+4. **Create/Update Workflows**: Based on summaries, workflows create or edit other workflows and context documents
+5. **Improve Behavior**: The improved workflows lead to better behavior alignment
+
+All of this happens through workflows (both .md files and n8n-style config files), not through hardcoded code. Background experiments can be run using workflows to test different approaches and refine strategies.
 
 ---
 
@@ -54,6 +67,19 @@ The system makes types of summaries from logs based on specific scopes. Each sco
 2. Identify patterns where wrong modes were selected
 3. Update mode selection workflows with better triggers
 4. Test improved selection logic
+
+### 4. Quality Metric Optimization
+
+**Goal:** Optimize quality metrics to better match user satisfaction.
+
+**Scope:** Analyze quality scores vs. user feedback patterns to identify metric misalignment.
+
+**Process:**
+1. Compare self-reported quality scores with user approval/rejection patterns
+2. Identify cases where high scores didn't match user satisfaction
+3. Generate summaries of metric misalignment patterns
+4. Create workflows to adjust quality metric calculations
+5. Test improved metrics and refine based on results
 
 ---
 
@@ -176,6 +202,20 @@ interface LearnedPattern {
 
 ---
 
+## Approval Workflow
+
+Each workflow specifies approval requirements (approve all, keep improving, etc.). Default: improvements visible but don't override in-use files until user approves. When approved, starts using improved workflow. Self-improvement logs batch process includes scoped summary comparing metrics (minimize back-and-forth, first correct behavior). If results similar, workflow can shift back to previous versions, then reflection workflow reasons through why similar results and thinks of other strategies.
+
+Everything learns through self-improving workflows (learns from both approved and rejected improvements).
+
+---
+
+## Conflict Resolution
+
+Conflicting patterns logged for later user review. Conflict doc `.md` file can be chatted with to create resolution implemented in all conflicting and related files in agentic suite.
+
+---
+
 ## Background Experimentation
 
 The system can run background experiments using workflows to:
@@ -188,4 +228,4 @@ All experimentation is done through workflows (both .md and config file types), 
 
 ---
 
-**See also:** [[agentic-mode-system]] for how modes are structured, [[smart-chunking-memory]] for context pattern learning, [[transparency-observability]] for decision logging
+**See also:** [agentic-mode-system](./agentic-mode-system.md) for how modes are structured, [smart-chunking-memory](./smart-chunking-memory.md) for context pattern learning, [transparency-observability](./transparency-observability.md) for decision logging
