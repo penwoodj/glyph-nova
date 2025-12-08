@@ -13,16 +13,17 @@
 1. [transparency-observability](./transparency-observability.md) - Full prompt visibility and decision logging
 2. [context-engineering](./context-engineering.md) - Smart chunking, relevance ranking, and budget management
 3. [agentic-mode-system](./agentic-mode-system.md) - Mode structure, selection, and composition
-4. [smart-chunking-memory](./smart-chunking-memory.md) - Persistent memory and context patterns
-5. [multi-source-integration](./multi-source-integration.md) - MCP, RAG, and context orchestration
-6. [self-improvement-system](./self-improvement-system.md) - Log analysis and automatic mode improvement
-7. [multi-machine-swarm](./multi-machine-swarm.md) - Distributed AI work across multiple machines
-8. [editor-experience](./editor-experience.md) - Rich markdown editing and code editing features
-9. [image-capabilities](./image-capabilities.md) - Local image generation and editing
-10. [vscode-integration](./vscode-integration.md) - Configuration import and extension compatibility
-11. [implementation-roadmap](./implementation-roadmap.md) - Phased development plan
-12. [technical-architecture](./technical-architecture.md) - Technology stack and data flow
-13. [open-questions](./open-questions.md) - Considerations and clarifications needed
+4. [workflows](./workflows.md) - Workflow file types, composition, and roles
+5. [smart-chunking-memory](./smart-chunking-memory.md) - Persistent memory and context patterns
+6. [multi-source-integration](./multi-source-integration.md) - MCP, RAG, and context orchestration
+7. [self-improvement-system](./self-improvement-system.md) - Log analysis and automatic mode improvement
+8. [multi-machine-swarm](./multi-machine-swarm.md) - Distributed AI work across multiple machines
+9. [editor-experience](./editor-experience.md) - Rich markdown editing and code editing features
+10. [image-capabilities](./image-capabilities.md) - Local image generation and editing
+11. [vscode-integration](./vscode-integration.md) - Configuration import and extension compatibility
+12. [implementation-roadmap](./implementation-roadmap.md) - Phased development plan
+13. [technical-architecture](./technical-architecture.md) - Technology stack and data flow
+14. [open-questions](./open-questions.md) - Considerations and clarifications needed
 
 ---
 
@@ -32,6 +33,7 @@
 - [transparency-observability](./transparency-observability.md) - See every AI decision
 - [context-engineering](./context-engineering.md) - Intelligent context gathering
 - [agentic-mode-system](./agentic-mode-system.md) - Customizable AI workflows
+- [workflows](./workflows.md) - Workflow file types, composition, and roles
 
 ### Advanced Capabilities
 - [multi-source-integration](./multi-source-integration.md) - MCP + RAG integration

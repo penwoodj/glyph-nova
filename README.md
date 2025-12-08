@@ -4,6 +4,12 @@ A desktop application for chatting with local LLMs (via Ollama) with integrated 
 
 > 🎯 **Long-Term Vision:** A transparency-first, local-LLM text editor with customizable agentic behavior that replaces Cursor for advanced context engineering. See **[Project Vision](.cursor/docs/reports/project-vision.md)** for the full roadmap.
 
+## Documentation
+
+- **Vision:** [Project Vision](.cursor/docs/reports/project-vision.md)
+- **Future Features:** [future-features/index](.cursor/docs/reports/future-features/index.md)
+  - Transparency & Observability, Context Engineering, Agentic Mode System, Self-Improvement, Multi-Machine Swarm, Editor Experience, Implementation Roadmap, Design Decisions, and more
+
 ## Features
 
 - 📁 **File Tree** - Browse and manage project files with VSCode-like interface
