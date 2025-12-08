@@ -365,6 +365,8 @@ Output: [expected output]
 
 ### Mode Selection
 
+<REFACTOR_SECTION> This Mode Selection section needs a refactor with some more info. Don't put implementation details in this context to this low of a level.  you can outline shapes of known data structures, but don't be too opinionated.  this mode selection will be a config file workflow mentioned previously, and will accessible and configurable at every level.  we want good defaults like these but I don't want to be stuck to any specific implementation details past high level feature expression, and encoding that is okay. I want there to be an auto mode select similar to cursor, but that is just a workflow that uses/links to workflows.  again everything is either a .md file, or a config file workflow similar to n8n. The default starting built in workflows will encompas the modes, but a list and brief description of key feature goals and how it works is preferred. edit other relevant sections without removing any other tags or their corresponding prompts based on the changes made here
+
 **Automatic Mode Triggers:**
 
 ```typescript
@@ -446,6 +448,7 @@ Long-term Memory (Vector DB):
 ├─ All historical sessions
 ├─ Successful context patterns
 └─ Quality-approved responses
+
 ```
 
 ### Context Patterns
@@ -621,6 +624,8 @@ async function gatherContext(
 
 ## Self-Improvement System
 
+<REFACTOR_SECTION> Self-Improvement System is sort of correct and this will be one workflow, but I want the flow to be a bit different.  I want scoped summary workflows of both types to make this happen, so a combination of interlinked files. So I want there to be types of summaries it makes of logs based on a specific scope.  For example, we have the goal of making it so the response to chats is what the user desired behavior with minimal back and forth.  The scope of the summary would be to find interactions that took more than one prompting or multiple corrections, and that one scope serves that goal.  With those summaries we run workflows for creating great workflows of both types and context docs to serve the goal, like editing debug workflows and nested referenced workflows to have correct behavior.  this is just one example of using this summary method, but the general category of workflow called a self improvement workflow and there should be 2 -3 other examples in this section of workflow strategies to get behavior to fill the aims of the user more and more overtime with minimal work on the user to make alignment improve.  Another self improvement workflow could be around context feeding order, where it tests different combinations in the same prompt of context, then generates logs of behavior differences in responses, then summarizes those logs for another workflow to use to integrate into improving existing user context feeding backend reordering for better prompt fixing or interaction and automatic workflows.  Basically, I want to be able to run background expiriments using workflows to really flush this out but here are some ideas to start with.  I don't want this in code but in workflows of both types. edit other relevant sections without removing any other tags or their corresponding prompts based on the changes made here
+
 ### Log Analysis Pipeline
 
 **Goal:** Automatically learn from usage patterns.
@@ -746,24 +751,24 @@ interface LearnedPattern {
 ┌──────────────────────────────────────────────────┐
 │  Developer Machine (Primary)                     │
 │  ├─ Editor UI                                    │
-│  ├─ Fast agents (chat, autocomplete)            │
+│  ├─ Fast agents (chat, autocomplete)             │
 │  └─ Swarm orchestrator                           │
 └──────────────────────────────────────────────────┘
           ↓ (gRPC / WebSocket)
 ┌──────────────────────────────────────────────────┐
-│  Server 1: Code Analysis                         │
+│  Local Server 1: Code Analysis                   │
 │  ├─ Slow LLM (70B+ models)                       │
 │  ├─ Background refactoring                       │
 │  └─ Deep code analysis                           │
 └──────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────┐
-│  Server 2: Research & RAG                        │
-│  ├─ Vector database (Qdrant/Chroma)             │
+│  Local Server 2: Research & RAG                  │
+│  ├─ Vector database (Qdrant/Chroma)              │
 │  ├─ Document indexing                            │
 │  └─ Research agent                               │
 └──────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────┐
-│  Server 3: Testing & Validation                  │
+│  Local Server 3: Testing & Validation            │
 │  ├─ Test runner                                  │
 │  ├─ Build verification                           │
 │  └─ Quality analysis                             │
