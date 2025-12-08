@@ -1,0 +1,319 @@
+# Documentation Updates Rule
+
+## Purpose
+
+This rule defines the process for updating Glyph Nova documentation when features are added, modified, or completed. It ensures consistent documentation across README.md, implementation status reports, and feature tracking documents.
+
+## When to Update Documentation
+
+Update documentation when:
+- A new feature is implemented
+- An existing feature is modified or enhanced
+- A feature status changes (pending → in progress → complete)
+- New limitations or issues are discovered
+- Screenshots are added for new features
+- A new plan file is created
+
+## Documentation Files Structure
+
+### 1. README.md
+**Location**: `/home/jon/code/glyph-nova/README.md`
+
+**Purpose**: User-facing documentation with feature overview, screenshots, and current status
+
+**Sections to Update**:
+- `## Features` - Add new features to the list
+- `## Current Status` - Update functionality and limitations
+- `## Screenshot Gallery` - Add new screenshots in logical flow order
+
+**Update Process**:
+1. Add feature to Features list if it's user-visible
+2. Update Current Functionality section with new capabilities
+3. Update Limitations section if new limitations discovered
+4. Add screenshots to gallery table in logical order
+5. Keep descriptions concise and user-friendly
+
+### 2. Implementation Status Report
+**Location**: `/home/jon/code/glyph-nova/.cursor/docs/reports/implementation-status.md`
+
+**Purpose**: Detailed technical documentation of implemented features
+
+**Sections to Update**:
+- Feature implementation status sections
+- Code references and GraphQL API documentation
+- Limitations for each feature
+- Remaining work sections
+- Version history
+
+**Update Process**:
+1. Add new feature section with status, implementation path, and code references
+2. Document GraphQL queries/mutations if applicable
+3. List limitations and known issues
+4. Update remaining work if feature was planned
+5. Add entry to version history
+
+**Template for New Feature**:
+```markdown
+### ✅ Feature Name
+
+**Status**: Complete / In Progress / Pending
+**Implementation**: `path/to/component/`
+
+**Features Implemented:**
+- ✅ Feature detail 1
+- ✅ Feature detail 2
+
+**GraphQL API:**
+- Query/Mutation: `name(params)` - Description
+- Location: `api/src/graphql/file.sdl.ts`
+
+**Code References:**
+- `web/src/components/Component.tsx` - Description
+
+**Limitations:**
+- ⚠️ Limitation description
+```
+
+### 3. Feature Tracking Document
+**Location**: `/home/jon/code/glyph-nova/.cursor/docs/reports/feature-tracking.md`
+
+**Purpose**: Centralized tracking of all features and their status
+
+**Sections to Update**:
+- Current Features table
+- Planned Features table
+- Abstract Features list (for future ideas)
+- Implementation Phases
+- Last Updated date
+
+**Update Process**:
+1. Add feature to appropriate table (Current, Planned, or Abstract)
+2. Set status using legend (✅ Complete / 🔄 In Progress / ⏸️ Pending / ❌ Blocked)
+3. Link to implementation status and plan files
+4. Update status as work progresses
+5. Move features between tables as status changes
+
+**Status Updates**:
+- When starting work: ⏸️ → 🔄
+- When completing work: 🔄 → ✅
+- When blocked: Any → ❌ (add note explaining blocker)
+
+### 4. Plan Files
+**Location**: `/home/jon/code/glyph-nova/.cursor/docs/plans/`
+
+**Purpose**: Detailed implementation plans for features
+
+**Update Process**:
+1. Create new plan file when starting major feature work
+2. Reference plan file in feature-tracking.md
+3. Update plan file with completion status as work progresses
+4. Link plan file from implementation-status.md
+
+## Screenshot Management
+
+### Screenshot Organization
+
+**Directory Structure**:
+```
+assets/screenshots/
+  └── {version}/
+      ├── feature-name-1.png
+      ├── feature-name-2.png
+      └── ...
+```
+
+**Naming Convention**:
+- Use kebab-case: `copy-path-to-chat.png`
+- Be descriptive: `chat-response-streaming.png`
+- Include version folder: `0.0.0/`, `0.1.0/`, etc.
+
+### Adding Screenshots
+
+1. **Take Screenshot**:
+   - Use Linux screenshot tool (Print Screen, Shift+Print Screen, or `gnome-screenshot`)
+   - Save to `assets/screenshots/{version}/feature-name.png`
+
+2. **Add to README**:
+   - Add to Screenshot Gallery table
+   - Order screenshots to show feature flow
+   - Use descriptive caption
+
+3. **Update Documentation**:
+   - Reference screenshot in implementation-status.md if relevant
+   - Update version number if major feature addition
+
+**Screenshot Table Format**:
+```markdown
+| Screenshot | Description |
+|------------|-------------|
+| ![Feature Name](assets/screenshots/0.0.0/feature-name.png) | **Feature Description** - Brief explanation of what the screenshot shows |
+```
+
+## Feature Evaluation Process
+
+### Evaluating Current Feature Set
+
+When updating documentation, evaluate:
+
+1. **What features are implemented?**
+   - Check codebase for new components/services
+   - Review recent commits and changes
+   - Test features in running application
+
+2. **What's the current status?**
+   - Complete: Fully functional, tested
+   - In Progress: Partially implemented, work ongoing
+   - Pending: Planned but not started
+   - Blocked: Cannot proceed due to dependencies
+
+3. **What are the limitations?**
+   - Functional limitations (missing features)
+   - Performance limitations (scalability issues)
+   - Technical limitations (dependencies, constraints)
+
+4. **What's remaining?**
+   - Check plan files for planned work
+   - Review issue tracker for known issues
+   - Identify gaps in functionality
+
+### Documentation Update Checklist
+
+When updating documentation, complete:
+
+- [ ] README.md updated with new features/limitations
+- [ ] Screenshots added if new features are user-visible
+- [ ] Implementation-status.md updated with technical details
+- [ ] Feature-tracking.md updated with status changes
+- [ ] Plan files referenced and linked correctly
+- [ ] Version history updated
+- [ ] Last Updated dates updated
+- [ ] Cross-references between documents verified
+
+## Template: Feature Documentation Update
+
+When documenting a new feature:
+
+```markdown
+### Feature Name
+
+**Status**: [Complete/In Progress/Pending]
+**Added**: YYYY-MM-DD
+**Implementation**: `path/to/implementation/`
+
+**Description**: Brief description of the feature
+
+**Features**:
+- Feature detail 1
+- Feature detail 2
+
+**Code References**:
+- `file/path.ts` - Description
+
+**Limitations**:
+- Known limitation 1
+- Known limitation 2
+
+**Related**:
+- [Plan File](../plans/plan-name.md)
+- [Implementation Status](./implementation-status.md#feature-name)
+```
+
+## Abstract Feature Documentation
+
+For abstract/future features:
+
+1. Add to feature-tracking.md Abstract Features section
+2. Categorize by feature area (File Operations, Editor, Chat, etc.)
+3. Keep description brief (1-2 sentences)
+4. Create detailed plan file when ready to implement
+5. Move to Planned Features table when plan is created
+
+## Version Updates
+
+### When to Update Version
+
+- Major feature addition: Increment minor version (0.1.0 → 0.2.0)
+- Bug fixes or minor updates: Increment patch version (0.1.0 → 0.1.1)
+- Major refactoring: Increment major version (0.x.x → 1.0.0)
+
+### Version History Format
+
+```markdown
+## Version History
+
+- **0.1.0** (YYYY-MM-DD) - Description
+  - Feature addition 1
+  - Feature addition 2
+  - Bug fix or improvement
+```
+
+## Quick Reference
+
+### File Locations
+- README: `/home/jon/code/glyph-nova/README.md`
+- Implementation Status: `/home/jon/code/glyph-nova/.cursor/docs/reports/implementation-status.md`
+- Feature Tracking: `/home/jon/code/glyph-nova/.cursor/docs/reports/feature-tracking.md`
+- Plans: `/home/jon/code/glyph-nova/.cursor/docs/plans/`
+- Screenshots: `/home/jon/code/glyph-nova/assets/screenshots/`
+
+### Status Icons
+- ✅ Complete
+- 🔄 In Progress
+- ⏸️ Pending
+- ❌ Blocked
+
+### Update Frequency
+- After each feature completion: Update all relevant docs
+- Weekly: Review and update status of in-progress features
+- Monthly: Review abstract features and create plans for high-priority items
+
+## Integration with Development Workflow
+
+### During Feature Development
+
+1. **Planning Phase**:
+   - Add feature to feature-tracking.md (Planned or Abstract)
+   - Create plan file if detailed planning needed
+   - Link plan file in feature-tracking.md
+
+2. **Implementation Phase**:
+   - Update feature status: ⏸️ → 🔄
+   - Update plan file with progress
+   - Document implementation details as you code
+
+3. **Completion Phase**:
+   - Update feature status: 🔄 → ✅
+   - Update implementation-status.md with details
+   - Update README.md if user-visible feature
+   - Add screenshots if applicable
+   - Update version history
+
+### After Feature Completion
+
+1. Test feature thoroughly
+2. Take screenshots if user-visible
+3. Update all documentation files
+4. Update version numbers
+5. Commit documentation changes with feature
+
+## Best Practices
+
+1. **Keep Documentation Current**: Update docs as you work, not after
+2. **Be Specific**: Include file paths, code references, and technical details
+3. **Link Everything**: Cross-reference between documents
+4. **Update Dates**: Always update "Last Updated" dates
+5. **Version Control**: Commit documentation changes with code changes
+6. **Review Regularly**: Periodically review and update abstract features
+7. **User-Focused README**: Keep README.md accessible to non-technical users
+8. **Technical Details**: Put detailed technical info in implementation-status.md
+
+## Related Documentation
+
+- [Implementation Status](../reports/implementation-status.md)
+- [Feature Tracking](../reports/feature-tracking.md)
+- [Plan Files](../plans/)
+
+---
+
+**Last Updated**: 2025-12-07  
+**Version**: 1.0.0
