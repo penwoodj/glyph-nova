@@ -182,10 +182,39 @@ Local Server 3:       Background research tasks
 
 ## Related Documentation
 
-- **[Feature Implementation Details](./future-features.md)** - Deep dive into planned features
+### Feature Specifications
+
+The [[future-features]] documentation has been split into detailed sections:
+
+**Core Features:**
+- [[transparency-observability]] - Full prompt visibility and decision logging
+- [[context-engineering]] - Smart chunking, relevance ranking, and budget management
+- [[agentic-mode-system]] - Mode structure, selection, and composition
+
+**Advanced Capabilities:**
+- [[multi-source-integration]] - MCP, RAG, and context orchestration
+- [[self-improvement-system]] - Log analysis and automatic mode improvement
+- [[multi-machine-swarm]] - Distributed AI work across multiple machines
+- [[smart-chunking-memory]] - Persistent memory and context patterns
+
+**User Experience:**
+- [[editor-experience]] - Rich markdown editing and code editing features
+- [[image-capabilities]] - Local image generation and editing
+- [[vscode-integration]] - Configuration import and extension compatibility
+
+**Planning & Architecture:**
+- [[implementation-roadmap]] - Phased development plan
+- [[technical-architecture]] - Technology stack and data flow
+- [[open-questions]] - Considerations and clarifications needed
+
+**Quick Access:**
+- [[future-features/index]] - Complete table of contents and navigation
+
+### Other Documentation
+
 - **[Implementation Status](./implementation-status.md)** - Current development status
 - **[Desktop Architecture](./pass2/09-desktop-app-architecture.md)** - Technical architecture details
 
 ---
 
-**For detailed feature specifications, see [[future-features]]**
+**For detailed feature specifications, see [[future-features/index]]**
