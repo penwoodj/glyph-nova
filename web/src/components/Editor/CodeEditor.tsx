@@ -79,12 +79,13 @@ export const CodeEditor = ({
   )
 
   // Custom style for VSCode dark theme
+  // Uses CSS variables from index.css for theme consistency
   const customStyle = {
     ...vscDarkPlus,
     'pre[class*="language-"]': {
       ...vscDarkPlus['pre[class*="language-"]'],
-      background: '#1e1e1e', // VSCode dark theme background
-      color: '#d4d4d4',
+      background: 'var(--vscode-bg)', // VSCode dark theme background
+      color: 'var(--vscode-fg)',
       margin: 0,
       padding: '1rem',
       fontSize: '14px',
@@ -95,7 +96,7 @@ export const CodeEditor = ({
     'code[class*="language-"]': {
       ...vscDarkPlus['code[class*="language-"]'],
       background: 'transparent',
-      color: '#d4d4d4',
+      color: 'var(--vscode-fg)',
       fontSize: '14px',
       fontFamily:
         'Consolas, Monaco, "Courier New", monospace, "Fira Code", "Droid Sans Mono"',
@@ -117,7 +118,7 @@ export const CodeEditor = ({
           customStyle={{
             margin: 0,
             padding: '1rem',
-            background: '#1e1e1e',
+            background: 'var(--vscode-bg)',
           }}
         >
           {editedContent || placeholder}
@@ -149,7 +150,7 @@ export const CodeEditor = ({
           tabSize: 2,
           whiteSpace: 'pre',
           overflow: 'auto',
-          caretColor: '#d4d4d4',
+          caretColor: 'var(--vscode-fg)',
         }}
       />
     </div>
