@@ -22,8 +22,3 @@ api/src/lib/generateGraphiQLHeader.*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
-# Temporary assets and screenshots
-assets/
-
-asdf
