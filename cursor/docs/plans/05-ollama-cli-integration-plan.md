@@ -7,11 +7,11 @@
 **Context**: Based on pass2 reports (01-07) and current codebase analysis
 **Status**: ✅ **COMPLETE** - All phases implemented and tested
 **Related Reports**:
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/04-ollama-cli-command-reference.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/07-practical-implementation-guide.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/04-ollama-cli-command-reference.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/07-practical-implementation-guide.md`
 
 ## Current State Analysis
 
@@ -797,10 +797,10 @@ User Input → ChatInterface → Execution Mode Selector
 10. **[Stack Overflow - Node.js Child Process](https://stackoverflow.com/questions/tagged/node.js+child-process)** - Common patterns and solutions
 
 ### Project-Specific Documentation
-11. **[Report 03: GraphQL-Tauri Integration](./.cursor/docs/reports/pass2/03-graphql-tauri-integration.md)** - Direct Node.js execution approach (recommended)
-12. **[Report 04: Ollama CLI Reference](./.cursor/docs/reports/pass2/04-ollama-cli-command-reference.md)** - Complete CLI command reference
-13. **[Report 05: Security Practices](./.cursor/docs/reports/pass2/05-security-permissions-command-execution.md)** - Security implementation guide
-14. **[Report 07: Implementation Guide](./.cursor/docs/reports/pass2/07-practical-implementation-guide.md)** - Step-by-step implementation patterns
+11. **[Report 03: GraphQL-Tauri Integration](./cursor/docs/reports/pass2/03-graphql-tauri-integration.md)** - Direct Node.js execution approach (recommended)
+12. **[Report 04: Ollama CLI Reference](./cursor/docs/reports/pass2/04-ollama-cli-command-reference.md)** - Complete CLI command reference
+13. **[Report 05: Security Practices](./cursor/docs/reports/pass2/05-security-permissions-command-execution.md)** - Security implementation guide
+14. **[Report 07: Implementation Guide](./cursor/docs/reports/pass2/07-practical-implementation-guide.md)** - Step-by-step implementation patterns
 
 ## Plan Overlap Analysis
 

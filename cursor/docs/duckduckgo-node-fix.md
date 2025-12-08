@@ -30,8 +30,8 @@ Changed the node type identifier in the workflow to:
 
 ## Files Changed
 
-**Original:** `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json`
-**Fixed:** `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved - FIXED.json`
+**Original:** `/home/jon/code/glyph-nova/cursor/docs/My workflow improved.json`
+**Fixed:** `/home/jon/code/glyph-nova/cursor/docs/My workflow improved - FIXED.json`
 
 ### Change Made (Line 95)
 
@@ -93,7 +93,7 @@ Based on the node source code, the correct configuration is:
 2. **Import the fixed workflow**:
    - Open n8n at http://localhost:5678
    - Go to Workflows → Import from File
-   - Select: `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved - FIXED.json`
+   - Select: `/home/jon/code/glyph-nova/cursor/docs/My workflow improved - FIXED.json`
 
 3. **Verify the node appears**:
    - The DuckDuckGo Search node should now be recognized

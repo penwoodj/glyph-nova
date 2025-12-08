@@ -86,9 +86,8 @@ export const getDirectoryContents = async ({
     return { files, folders }
   } catch (error) {
     logger.error('Failed to read directory', { directoryPath, error })
-    throw new Error(
-      `Failed to read directory: ${error instanceof Error ? error.message : String(error)}`
-    )
+    const errorMessage = getFileSystemErrorMessage(error, 'read directory')
+    throw new Error(errorMessage)
   }
 }
 
@@ -124,9 +123,8 @@ export const readFileInternal = async ({
     return content
   } catch (error) {
     logger.error('Failed to read file', { filePath, error })
-    throw new Error(
-      `Failed to read file: ${error instanceof Error ? error.message : String(error)}`
-    )
+    const errorMessage = getFileSystemErrorMessage(error, 'read file')
+    throw new Error(errorMessage)
   }
 }
 
@@ -175,9 +173,8 @@ const writeFileInternal = async ({
     logger.info('File written successfully', { filePath })
   } catch (error) {
     logger.error('Failed to write file', { filePath, error })
-    throw new Error(
-      `Failed to write file: ${error instanceof Error ? error.message : String(error)}`
-    )
+    const errorMessage = getFileSystemErrorMessage(error, 'write file')
+    throw new Error(errorMessage)
   }
 }
 
@@ -244,10 +241,43 @@ export const getFileStats = async ({
     return await fs.stat(filePath)
   } catch (error) {
     logger.error('Failed to get file stats', { filePath, error })
-    throw new Error(
-      `Failed to get file stats: ${error instanceof Error ? error.message : String(error)}`
-    )
+    const errorMessage = getFileSystemErrorMessage(error, 'get file stats')
+    throw new Error(errorMessage)
   }
+}
+
+/**
+ * Get user-friendly error message for file system errors
+ * Handles common error codes: EACCES (permission), ENOENT (not found), ENOSPC (disk space)
+ */
+function getFileSystemErrorMessage(error: unknown, operation: string): string {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = (error as { code: string }).code
+
+    switch (code) {
+      case 'EACCES':
+        return `Permission denied: Cannot ${operation}. You may not have the necessary permissions to access this file or directory.`
+      case 'ENOENT':
+        return `File not found: Cannot ${operation}. The file or directory does not exist.`
+      case 'ENOSPC':
+        return `Disk space error: Cannot ${operation}. There is not enough disk space available.`
+      case 'EISDIR':
+        return `Invalid operation: Cannot ${operation}. The path is a directory, not a file.`
+      case 'ENOTDIR':
+        return `Invalid path: Cannot ${operation}. A component of the path is not a directory.`
+      case 'EMFILE':
+        return `Too many open files: Cannot ${operation}. The system limit for open files has been reached.`
+      case 'ENAMETOOLONG':
+        return `Path too long: Cannot ${operation}. The file path exceeds the maximum length.`
+      default:
+        // Fall through to generic error message
+        break
+    }
+  }
+
+  // Generic error message
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  return `Failed to ${operation}: ${errorMessage}`
 }
 
 // Security: Whitelist allowed directories

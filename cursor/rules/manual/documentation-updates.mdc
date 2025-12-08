@@ -34,7 +34,7 @@ Update documentation when:
 5. Keep descriptions concise and user-friendly
 
 ### 2. Implementation Status Report
-**Location**: `/home/jon/code/glyph-nova/.cursor/docs/reports/implementation-status.md`
+**Location**: `/home/jon/code/glyph-nova/cursor/docs/reports/implementation-status.md`
 
 **Purpose**: Detailed technical documentation of implemented features
 
@@ -75,7 +75,7 @@ Update documentation when:
 ```
 
 ### 3. Feature Tracking Document
-**Location**: `/home/jon/code/glyph-nova/.cursor/docs/reports/feature-tracking.md`
+**Location**: `/home/jon/code/glyph-nova/cursor/docs/reports/feature-tracking.md`
 
 **Purpose**: Centralized tracking of all features and their status
 
@@ -99,7 +99,7 @@ Update documentation when:
 - When blocked: Any → ❌ (add note explaining blocker)
 
 ### 4. Plan Files
-**Location**: `/home/jon/code/glyph-nova/.cursor/docs/plans/`
+**Location**: `/home/jon/code/glyph-nova/cursor/docs/plans/`
 
 **Purpose**: Detailed implementation plans for features
 
@@ -251,9 +251,9 @@ For abstract/future features:
 
 ### File Locations
 - README: `/home/jon/code/glyph-nova/README.md`
-- Implementation Status: `/home/jon/code/glyph-nova/.cursor/docs/reports/implementation-status.md`
-- Feature Tracking: `/home/jon/code/glyph-nova/.cursor/docs/reports/feature-tracking.md`
-- Plans: `/home/jon/code/glyph-nova/.cursor/docs/plans/`
+- Implementation Status: `/home/jon/code/glyph-nova/cursor/docs/reports/implementation-status.md`
+- Feature Tracking: `/home/jon/code/glyph-nova/cursor/docs/reports/feature-tracking.md`
+- Plans: `/home/jon/code/glyph-nova/cursor/docs/plans/`
 - Screenshots: `/home/jon/code/glyph-nova/assets/screenshots/`
 
 ### Status Icons
@@ -315,5 +315,5 @@ For abstract/future features:
 
 ---
 
-**Last Updated**: 2025-12-07  
+**Last Updated**: 2025-12-07
 **Version**: 1.0.0

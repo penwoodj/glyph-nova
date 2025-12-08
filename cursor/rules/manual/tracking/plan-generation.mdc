@@ -4,9 +4,9 @@
 
 **Usage**: Manual rule for creating detailed project plans with consistent quality standards and overlap prevention.
 
-**Version**: 2.0  
-**Created**: January 14, 2025  
-**Updated**: January 14, 2025  
+**Version**: 2.0
+**Created**: January 14, 2025
+**Updated**: January 14, 2025
 **Context**: Based on OpenCTI IOC submission UI plan generation success patterns and user feedback improvements
 
 ## Intelligence Layer - Context Analysis Before Questions
@@ -45,7 +45,7 @@ Before generating any questions, ALWAYS perform this analysis:
 Before creating any plan, ALWAYS check existing plans:
 
 #### [ ] 1. Existing Plans Analysis
-- **Check folder**: `.cursor/docs/plans`
+- **Check folder**: `cursor/docs/plans`
 - **Read all existing plans** to understand:
   - Previous approaches taken
   - Tasks already completed
@@ -108,12 +108,12 @@ After generating the plan, ALWAYS:
 **Use Copyable Question Blocks**:
 ```
 - [Specific question about requirements]?
-- Ans: 
-- Notes: 
+- Ans:
+- Notes:
 
 - [Specific question about scope]?
-- Ans: 
-- Notes: 
+- Ans:
+- Notes:
 
 [Continue for 8-12 questions]
 ```
@@ -301,7 +301,7 @@ Based on analysis of existing plans in the project, common workflow patterns inc
 - Identify implementation patterns
 
 #### [ ] 1.3 Existing Plans Review
-- Check `/Users/jonp/code/projects/integrations/opencti-ioc-submission/.cursor/docs/plans`
+- Check `/Users/jonp/code/projects/integrations/opencti-ioc-submission/cursor/docs/plans`
 - Identify previous approaches
 - Note potential overlap areas
 

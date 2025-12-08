@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 # Cursor AI Developer Profile Rules
@@ -25,7 +25,7 @@ This document outlines the developer's experience, preferences, and context to h
 ## Technical Experience
 
 ### Programming Languages
-- **JavaScript/Node.js:** Expert 
+- **JavaScript/Node.js:** Expert
 - **TypeScript:** Advanced
 - **Python:** Advanced
 - **Other languages:** Intermediate
@@ -54,13 +54,13 @@ This document outlines the developer's experience, preferences, and context to h
 
 ### Common Challenges
 - **Frequently encountered issues:** LLM Not following provided context and rules to the letter
-- **Areas needing improvement:** Patience 
-- **Learning goals:** Cursor Extensions, n8n, ollama, pcb design, FPGAs, RAG DBs, Cursor Backend Architecture, 
+- **Areas needing improvement:** Patience
+- **Learning goals:** Cursor Extensions, n8n, ollama, pcb design, FPGAs, RAG DBs, Cursor Backend Architecture,
 
 ## Preferences & Communication Style
 
 ### Technical Communication
-- **Preferred explanation level:** overview 
+- **Preferred explanation level:** overview
 - **Documentation style:** Skimmable, Clear, Concise
 
 ### Problem-Solving Approach
@@ -69,8 +69,8 @@ This document outlines the developer's experience, preferences, and context to h
 - **Time constraints:** Context dependent (ask) (Quick solutions needed, Can spend time on thorough solutions)
 
 ### Feedback & Iteration
-- **Code review feedback:** Create a Checkbox Plan file in `.cursor/docs/plans/` on how to solve issues from the review 
-- **Iteration preferences:** Fewer larger iterations 
+- **Code review feedback:** Create a Checkbox Plan file in `cursor/docs/plans/` on how to solve issues from the review
+- **Iteration preferences:** Fewer larger iterations
 - **Error handling:** Comprehensive error messages, and graceful failing
 
 

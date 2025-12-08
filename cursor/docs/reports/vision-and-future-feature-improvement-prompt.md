@@ -1,5 +1,5 @@
-So I've made some minor edits in /home/jon/code/glyph-nova/.cursor/docs/reports/project-vision.md
-, but have added some key notes in /home/jon/code/glyph-nova/.cursor/docs/reports/future-features.md
+So I've made some minor edits in /home/jon/code/glyph-nova/cursor/docs/reports/project-vision.md
+, but have added some key notes in /home/jon/code/glyph-nova/cursor/docs/reports/future-features.md
 that I've labed with descriptive tags at the beginning of the line then details of what you are to do you are to replace both the tag and prompt with added info or edits e.g.
 `<ADD_TO_HERE>I want you to add a section...`
 Only remove tags and corresponding prompts after the file edits are made and you've verified the prompt is complete through checking the file for deliverables.
@@ -33,7 +33,7 @@ Notes:
 2. Mode System Power & Flexibility
 Questions:
 Should modes be Turing-complete (able to run arbitrary code/scripts), or purely declarative (configuration only)?
-Ans: Modes are just workflows of both types, .md templated files, or n8n style config agentic workflow tools. this is detailed more in my in document instructions in /home/jon/code/glyph-nova/.cursor/docs/reports/future-features.md
+Ans: Modes are just workflows of both types, .md templated files, or n8n style config agentic workflow tools. this is detailed more in my in document instructions in /home/jon/code/glyph-nova/cursor/docs/reports/future-features.md
 Notes:
 
 How should mode inheritance work?
@@ -48,7 +48,7 @@ Ans: sort of but I want it run through something like github so all contribution
 Notes:
 
 Do you want modes to be able to spawn sub-agents or create workflows with multiple steps?
-Ans: already described above and in /home/jon/code/glyph-nova/.cursor/docs/reports/future-features.md
+Ans: already described above and in /home/jon/code/glyph-nova/cursor/docs/reports/future-features.md
 Notes:
 
 3. Context Engineering Trade-offs

@@ -38,7 +38,7 @@ n8n start
 ### 2. Import the Workflow
 1. Open n8n at `http://localhost:5678`
 2. Go to **Workflows** → **Import from File**
-3. Select: `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json`
+3. Select: `/home/jon/code/glyph-nova/cursor/docs/My workflow improved.json`
 4. Click **Import**
 
 ### 3. Update the Workflow (Important!)

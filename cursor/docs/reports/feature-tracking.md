@@ -1,7 +1,7 @@
 # Glyph Nova - Feature Tracking
 
-**Version**: 0.1.0  
-**Last Updated**: 2025-12-07  
+**Version**: 0.1.0
+**Last Updated**: 2025-12-07
 **Purpose**: Centralized tracking document for all features, their implementation status, and links to detailed plans
 
 ## Feature Status Legend
@@ -42,7 +42,7 @@
 
 ## Abstract Features (Future)
 
-These are high-level feature ideas that may be implemented in the future. Create detailed plan files in `.cursor/docs/plans/` when ready to implement.
+These are high-level feature ideas that may be implemented in the future. Create detailed plan files in `cursor/docs/plans/` when ready to implement.
 
 ### File Operations
 - ⏸️ **File/Folder Creation** - UI for creating new files and folders
@@ -132,13 +132,13 @@ These are high-level feature ideas that may be implemented in the future. Create
 
 1. Add the feature to the appropriate section (Current, Planned, or Abstract)
 2. Set status using the legend above
-3. Link to detailed plan file in `.cursor/docs/plans/` if one exists
+3. Link to detailed plan file in `cursor/docs/plans/` if one exists
 4. Add estimated time and priority if known
 5. Update "Last Updated" date
 
 ### Creating a Detailed Plan
 
-1. Create a new plan file in `.cursor/docs/plans/` (e.g., `07-feature-name-plan.md`)
+1. Create a new plan file in `cursor/docs/plans/` (e.g., `07-feature-name-plan.md`)
 2. Reference the plan file in the Feature Tracking table
 3. Link back to this document from the plan file
 4. Update status as work progresses

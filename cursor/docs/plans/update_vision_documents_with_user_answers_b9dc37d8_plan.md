@@ -234,44 +234,44 @@ Update both vision documents to integrate user answers while preserving all `<ED
 
 ## Files to Modify
 
-1. `/home/jon/code/glyph-nova/.cursor/docs/reports/project-vision.md`
+1. `/home/jon/code/glyph-nova/cursor/docs/reports/project-vision.md`
 
 - Update Core Principles (Local First)
 - Update Architecture Vision
 - Update Implementation Philosophy phases
 - Update Editor Philosophy
 
-2. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/transparency-observability.md`
+2. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/transparency-observability.md`
 
 - Add Chat Interface Details section
 
-3. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/context-engineering.md`
+3. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/context-engineering.md`
 
 - Add quality-over-speed emphasis
 
-4. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/agentic-mode-system.md`
+4. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/agentic-mode-system.md`
 
 - Update Mode Selection and Mode Composition sections
 
-5. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/self-improvement-system.md`
+5. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/self-improvement-system.md`
 
 - Add scoped summary workflows explanation
 - Update approval workflow and conflict resolution
 
-6. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/multi-machine-swarm.md`
+6. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/multi-machine-swarm.md`
 
 - Add strictly local emphasis and network topology
 
-7. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/editor-experience.md`
+7. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/editor-experience.md`
 
 - Remove collaborative editing
 - Add Primary Audience notes
 
-8. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/implementation-roadmap.md`
+8. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/implementation-roadmap.md`
 
 - Reorganize Phase 3/4
 
-9. `/home/jon/code/glyph-nova/.cursor/docs/reports/future-features/open-questions.md`
+9. `/home/jon/code/glyph-nova/cursor/docs/reports/future-features/open-questions.md`
 
 - Convert to Design Decisions section
 

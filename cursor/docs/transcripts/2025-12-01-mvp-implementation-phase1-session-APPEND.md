@@ -447,7 +447,7 @@ I've installed yarn. Complete any deferred steps then stop and update the plan f
    - Updated dependencies section
 
 **Files Modified:**
-- ✅ `.cursor/docs/plans/02-mvp-implementation-plan.md` - All deferred steps updated
+- ✅ `cursor/docs/plans/02-mvp-implementation-plan.md` - All deferred steps updated
 
 **Time Taken:** ~5 minutes
 

@@ -6,7 +6,7 @@
 **Created**: January 2025
 **Last Updated**: January 2025
 **Context**: Implementation phase following comprehensive tech stack research
-**Research Context**: All reports available in `.cursor/docs/reports/`
+**Research Context**: All reports available in `cursor/docs/reports/`
 **Status**: ✅ **PHASE 1-2 COMPLETE, BUILD SYSTEM FIXED** - Ready for Phase 3+ Implementation
 **Last Updated**: 2025-12-01 20:22:10 CST
 
@@ -39,7 +39,7 @@
 #### Fix 2: GraphQL Type Resolver Duplicate Declaration
 **Status**: ✅ **COMPLETE**
 
-**Reference**: Report 01 ([Redwood.js Comprehensive Guide](.cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)) - GraphQL resolvers pattern
+**Reference**: Report 01 ([Redwood.js Comprehensive Guide](cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)) - GraphQL resolvers pattern
 
 - [x] Fixed duplicate `FileEntry` declaration in GraphQL resolvers
   - [x] Changed import to type-only import: `import { type FileEntry }`
@@ -61,7 +61,7 @@
 #### Fix 3: Tailwind CSS v4 PostCSS Plugin Configuration
 **Status**: ✅ **COMPLETE**
 
-**Reference**: Report 11 ([Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)) - shadcn/ui setup with Tailwind CSS
+**Reference**: Report 11 ([Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)) - shadcn/ui setup with Tailwind CSS
 
 - [x] Installed Tailwind CSS v4 PostCSS plugin
   - [x] Installed `@tailwindcss/postcss` package
@@ -301,7 +301,7 @@ Build a desktop application for Pop!_OS (Linux) that provides a local LLM interf
 
 ### Research Report Index
 
-All research reports are located in `.cursor/docs/reports/`:
+All research reports are located in `cursor/docs/reports/`:
 
 1. **01-redwoodjs-comprehensive-guide.md** - Redwood.js architecture and patterns
 2. **02-electron-vs-tauri-linux-comparison.md** - Framework comparison (Tauri recommended)
@@ -1109,8 +1109,8 @@ All research reports are located in `.cursor/docs/reports/`:
 **Estimated Time**: 12-14 hours (with 20% buffer: 14.4-16.8 hours)
 **Risk Level**: Medium (complex editor integration)
 **Research References**:
-- Report 06 ([Markdown Editor Implementation](.cursor/docs/reports/06-markdown-editor-implementation.md)) - Complete editor implementation guide
-- Report 11 ([Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)) - UI component patterns
+- Report 06 ([Markdown Editor Implementation](cursor/docs/reports/06-markdown-editor-implementation.md)) - Complete editor implementation guide
+- Report 11 ([Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)) - UI component patterns
 
 ### Phase 3.1: Markdown Editor Setup (Vditor)
 
@@ -1312,9 +1312,9 @@ All research reports are located in `.cursor/docs/reports/`:
 1. **Load Relevant Research Reports** (2-3 reports):
    ```
    Load these reports for context:
-   - .cursor/docs/reports/[relevant-report-1].md
-   - .cursor/docs/reports/[relevant-report-2].md
-   - .cursor/docs/reports/[relevant-report-3].md
+   - cursor/docs/reports/[relevant-report-1].md
+   - cursor/docs/reports/[relevant-report-2].md
+   - cursor/docs/reports/[relevant-report-3].md
    ```
 
 2. **Reference Specific Sections**:

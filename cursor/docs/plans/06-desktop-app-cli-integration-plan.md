@@ -8,11 +8,11 @@
 **Status**: 🔄 **IN PROGRESS** - Phase 1 Critical Fix Completed
 **Prerequisites**: Plan 05 (05-ollama-cli-integration-plan.md) should be completed first
 **Related Reports**:
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/02-rust-process-execution-patterns.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
-- `/home/jon/code/glyph-nova/.cursor/docs/reports/pass2/06-error-handling-debugging.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/02-rust-process-execution-patterns.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
+- `/home/jon/code/glyph-nova/cursor/docs/reports/pass2/06-error-handling-debugging.md`
 
 ## Current State Analysis
 
@@ -1057,12 +1057,12 @@ Response → Frontend → GraphQL (optional)
 6. **[Tauri Security Model](https://tauri.app/v2/guides/security/)** - Tauri-specific security
 
 ### Project-Specific Documentation
-7. **[Report 01: Tauri Command Execution](./.cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md)** - Tauri command patterns
-8. **[Report 02: Rust Process Execution](./.cursor/docs/reports/pass2/02-rust-process-execution-patterns.md)** - Rust execution patterns
-9. **[Report 03: GraphQL-Tauri Integration](./.cursor/docs/reports/pass2/03-graphql-tauri-integration.md)** - Integration approaches
-10. **[Report 05: Security & Permissions](./.cursor/docs/reports/pass2/05-security-permissions-command-execution.md)** - Security practices
-11. **[Report 06: Error Handling](./.cursor/docs/reports/pass2/06-error-handling-debugging.md)** - Error handling patterns
-12. **[Plan 05: CLI Integration](./.cursor/docs/plans/05-ollama-cli-integration-plan.md)** - Base CLI implementation plan
+7. **[Report 01: Tauri Command Execution](./cursor/docs/reports/pass2/01-tauri-command-execution-fundamentals.md)** - Tauri command patterns
+8. **[Report 02: Rust Process Execution](./cursor/docs/reports/pass2/02-rust-process-execution-patterns.md)** - Rust execution patterns
+9. **[Report 03: GraphQL-Tauri Integration](./cursor/docs/reports/pass2/03-graphql-tauri-integration.md)** - Integration approaches
+10. **[Report 05: Security & Permissions](./cursor/docs/reports/pass2/05-security-permissions-command-execution.md)** - Security practices
+11. **[Report 06: Error Handling](./cursor/docs/reports/pass2/06-error-handling-debugging.md)** - Error handling patterns
+12. **[Plan 05: CLI Integration](./cursor/docs/plans/05-ollama-cli-integration-plan.md)** - Base CLI implementation plan
 
 ### Community Resources
 13. **[Tauri Discord](https://discord.gg/tauri)** - Community support

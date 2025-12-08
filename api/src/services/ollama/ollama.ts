@@ -9,6 +9,47 @@
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 
+/**
+ * Get user-friendly error message for Ollama/network errors
+ * Handles common error types: connection refused, timeout, network errors
+ */
+function getOllamaErrorMessage(error: unknown, operation: string): string {
+  if (error && typeof error === 'object') {
+    // Check for AbortError (timeout)
+    if (error instanceof Error && error.name === 'AbortError') {
+      return `Request timeout: The ${operation} request timed out. Ollama may be slow to respond or unavailable. Please try again.`
+    }
+
+    // Check for network error codes (Node.js fetch errors)
+    if ('code' in error) {
+      const code = (error as { code: string }).code
+
+      switch (code) {
+        case 'ECONNREFUSED':
+          return `Connection refused: Cannot ${operation}. Ollama is not running or not accessible at ${OLLAMA_BASE_URL}. Please ensure Ollama is installed and running.`
+        case 'ETIMEDOUT':
+          return `Connection timeout: The ${operation} request timed out. Ollama may be slow to respond or the network connection is unstable.`
+        case 'ENOTFOUND':
+          return `Host not found: Cannot ${operation}. The Ollama server address could not be resolved. Please check your network connection and Ollama configuration.`
+        case 'ECONNRESET':
+          return `Connection reset: The ${operation} connection was reset by Ollama. The service may be restarting or overloaded.`
+        default:
+          // Fall through to generic error message
+          break
+      }
+    }
+
+    // Check for fetch API errors (TypeError for network failures)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return `Network error: Cannot ${operation}. Failed to connect to Ollama at ${OLLAMA_BASE_URL}. Please ensure Ollama is running and accessible.`
+    }
+  }
+
+  // Generic error message
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  return `Failed to ${operation}: ${errorMessage}. Please ensure Ollama is running and accessible at ${OLLAMA_BASE_URL}.`
+}
+
 // Types
 export interface OllamaModel {
   name: string
@@ -86,7 +127,17 @@ export const listOllamaModels = async (): Promise<OllamaModel[]> => {
     })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch models: ${response.statusText}`)
+      const statusText = response.statusText || 'Unknown error'
+      const status = response.status
+      let errorMessage = `Failed to fetch models (${status}): ${statusText}`
+
+      if (status === 500) {
+        errorMessage = `Ollama server error: The Ollama service encountered an internal error while fetching models. Please check Ollama logs.`
+      } else if (status === 503) {
+        errorMessage = `Ollama service unavailable: The Ollama service is temporarily unavailable. Please ensure Ollama is running.`
+      }
+
+      throw new Error(errorMessage)
     }
 
     const data: OllamaModelListResponse = await response.json()
@@ -107,9 +158,8 @@ export const listOllamaModels = async (): Promise<OllamaModel[]> => {
     return models
   } catch (error) {
     console.error('Failed to list Ollama models:', error)
-    throw new Error(
-      `Ollama service unavailable. Please ensure Ollama is running. Error: ${error instanceof Error ? error.message : String(error)}`
-    )
+    const errorMessage = getOllamaErrorMessage(error, 'list Ollama models')
+    throw new Error(errorMessage)
   }
 }
 
@@ -172,7 +222,20 @@ export async function* streamChatCompletion({
     })
 
     if (!response.ok) {
-      throw new Error(`Ollama API error: ${response.statusText}`)
+      const statusText = response.statusText || 'Unknown error'
+      const status = response.status
+      let errorMessage = `Ollama API error (${status}): ${statusText}`
+
+      // Provide more specific error messages for common HTTP status codes
+      if (status === 404) {
+        errorMessage = `Model not found: The requested model may not be available. Please check that the model name is correct and that Ollama has the model installed.`
+      } else if (status === 500) {
+        errorMessage = `Ollama server error: The Ollama service encountered an internal error. Please try again or check Ollama logs.`
+      } else if (status === 503) {
+        errorMessage = `Ollama service unavailable: The Ollama service is temporarily unavailable. Please ensure Ollama is running and try again.`
+      }
+
+      throw new Error(errorMessage)
     }
 
     const reader = response.body?.getReader()
@@ -221,9 +284,8 @@ export async function* streamChatCompletion({
     }
   } catch (error) {
     console.error('Streaming chat completion error:', error)
-    throw new Error(
-      `Failed to stream chat completion: ${error instanceof Error ? error.message : String(error)}`
-    )
+    const errorMessage = getOllamaErrorMessage(error, 'stream chat completion')
+    throw new Error(errorMessage)
   }
 }
 

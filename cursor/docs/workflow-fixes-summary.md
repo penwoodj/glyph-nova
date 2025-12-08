@@ -153,6 +153,6 @@ return {
 
 ## Files Modified
 
-- `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json`
+- `/home/jon/code/glyph-nova/cursor/docs/My workflow improved.json`
   - Replaced HTTP Request node with DuckDuckGo Search community node
   - Updated Format Results code node to handle new response structure

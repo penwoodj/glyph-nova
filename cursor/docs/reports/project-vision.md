@@ -67,7 +67,7 @@ Slow Tier (Background) →  Larger models, quality over speed
 | **Context Engine** | Fixed behavior | Smart chunking, self-learning |
 | **Modes** | Predefined | Agentic instruction documents |
 | **Deployment** | Cloud-based | Local swarm across machines |
-| **Rules** | Static .cursorrules | Dynamic, context-aware modes |
+| **Rules** | Static cursorrules | Dynamic, context-aware modes |
 | **Context Sources** | Limited | MCP + RAG + custom integrations |
 
 ---

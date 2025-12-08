@@ -2,9 +2,9 @@
 
 **Purpose**: Conduct comprehensive research into Redwood.js, Storybook, Electron/Tauri for cross-platform desktop development, and related technologies to create a suite of contextual reports for implementation guidance.
 
-**Version**: 1.0  
-**Created**: January 2025  
-**Last Updated**: January 2025  
+**Version**: 1.0
+**Created**: January 2025
+**Last Updated**: January 2025
 **Context**: Initial research phase for local LLM UI desktop application on Pop!_OS (Linux)
 
 ## Plan Update - January 2025
@@ -15,7 +15,7 @@
 
 **Execution Summary**:
 - ✅ Phase 1 (Core Framework Research): 4/4 reports complete
-- ✅ Phase 2 (Feature-Specific Research): 4/4 reports complete  
+- ✅ Phase 2 (Feature-Specific Research): 4/4 reports complete
 - ✅ Phase 3 (Integration & Architecture): 3/3 reports complete
 - ✅ All validation checkpoints passed
 - ✅ Pre-implementation review complete
@@ -50,7 +50,7 @@
 - **Total Reports Generated**: 11 comprehensive research reports
 - **Total Documentation Links**: 100+ verified external links
 - **Average Report Size**: ~10KB (context window compatible)
-- **All Reports Located**: `.cursor/docs/reports/`
+- **All Reports Located**: `cursor/docs/reports/`
 
 ### 📋 Final Status
 - Phase 1 (Core Framework Research): ✅ 4 of 4 reports complete (100%)
@@ -462,10 +462,10 @@ For each research deliverable, use the report generation rules:
 
 ## Report Storage Structure
 
-All reports should be saved in `.cursor/docs/reports/` with clear naming:
+All reports should be saved in `cursor/docs/reports/` with clear naming:
 
 ```
-.cursor/docs/reports/
+cursor/docs/reports/
 ├── 01-redwoodjs-comprehensive-guide.md
 ├── 02-electron-vs-tauri-linux-comparison.md
 ├── 03-desktop-file-system-integration.md
@@ -597,7 +597,7 @@ All reports should be saved in `.cursor/docs/reports/` with clear naming:
 ### Final Validation Summary
 
 **Report Verification**:
-- ✅ All 11 reports exist in `.cursor/docs/reports/`
+- ✅ All 11 reports exist in `cursor/docs/reports/`
 - ✅ Report sizes verified: 10-19KB each (total ~172KB)
 - ✅ All reports contain Executive Summary with recommendations
 - ✅ All reports contain External Documentation Links sections

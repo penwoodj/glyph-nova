@@ -69,15 +69,15 @@ Status: ✅ 100% PASSING
 ### New Files Created
 1. `api/src/services/ollama/ollama-cli.ts` - CLI service (373 lines)
 2. `api/src/services/ollama/ollama-cli.test.ts` - Tests (167 lines)
-3. `.cursor/docs/plans/05-COMPLETION-SUMMARY.md` - Detailed summary
-4. `.cursor/docs/plans/05-FINAL-STATUS.md` - This file
+3. `cursor/docs/plans/05-COMPLETION-SUMMARY.md` - Detailed summary
+4. `cursor/docs/plans/05-FINAL-STATUS.md` - This file
 
 ### Files Modified
 1. `api/src/services/ollama/ollama.ts` - Added CLI service functions
 2. `api/src/graphql/chat.sdl.ts` - Extended schema with CLI queries
 3. `api/src/graphql/chat.ts` - Updated resolvers
 4. `web/src/components/Chat/ChatInterface.tsx` - Added CLI toggle
-5. `.cursor/docs/plans/05-ollama-cli-integration-plan.md` - Progress tracking
+5. `cursor/docs/plans/05-ollama-cli-integration-plan.md` - Progress tracking
 
 ---
 
@@ -218,9 +218,9 @@ The application is ready for production use.
 - This status: `05-FINAL-STATUS.md`
 
 **Technical References**:
-- Security guide: `.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
-- Implementation guide: `.cursor/docs/reports/pass2/07-practical-implementation-guide.md`
-- GraphQL integration: `.cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
+- Security guide: `cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
+- Implementation guide: `cursor/docs/reports/pass2/07-practical-implementation-guide.md`
+- GraphQL integration: `cursor/docs/reports/pass2/03-graphql-tauri-integration.md`
 
 **Code**:
 - CLI service: `api/src/services/ollama/ollama-cli.ts`

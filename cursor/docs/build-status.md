@@ -78,6 +78,6 @@ yarn tauri build
 5. ⏭️ Document any issues found during testing
 
 ### Reference
-- Plan: `.cursor/docs/plans/03-mvp-implementation-remaining-work-plan.md` - Phase 1.2.4
-- Report: `.cursor/docs/reports/09-desktop-app-architecture.md`
-- Dependency install script: `.cursor/docs/install-tauri-deps.sh`
+- Plan: `cursor/docs/plans/03-mvp-implementation-remaining-work-plan.md` - Phase 1.2.4
+- Report: `cursor/docs/reports/09-desktop-app-architecture.md`
+- Dependency install script: `cursor/docs/install-tauri-deps.sh`

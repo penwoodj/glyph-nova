@@ -125,23 +125,23 @@ $ curl "https://api.duckduckgo.com/?q=test&format=json"
 
 ## Files Changed
 
-1. **Main Workflow**: `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json`
+1. **Main Workflow**: `/home/jon/code/glyph-nova/cursor/docs/My workflow improved.json`
    - Replaced DuckDuckGo Search node with HTTP Request
    - Updated Format Results code node
 
-2. **Backup Created**: `/home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json`
+2. **Backup Created**: `/home/jon/code/glyph-nova/cursor/docs/My workflow - NO HANG.json`
    - Clean copy of the working workflow
 
 3. **Documentation**:
-   - `/home/jon/code/glyph-nova/.cursor/docs/duckduckgo-hanging-fix.md` - Diagnosis
-   - `/home/jon/code/glyph-nova/.cursor/docs/duckduckgo-hanging-resolved.md` - This file
+   - `/home/jon/code/glyph-nova/cursor/docs/duckduckgo-hanging-fix.md` - Diagnosis
+   - `/home/jon/code/glyph-nova/cursor/docs/duckduckgo-hanging-resolved.md` - This file
 
 ## How to Use
 
 ### Option 1: Import Fixed Workflow (Recommended)
 1. Open n8n: http://localhost:5678
 2. Workflows → Import from File
-3. Select: `/home/jon/code/glyph-nova/.cursor/docs/My workflow - NO HANG.json`
+3. Select: `/home/jon/code/glyph-nova/cursor/docs/My workflow - NO HANG.json`
 4. Activate and test
 
 ### Option 2: Update Existing Workflow

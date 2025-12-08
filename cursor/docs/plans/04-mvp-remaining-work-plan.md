@@ -7,7 +7,7 @@
 **Last Updated**: 2025-12-04
 **Context**: Continuation of MVP implementation following completion of Phases 3-4 core features
 **Previous Plan**: See [03-mvp-implementation-remaining-work-plan.md](03-mvp-implementation-remaining-work-plan.md) for completed work
-**Research Context**: All reports available in `.cursor/docs/reports/`
+**Research Context**: All reports available in `cursor/docs/reports/`
 **Status**: 🔄 **IN PROGRESS** - Phase 2 Complete, Phase 1 & 3-5 Pending
 
 ## Plan Update - 2025-12-04
@@ -109,14 +109,14 @@ This plan covers:
 
 ## Research Report References
 
-**All implementation work references the following research reports available in `.cursor/docs/reports/`:**
+**All implementation work references the following research reports available in `cursor/docs/reports/`:**
 
-1. **Report 05**: [Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md) - Streaming patterns
-2. **Report 08**: [Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md) - Streaming service section
-3. **Report 09**: [Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md) - Error handling, performance
-4. **Report 03**: [Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md) - File operations
-5. **Report 07**: [File Tree Component Guide](.cursor/docs/reports/07-file-tree-component-guide.md) - Virtual scrolling
-6. **Report 11**: [Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md) - Styling and theming
+1. **Report 05**: [Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md) - Streaming patterns
+2. **Report 08**: [Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md) - Streaming service section
+3. **Report 09**: [Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md) - Error handling, performance
+4. **Report 03**: [Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md) - File operations
+5. **Report 07**: [File Tree Component Guide](cursor/docs/reports/07-file-tree-component-guide.md) - Virtual scrolling
+6. **Report 11**: [Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md) - Styling and theming
 
 ---
 
@@ -234,14 +234,14 @@ This plan covers:
 **Actual Time**: ~1 hour
 **Risk Level**: Medium (streaming complexity)
 **Research References**:
-- Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Streaming service section
-- Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - Streaming patterns
+- Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Streaming service section
+- Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - Streaming patterns
 
 ### Phase 2.1: Create Frontend Streaming Service
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Streaming service section
+**Reference**: Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Streaming service section
 
 - [x] Create streaming service on frontend (Report 08, Streaming service section)
   ```typescript
@@ -290,7 +290,7 @@ This plan covers:
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Real-time updates section
+**Reference**: Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Real-time updates section
 
 - [x] Update ChatInterface to use streaming service
   - ✅ Replaced non-streaming GraphQL mutation with streaming service
@@ -365,12 +365,12 @@ This plan covers:
 **Actual Time**: ~2 hours
 **Risk Level**: Medium (LLM response parsing complexity)
 **Research References**:
-- Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - File editing patterns
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
+- Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - File editing patterns
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
 
 ### Phase 3.1: Implement Edit Request Parsing ✅
 
-**Reference**: Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - File editing patterns
+**Reference**: Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - File editing patterns
 
 - [x] Parse file edit requests from chat responses
   - [x] Detect edit requests in LLM responses (`detectEditRequests()`)
@@ -411,7 +411,7 @@ This plan covers:
 
 ### Phase 3.2: Apply Edits to Files ✅
 
-**Reference**: Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
+**Reference**: Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
 
 - [x] Apply edits to files via GraphQL mutation
   - [x] Use existing `writeFile` mutation (Plan 02, Phase 2.1.2)
@@ -478,7 +478,7 @@ This plan covers:
 
 ### Phase 4.1: Styling and Theming
 
-**Reference**: Report 11 ([Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)) - VSCode theme section
+**Reference**: Report 11 ([Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)) - VSCode theme section
 
 - [x] Apply VSCode dark theme consistently (Report 11, VSCode theme section)
   - [x] Added missing VSCode theme colors to Tailwind config:
@@ -490,40 +490,31 @@ This plan covers:
     - `vscode-focus-border`: '#007acc'
   - [x] Verified all components use VSCode colors (20 files checked)
   - [x] Theme colors now match usage across all components
-  - [x] Replaced hardcoded colors in CodeEditor with CSS variables
-    - Changed `#1e1e1e` → `var(--vscode-bg)`
-    - Changed `#d4d4d4` → `var(--vscode-fg)`
-  - [x] Verified theme consistency across panels (DesktopLayout, FileTree, Editor, Chat all use VSCode theme)
-  - [ ] Follow patterns from Report 11 (next step)
+  - [x] Verified theme consistency across panels:
+    - DesktopLayout: Uses `bg-vscode-bg`, `bg-vscode-sidebar-bg`, `bg-vscode-editor-bg`
+    - FileTree: Uses `bg-vscode-sidebar-bg`, `text-vscode-fg-secondary`, `border-vscode-border`
+    - Editor: Uses `bg-vscode-editor-bg`, `text-vscode-fg` (with CSS variables)
+    - Chat: Uses `bg-vscode-editor-bg`, `bg-vscode-input-bg`, `text-vscode-fg`
+  - [x] Replaced hardcoded colors in CodeEditor with CSS variables (`var(--vscode-bg)`, `var(--vscode-fg)`)
 - [ ] Style all components to match VSCode
   - File tree matches VSCode appearance
   - Editor matches VSCode editor
   - Chat matches Cursor-like appearance
-- [x] Ensure consistent spacing and typography
-  - [x] Verified consistent padding and margins across components:
-    - Headers: `px-2 py-1` (FileTree) or `px-4 py-2` (Chat)
-    - Content areas: `p-4` (consistent)
-    - Items: `px-2 py-1` (consistent)
-    - Buttons: `px-4 py-2` (consistent)
-  - [x] Verified uniform typography scale:
-    - Labels/small: `text-xs`
-    - Body text: `text-sm` (most common)
-    - Headings: `text-lg`
-    - Consistent font families (system fonts for UI, monospace for code)
-  - [x] Verified proper line heights:
-    - Code editor: `lineHeight: 1.6`
-    - Prose content: `leading-relaxed` (1.625)
-    - Consistent across similar content types
+- [ ] Ensure consistent spacing and typography
+  - Consistent padding and margins
+  - Uniform typography scale
+  - Proper line heights and spacing
 - [ ] Test dark theme appearance
   - Verify all components visible
   - Check contrast ratios
   - Test in different lighting conditions
 
 **Files Modified**:
-- ✅ `web/tailwind.config.js` - Added missing VSCode theme colors
+- ✅ `web/tailwind.config.js` - Added missing VSCode theme colors (6 colors)
+- ✅ `web/src/components/Editor/CodeEditor.tsx` - Replaced hardcoded colors with CSS variables
 
-**Files to Modify**:
-- All component styles (verification in progress)
+**Files Verified**:
+- ✅ All component styles verified - consistent VSCode theme usage across 20+ files
 
 **Success Criteria**:
 - Consistent VSCode dark theme throughout app
@@ -536,18 +527,14 @@ This plan covers:
   - Added missing theme colors to Tailwind config
   - Replaced hardcoded colors in CodeEditor with CSS variables
   - Verified theme consistency across all panels
-  - Verified consistent spacing and typography patterns
 
 **Verification** (2025-01-15):
 - ✅ Build successful: `yarn rw build web` passes
 - ✅ No linter errors
-- ✅ All missing VSCode theme colors added to config
-- ✅ 20 component files verified using VSCode theme classes
-- ✅ Hardcoded colors replaced with CSS variables for consistency
+- ✅ All missing VSCode theme colors added to config (6 colors)
+- ✅ 20+ component files verified using VSCode theme classes
 - ✅ Theme consistent across DesktopLayout, FileTree, Editor, and Chat panels
-- ✅ Spacing patterns consistent (using Tailwind scale: p-4, px-2 py-1, px-4 py-2)
-- ✅ Typography scale consistent (text-xs, text-sm, text-lg)
-- ✅ Line heights consistent (1.6 for code, leading-relaxed for prose)
+- ✅ Hardcoded colors replaced with CSS variables for consistency
 
 **External Documentation Links**:
 - Report 11, VSCode theme section - Theme matching patterns
@@ -555,33 +542,61 @@ This plan covers:
 
 ### Phase 4.2: Error Handling and Edge Cases
 
-**Reference**: Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - Error handling section
+**Reference**: Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - Error handling section
 
-- [ ] Add error boundaries (Report 09, Error handling section)
-  - React Error Boundaries for component errors
-  - Global error handler
-  - Error logging and reporting
-- [ ] Handle file system errors gracefully
-  - Permission errors
-  - File not found errors
-  - Disk space errors
-- [ ] Handle Ollama unavailable scenarios
-  - Service unavailable errors
-  - Network errors
-  - Timeout errors
-- [ ] Handle network errors
-  - Connection failures
-  - Request timeouts
-  - Retry logic
+- [x] Add error boundaries (Report 09, Error handling section)
+  - [x] Created `ErrorBoundary.tsx` component with React Error Boundary
+  - [x] VSCode-themed error UI with error details and stack trace
+  - [x] Error logging to console
+  - [x] "Try Again" and "Reload Page" recovery options
+  - [ ] Global error handler (next step)
+  - [ ] Error reporting service integration (TODO: Sentry or similar)
+- [x] Handle file system errors gracefully
+  - [x] Created `getFileSystemErrorMessage()` helper function
+  - [x] Detects and handles specific error codes:
+    - `EACCES`: Permission denied errors with user-friendly message
+    - `ENOENT`: File not found errors with user-friendly message
+    - `ENOSPC`: Disk space errors with user-friendly message
+    - `EISDIR`, `ENOTDIR`, `EMFILE`, `ENAMETOOLONG`: Additional common errors
+  - [x] Integrated into all file operations:
+    - `getDirectoryContents()` - directory reading errors
+    - `readFileInternal()` - file reading errors
+    - `writeFileInternal()` - file writing errors
+    - `getFileStats()` - file stats errors
+- [x] Handle Ollama unavailable scenarios
+  - [x] Created `getOllamaErrorMessage()` helper function
+  - [x] Detects and handles specific error types:
+    - `ECONNREFUSED`: Connection refused (Ollama not running)
+    - `ETIMEDOUT`: Connection timeout
+    - `ENOTFOUND`: Host not found
+    - `ECONNRESET`: Connection reset
+    - `AbortError`: Request timeout (from AbortSignal)
+    - `TypeError`: Network fetch failures
+  - [x] Enhanced HTTP status code error handling:
+    - `404`: Model not found errors
+    - `500`: Server error
+    - `503`: Service unavailable
+  - [x] Integrated into Ollama service functions:
+    - `listOllamaModels()` - model listing errors
+    - `streamChatCompletion()` - streaming errors
+- [x] Handle network errors
+  - [x] Connection failures detected and handled with user-friendly messages
+  - [x] Request timeouts detected and handled (AbortSignal.timeout)
+  - [ ] Retry logic (optional enhancement - not critical for MVP)
 - [ ] Add user-friendly error messages
   - Clear, actionable error messages
   - Recovery suggestions
   - Error reporting mechanism
 
+**Files Created**:
+- ✅ `web/src/components/ErrorBoundary.tsx` (140 lines) - Error boundary component
+
+**Files Modified**:
+- ✅ `api/src/services/files/files.ts` - Enhanced error handling with user-friendly messages
+- ✅ `api/src/services/ollama/ollama.ts` - Enhanced error handling for Ollama/network errors
+
 **Files to Create/Modify**:
-- `web/src/components/ErrorBoundary.tsx` - Error boundary component
-- Error handling in all services
-- User-friendly error message utilities
+- User-friendly error message utilities for frontend (optional enhancement)
 
 **Success Criteria**:
 - Errors caught and displayed gracefully
@@ -590,6 +605,19 @@ This plan covers:
 - Error recovery mechanisms in place
 
 **Time Estimate**: 2 hours
+**Progress**: ~60 minutes
+  - Created ErrorBoundary component
+  - Enhanced file system error handling with user-friendly messages
+  - Enhanced Ollama/network error handling with user-friendly messages
+
+**Verification** (2025-01-15):
+- ✅ Build successful: `yarn rw build api` passes
+- ✅ No linter errors
+- ✅ ErrorBoundary component created with VSCode theme styling
+- ✅ File system error handling detects EACCES, ENOENT, ENOSPC and other common errors
+- ✅ User-friendly error messages for all file operations
+- ✅ Ollama error handling detects ECONNREFUSED, ETIMEDOUT, network errors, and HTTP status codes
+- ✅ User-friendly error messages for all Ollama operations with actionable guidance
 
 **External Documentation Links**:
 - Report 09, Error handling section - Error handling patterns
@@ -598,8 +626,8 @@ This plan covers:
 ### Phase 4.3: Performance Optimization
 
 **Reference**:
-- Report 07 ([File Tree Component Guide](.cursor/docs/reports/07-file-tree-component-guide.md)) - Virtual scrolling section
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - Performance optimization
+- Report 07 ([File Tree Component Guide](cursor/docs/reports/07-file-tree-component-guide.md)) - Virtual scrolling section
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - Performance optimization
 
 - [ ] Implement virtual scrolling for large file trees (Report 07, Virtual scrolling section)
   - Use react-window (already installed in Plan 02, Phase 2.2.1)
@@ -850,9 +878,9 @@ This plan covers:
 1. **Load Relevant Research Reports** (2-3 reports):
    ```
    Load these reports for context:
-   - .cursor/docs/reports/[relevant-report-1].md
-   - .cursor/docs/reports/[relevant-report-2].md
-   - .cursor/docs/reports/[relevant-report-3].md
+   - cursor/docs/reports/[relevant-report-1].md
+   - cursor/docs/reports/[relevant-report-2].md
+   - cursor/docs/reports/[relevant-report-3].md
    ```
 
 2. **Reference Completed Work**:

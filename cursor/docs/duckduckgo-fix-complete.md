@@ -29,7 +29,7 @@ The DuckDuckGo search node wasn't being recognized in your n8n workflow due to a
 ## Test Results
 
 ```bash
-$ /home/jon/code/glyph-nova/.cursor/docs/test-duckduckgo-node.sh
+$ /home/jon/code/glyph-nova/cursor/docs/test-duckduckgo-node.sh
 
 ✅ n8n is running (PID: 712357)
 ✅ DuckDuckGo node installed: v31.0.1
@@ -43,7 +43,7 @@ $ /home/jon/code/glyph-nova/.cursor/docs/test-duckduckgo-node.sh
 
 1. Open n8n: **http://localhost:5678**
 2. Go to: **Workflows** → **Import from File**
-3. Select: `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json`
+3. Select: `/home/jon/code/glyph-nova/cursor/docs/My workflow improved.json`
 4. Click **Import**
 
 ### Step 2: Verify the Node Appears
@@ -138,10 +138,10 @@ The node returns:
 
 ## Files Updated
 
-- `/home/jon/code/glyph-nova/.cursor/docs/My workflow improved.json` - Fixed workflow
-- `/home/jon/code/glyph-nova/.cursor/docs/duckduckgo-node-fix.md` - Detailed fix documentation
-- `/home/jon/code/glyph-nova/.cursor/docs/test-duckduckgo-node.sh` - Test script
-- `/home/jon/code/glyph-nova/.cursor/docs/duckduckgo-fix-complete.md` - This summary
+- `/home/jon/code/glyph-nova/cursor/docs/My workflow improved.json` - Fixed workflow
+- `/home/jon/code/glyph-nova/cursor/docs/duckduckgo-node-fix.md` - Detailed fix documentation
+- `/home/jon/code/glyph-nova/cursor/docs/test-duckduckgo-node.sh` - Test script
+- `/home/jon/code/glyph-nova/cursor/docs/duckduckgo-fix-complete.md` - This summary
 
 ## n8n Status
 

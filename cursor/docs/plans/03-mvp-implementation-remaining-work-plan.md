@@ -7,7 +7,7 @@
 **Last Updated**: 2025-12-04 (Latest)
 **Context**: Continuation of MVP implementation following completion of Phases 1-2
 **Previous Plan**: See [02-mvp-implementation-plan.md](02-mvp-implementation-plan.md) for completed work and foundation context
-**Research Context**: All reports available in `.cursor/docs/reports/`
+**Research Context**: All reports available in `cursor/docs/reports/`
 **Status**: ✅ **PHASES 3-4 COMPLETE - CORE MVP FUNCTIONAL**
 
 ## Plan Update - 2025-12-01 21:30:00 CST
@@ -102,53 +102,53 @@ This plan covers:
 
 ## Research Report References
 
-**All implementation work references the following research reports available in `.cursor/docs/reports/`:**
+**All implementation work references the following research reports available in `cursor/docs/reports/`:**
 
-1. **Report 01**: [Redwood.js Comprehensive Guide](.cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)
+1. **Report 01**: [Redwood.js Comprehensive Guide](cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)
    - Architecture patterns, Cells pattern, Service layer organization
    - **Key Sections**: Cells pattern, GraphQL resolvers, Desktop integration
 
-2. **Report 02**: [Electron vs Tauri Linux Comparison](.cursor/docs/reports/02-electron-vs-tauri-linux-comparison.md)
+2. **Report 02**: [Electron vs Tauri Linux Comparison](cursor/docs/reports/02-electron-vs-tauri-linux-comparison.md)
    - Framework comparison (Tauri chosen for MVP)
    - **Key Sections**: Tauri setup, Security model, Performance optimization
 
-3. **Report 03**: [Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)
+3. **Report 03**: [Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)
    - File operations patterns, Security considerations, Performance optimization
    - **Key Sections**: File System Access Patterns, Security patterns, Backup strategies
 
-4. **Report 04**: [Storybook Redwood.js Integration](.cursor/docs/reports/04-storybook-redwoodjs-integration.md)
+4. **Report 04**: [Storybook Redwood.js Integration](cursor/docs/reports/04-storybook-redwoodjs-integration.md)
    - Storybook setup and configuration, Component development patterns
    - **Key Sections**: Redwood.js integration, Component patterns, Testing strategies
 
-5. **Report 05**: [Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)
+5. **Report 05**: [Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)
    - Ollama API integration, Streaming patterns, Context management
    - **Key Sections**: Streaming chat completion, File context integration, Model management
 
-6. **Report 06**: [Markdown Editor Implementation](.cursor/docs/reports/06-markdown-editor-implementation.md)
+6. **Report 06**: [Markdown Editor Implementation](cursor/docs/reports/06-markdown-editor-implementation.md)
    - Vditor integration, Syntax highlighting, Unified editor component
    - **Key Sections**: Code syntax highlighting, File type detection, Unified editor component
 
-7. **Report 07**: [File Tree Component Guide](.cursor/docs/reports/07-file-tree-component-guide.md)
+7. **Report 07**: [File Tree Component Guide](cursor/docs/reports/07-file-tree-component-guide.md)
    - VSCode-like file tree, Expand/collapse patterns, Right-click context menu
    - **Key Sections**: Recursive tree item component, Virtual scrolling, Clipboard integration
 
-8. **Report 08**: [Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)
+8. **Report 08**: [Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)
    - Cursor-like chat UI, Streaming message updates, File context integration
    - **Key Sections**: Component structure, Streaming service, File path insertion
 
-9. **Report 09**: [Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)
+9. **Report 09**: [Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)
    - Overall architecture pattern, State management, Cross-panel communication
    - **Key Sections**: State management, Cross-panel communication, Error handling
 
-10. **Report 10**: [Linux Build & Packaging Guide](.cursor/docs/reports/10-linux-build-packaging-guide.md)
+10. **Report 10**: [Linux Build & Packaging Guide](cursor/docs/reports/10-linux-build-packaging-guide.md)
     - Tauri/Electron build process, .deb and AppImage creation, Distribution strategies
     - **Key Sections**: Build configuration, Packaging process, Distribution
 
-11. **Report 11**: [Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)
+11. **Report 11**: [Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)
     - UI library comparison (shadcn/ui chosen for MVP)
     - **Key Sections**: shadcn/ui setup, VSCode theme matching, Customization patterns
 
-**Summary Report**: [Research Summary](.cursor/docs/reports/00-research-summary.md) - Overview of all reports and key recommendations
+**Summary Report**: [Research Summary](cursor/docs/reports/00-research-summary.md) - Overview of all reports and key recommendations
 
 ---
 
@@ -162,7 +162,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Reference**:
 - Plan 02, Phase 1.2.4 - Server lifecycle implementation complete
-- Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - Server lifecycle patterns
+- Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - Server lifecycle patterns
 
 **Context**: The Redwood.js server lifecycle management code is implemented and integrated into Tauri. Testing requires building and running the desktop app.
 
@@ -196,7 +196,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Reference**:
 - Plan 02, Phase 1.4.1 - Storybook configuration complete
-- Report 04 ([Storybook Redwood.js Integration](.cursor/docs/reports/04-storybook-redwoodjs-integration.md)) - Storybook setup
+- Report 04 ([Storybook Redwood.js Integration](cursor/docs/reports/04-storybook-redwoodjs-integration.md)) - Storybook setup
 
 **Context**: Storybook configuration files are created and all dependencies installed. Ready to start and test.
 
@@ -236,12 +236,12 @@ These items are marked complete in implementation but require actual app runtime
 **Estimated Time**: 10-11 hours budgeted (Actual: ~1.5 hours)
 **Risk Level**: Medium (complex editor integration)
 **Research References**:
-- Report 06 ([Markdown Editor Implementation](.cursor/docs/reports/06-markdown-editor-implementation.md)) - Complete editor implementation guide
-- Report 11 ([Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)) - UI component patterns
+- Report 06 ([Markdown Editor Implementation](cursor/docs/reports/06-markdown-editor-implementation.md)) - Complete editor implementation guide
+- Report 11 ([Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)) - UI component patterns
 
 ### Phase 3.1: Markdown Editor Setup (Vditor) - Partial Complete
 
-**Reference**: Report 06 ([Markdown Editor Implementation](.cursor/docs/reports/06-markdown-editor-implementation.md)) - Vditor integration
+**Reference**: Report 06 ([Markdown Editor Implementation](cursor/docs/reports/06-markdown-editor-implementation.md)) - Vditor integration
 
 **Completed** (From Plan 02):
 - ✅ Phase 3.1.1: Vditor installed (v3.11.2, Prism.js v1.30.0)
@@ -251,7 +251,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-01 21:30:00 CST
 
-**Reference**: Report 06 ([Markdown Editor Implementation](.cursor/docs/reports/06-markdown-editor-implementation.md)) - Code syntax highlighting section
+**Reference**: Report 06 ([Markdown Editor Implementation](cursor/docs/reports/06-markdown-editor-implementation.md)) - Code syntax highlighting section
 
 - [x] Install syntax highlighting library
   ```bash
@@ -309,7 +309,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04 (continued session)
 
-**Reference**: Report 06 ([Markdown Editor Implementation](.cursor/docs/reports/06-markdown-editor-implementation.md)) - Unified editor component section
+**Reference**: Report 06 ([Markdown Editor Implementation](cursor/docs/reports/06-markdown-editor-implementation.md)) - Unified editor component section
 
 - [x] Create UnifiedEditor component that switches based on file type
   - ✅ File: `web/src/components/Editor/UnifiedEditor.tsx` (97 lines)
@@ -353,15 +353,15 @@ These items are marked complete in implementation but require actual app runtime
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
 **Reference**:
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations patterns
-- Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - State management patterns
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations patterns
+- Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - State management patterns
 - **Note**: GraphQL file reading query and resolver already exist (completed in Plan 02, Phase 2.1.2)
 
 #### Phase 3.2.1: Create File Loading Service
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 01 ([Redwood.js Comprehensive Guide](.cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)) - Cells pattern section
+**Reference**: Report 01 ([Redwood.js Comprehensive Guide](cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)) - Cells pattern section
 
 **Note**: The GraphQL query (`readFile`) and resolver already exist from Plan 02, Phase 2.1.2. Only need to create the frontend Cell component.
 
@@ -398,7 +398,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - State management section, Cross-component communication patterns
+**Reference**: Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - State management section, Cross-component communication patterns
 
 - [x] Create state management for selected file (Report 09, State management section)
   - ✅ Created Zustand store with persistence
@@ -442,7 +442,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations section, Backup patterns
+**Reference**: Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations section, Backup patterns
 
 **Note**: The GraphQL mutation (`writeFile`) and resolver already exist from Plan 02, Phase 2.1.2. Only need to add save functionality to editor.
 
@@ -499,18 +499,18 @@ These items are marked complete in implementation but require actual app runtime
 **Estimated Time**: 12-14 hours (with 20% buffer: 14.4-16.8 hours)
 **Risk Level**: Medium (streaming complexity, Ollama integration)
 **Research References**:
-- Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - Complete Ollama integration guide with streaming patterns
-- Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Cursor-like chat UI implementation patterns
+- Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - Complete Ollama integration guide with streaming patterns
+- Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Cursor-like chat UI implementation patterns
 
 ### Phase 4.1: Ollama Integration Service
 
-**Reference**: Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - Ollama integration patterns
+**Reference**: Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - Ollama integration patterns
 
 #### Phase 4.1.1: Create Ollama Service
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - Model management section
+**Reference**: Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - Model management section
 
 - [x] Generate Redwood.js service for Ollama
   - ✅ Manually created service (Redwood.js generator doesn't support non-database services)
@@ -550,7 +550,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - Streaming chat completion section
+**Reference**: Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - Streaming chat completion section
 
 - [x] Implement streaming chat service (Report 05, Streaming pattern section)
   - ✅ `streamChatCompletion()` generator function implemented
@@ -588,7 +588,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 01 ([Redwood.js Comprehensive Guide](.cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)) - GraphQL schema patterns
+**Reference**: Report 01 ([Redwood.js Comprehensive Guide](cursor/docs/reports/01-redwoodjs-comprehensive-guide.md)) - GraphQL schema patterns
 
 - [x] Create GraphQL schema for chat operations
   - ✅ Schema created with `gql` template literal
@@ -624,14 +624,14 @@ These items are marked complete in implementation but require actual app runtime
 ### Phase 4.2: Chat UI Component Development
 
 **Reference**:
-- Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Chat interface patterns
-- Report 11 ([Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)) - Component library patterns
+- Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Chat interface patterns
+- Report 11 ([Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)) - Component library patterns
 
 #### Phase 4.2.1: Create Chat Interface Layout
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Component structure section
+**Reference**: Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Component structure section
 
 - [x] Create ChatInterface component structure (Report 08, Component structure section)
   - ✅ File: `web/src/components/Chat/ChatInterface.tsx` (265 lines)
@@ -670,7 +670,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Message rendering section
+**Reference**: Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Message rendering section
 
 - [x] Create ChatMessage component (Report 08, Chat message component section)
   - ✅ File: `web/src/components/Chat/ChatMessage.tsx` (180 lines)
@@ -712,7 +712,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ⚠️ **PARTIAL** - Backend streaming complete, frontend streaming needs implementation/testing
 
-**Reference**: Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Streaming response handling section
+**Reference**: Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Streaming response handling section
 
 - [ ] Create streaming service on frontend (Report 08, Streaming service section)
   - ⚠️ Backend streaming implemented, frontend streaming service not yet created
@@ -751,8 +751,8 @@ These items are marked complete in implementation but require actual app runtime
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
 **Reference**:
-- Report 07 ([File Tree Component Guide](.cursor/docs/reports/07-file-tree-component-guide.md)) - Clipboard integration
-- Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - File path insertion section
+- Report 07 ([File Tree Component Guide](cursor/docs/reports/07-file-tree-component-guide.md)) - Clipboard integration
+- Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - File path insertion section
 
 **Context**: File tree context menu already dispatches 'file-path-to-chat' custom event (Plan 02, Phase 2.2.5). Need to listen for this event in chat component.
 
@@ -793,8 +793,8 @@ These items are marked complete in implementation but require actual app runtime
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
 **Reference**:
-- Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - File context integration section
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
+- Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - File context integration section
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
 
 - [x] Load file content when file path in message
   - ✅ Detects file paths in chat messages (absolute paths, backtick-wrapped)
@@ -854,20 +854,20 @@ These items are marked complete in implementation but require actual app runtime
 **Estimated Time**: 8-10 hours (with 20% buffer: 9.6-12 hours)
 **Risk Level**: Low (integration and refinement)
 **Research References**:
-- Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - Integration patterns and state management
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
-- Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - File context
-- Report 08 ([Chat Interface Patterns](.cursor/docs/reports/08-chat-interface-patterns.md)) - Chat patterns
+- Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - Integration patterns and state management
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
+- Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - File context
+- Report 08 ([Chat Interface Patterns](cursor/docs/reports/08-chat-interface-patterns.md)) - Chat patterns
 
 ### Phase 5.1: Cross-Panel Communication
 
-**Reference**: Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - Cross-panel communication section
+**Reference**: Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - Cross-panel communication section
 
 #### Phase 5.1.1: Implement State Management
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - State management section
+**Reference**: Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - State management section
 
 - [x] Set up Zustand store or React Context (Report 09, State management section)
   - ✅ Chose Zustand for state management
@@ -908,7 +908,7 @@ These items are marked complete in implementation but require actual app runtime
 
 **Status**: ✅ **COMPLETE** - 2025-12-04
 
-**Reference**: Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - Cross-panel communication section
+**Reference**: Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - Cross-panel communication section
 
 - [x] Connect file tree selection to editor
   - ✅ FileTreeView → State → UnifiedEditor
@@ -949,12 +949,12 @@ These items are marked complete in implementation but require actual app runtime
 ### Phase 5.2: File Editing from Chat
 
 **Reference**:
-- Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - File context section
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
+- Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - File context section
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - File operations
 
 #### Phase 5.2.1: Implement Chat-to-Editor Communication
 
-**Reference**: Report 05 ([Ollama Integration Patterns](.cursor/docs/reports/05-ollama-integration-patterns.md)) - File editing patterns
+**Reference**: Report 05 ([Ollama Integration Patterns](cursor/docs/reports/05-ollama-integration-patterns.md)) - File editing patterns
 
 - [ ] Parse file edit requests from chat responses
   - Detect edit requests in LLM responses
@@ -999,7 +999,7 @@ These items are marked complete in implementation but require actual app runtime
 
 #### Phase 5.3.1: Styling and Theming
 
-**Reference**: Report 11 ([Component Library Evaluation](.cursor/docs/reports/11-component-library-evaluation.md)) - VSCode theme section
+**Reference**: Report 11 ([Component Library Evaluation](cursor/docs/reports/11-component-library-evaluation.md)) - VSCode theme section
 
 - [ ] Apply VSCode dark theme consistently (Report 11, VSCode theme section)
   - Ensure all components use VSCode colors
@@ -1036,7 +1036,7 @@ These items are marked complete in implementation but require actual app runtime
 
 #### Phase 5.3.2: Error Handling and Edge Cases
 
-**Reference**: Report 09 ([Desktop App Architecture](.cursor/docs/reports/09-desktop-app-architecture.md)) - Error handling section
+**Reference**: Report 09 ([Desktop App Architecture](cursor/docs/reports/09-desktop-app-architecture.md)) - Error handling section
 
 - [ ] Add error boundaries (Report 09, Error handling section)
   - React Error Boundaries for component errors
@@ -1079,8 +1079,8 @@ These items are marked complete in implementation but require actual app runtime
 #### Phase 5.3.3: Performance Optimization
 
 **Reference**:
-- Report 07 ([File Tree Component Guide](.cursor/docs/reports/07-file-tree-component-guide.md)) - Virtual scrolling section
-- Report 03 ([Desktop File System Integration](.cursor/docs/reports/03-desktop-file-system-integration.md)) - Performance optimization
+- Report 07 ([File Tree Component Guide](cursor/docs/reports/07-file-tree-component-guide.md)) - Virtual scrolling section
+- Report 03 ([Desktop File System Integration](cursor/docs/reports/03-desktop-file-system-integration.md)) - Performance optimization
 
 - [ ] Implement virtual scrolling for large file trees (Report 07, Virtual scrolling section)
   - Use react-window (already installed in Plan 02, Phase 2.2.1)
@@ -1261,9 +1261,9 @@ This plan builds upon work completed in Plan 02:
 1. **Load Relevant Research Reports** (2-3 reports):
    ```
    Load these reports for context:
-   - .cursor/docs/reports/[relevant-report-1].md
-   - .cursor/docs/reports/[relevant-report-2].md
-   - .cursor/docs/reports/[relevant-report-3].md
+   - cursor/docs/reports/[relevant-report-1].md
+   - cursor/docs/reports/[relevant-report-2].md
+   - cursor/docs/reports/[relevant-report-3].md
    ```
 
 2. **Reference Completed Work**:
@@ -1418,9 +1418,9 @@ This plan builds upon work completed in Plan 02:
   - Issue: File service tests use /tmp which is blocked by security validation
 
 - 📋 **Verification Rules Created**
-  - Created `.cursor/rules/always-on/verification-required.mdc`
-  - Created `.cursor/rules/always-on/build-verification.mdc`
-  - Created `.cursor/rules/always-on/test-before-complete.mdc`
+  - Created `cursor/rules/always-on/verification-required.mdc`
+  - Created `cursor/rules/always-on/build-verification.mdc`
+  - Created `cursor/rules/always-on/test-before-complete.mdc`
   - Rules enforce: Build → Test → Manual verify → THEN mark complete
 
 **Files Created** (22 total):

@@ -120,7 +120,7 @@ Security:
 ```
 api/src/services/ollama/ollama-cli.ts          373 lines
 api/src/services/ollama/ollama-cli.test.ts     167 lines
-.cursor/docs/plans/05-COMPLETION-SUMMARY.md     This file
+cursor/docs/plans/05-COMPLETION-SUMMARY.md     This file
 ```
 
 ### Modified Files
@@ -129,7 +129,7 @@ api/src/services/ollama/ollama.ts              +90 lines (CLI service functions)
 api/src/graphql/chat.sdl.ts                    +8 lines (CLI schema)
 api/src/graphql/chat.ts                        +40 lines (CLI resolvers)
 web/src/components/Chat/ChatInterface.tsx      +35 lines (CLI toggle)
-.cursor/docs/plans/05-ollama-cli-integration-plan.md  +454 lines (progress tracking)
+cursor/docs/plans/05-ollama-cli-integration-plan.md  +454 lines (progress tracking)
 ```
 
 **Total New Code**: ~700 lines (production + tests)
@@ -349,8 +349,8 @@ web/src/components/Chat/ChatInterface.tsx      +35 lines (CLI toggle)
 
 **Questions?** Reference:
 - Main plan: `05-ollama-cli-integration-plan.md`
-- Security docs: `.cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
-- Implementation: `.cursor/docs/reports/pass2/07-practical-implementation-guide.md`
+- Security docs: `cursor/docs/reports/pass2/05-security-permissions-command-execution.md`
+- Implementation: `cursor/docs/reports/pass2/07-practical-implementation-guide.md`
 
 ---
 
