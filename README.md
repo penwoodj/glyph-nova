@@ -51,11 +51,10 @@ The following screenshots demonstrate the application flow and key features:
 
 | Screenshot | Description |
 |------------|-------------|
-| ![Copy Path to Chat](assets/screenshots/0.0.0/copy-path-to-chat.png) | **File Tree Context Menu** - Right-click any file to copy its path to clipboard or append to chat input |
-| ![Chat Sent Message](assets/screenshots/0.0.0/chat-sent-message-thinking.png) | **Sending Message** - Type a message with file context and send to Ollama |
-| ![Streaming Response](assets/screenshots/0.0.0/chat-response-writing.png) | **Streaming Response** - Real-time streaming of LLM response as it's generated |
-| ![Response Start](assets/screenshots/0.0.0/chat-response-result-start.png) | **Response Beginning** - Formatted markdown response starts appearing |
-| ![Response Complete](assets/screenshots/0.0.0/chat-response-result-end.png) | **Complete Response** - Fully rendered markdown response with code blocks |
+| <img src="assets/screenshots/0.0.0/copy-path-to-chat.png"/> | **File Tree Context Menu** - Right-click any file to copy its path to clipboard or append to chat input |
+| <img src="assets/screenshots/0.0.0/chat-sent-message-thinking.png"/> | **Sending Message** - Type a message with file context and send to Ollama |
+| !<img src="assets/screenshots/0.0.0/chat-response-writing.png"/> **Streaming Response** - Real-time streaming of LLM response as it's generated |<img src="assets/screenshots/0.0.0/chat-response-result-start.png"/> | **Response Beginning** - Formatted markdown response starts appearing |
+| <img src="assets/screenshots/0.0.0/chat-response-result-end.png"/> | **Complete Response** - Fully rendered markdown response with code blocks |
 
 ## Prerequisites
 
