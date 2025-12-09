@@ -7,8 +7,9 @@
  * Reference: Report 07 (File tree implementation)
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { gql, useLazyQuery } from '@apollo/client'
+import { List } from 'react-window'
 import { FileTreeItem } from './FileTreeItem'
 import { FileTreeNode } from './types'
 import { ContextMenu } from './ContextMenu'
@@ -93,6 +94,32 @@ export const FileTreeView = ({
     y: number
     filePath: string
   } | null>(null)
+
+  // Container ref for measuring height
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerHeight, setContainerHeight] = useState(600) // Default height
+
+  // Measure container height on mount and resize
+  useEffect(() => {
+    const measureHeight = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.clientHeight
+        setContainerHeight(height)
+      }
+    }
+
+    measureHeight()
+
+    // Use ResizeObserver for better performance than window resize
+    const resizeObserver = new ResizeObserver(measureHeight)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   const updateNodeInTree = useCallback(
     (nodes: FileTreeNode[], targetPath: string, updates: Partial<FileTreeNode>): FileTreeNode[] => {
@@ -186,13 +213,78 @@ export const FileTreeView = ({
   )
 
   const handleCopyPath = useCallback((path: string) => {
-    console.log('File path copied:', path)
+    // Debug: File path copied (disabled in production)
+    // console.log('File path copied:', path)
   }, [])
 
   const handleCopyPathToChat = useCallback((path: string) => {
-    console.log('File path copied to chat:', path)
+    // Debug: File path copied to chat (disabled in production)
+    // console.log('File path copied to chat:', path)
     // Custom event will be dispatched by ContextMenu
   }, [])
+
+  // Flatten tree into linear list for virtual scrolling
+  // Only includes visible nodes (respects expanded/collapsed state)
+  const flattenedTree = useMemo(() => {
+    const flatten = (nodes: FileTreeNode[], level: number = 0): Array<{ node: FileTreeNode; level: number; index: number }> => {
+      const result: Array<{ node: FileTreeNode; level: number; index: number }> = []
+      let index = 0
+
+      for (const node of nodes) {
+        result.push({ node, level, index })
+        index++
+
+        // If directory is expanded and has children, include children
+        if (node.type === 'directory' && expandedPaths.has(node.path) && node.children) {
+          const children = flatten(node.children, level + 1)
+          result.push(...children)
+          index += children.length
+        }
+      }
+
+      return result
+    }
+
+    return flatten(tree)
+  }, [tree, expandedPaths])
+
+  // Row component for virtual scrolling (react-window v2 API)
+  const RowComponent = useCallback(
+    ({
+      index,
+      style,
+      ariaAttributes,
+    }: {
+      index: number
+      style: React.CSSProperties
+      ariaAttributes: {
+        'aria-posinset': number
+        'aria-setsize': number
+        role: 'listitem'
+      }
+    }) => {
+      const item = flattenedTree[index]
+      if (!item) return null
+
+      return (
+        <div style={style} {...ariaAttributes}>
+          <FileTreeItem
+            node={item.node}
+            level={item.level}
+            expandedPaths={expandedPaths}
+            selectedPath={selectedPath}
+            onToggleExpand={toggleExpand}
+            onFileClick={(path) => {
+              setSelectedFile(path)
+              onFileClick?.(path)
+            }}
+            onFileRightClick={handleFileRightClick}
+          />
+        </div>
+      )
+    },
+    [flattenedTree, expandedPaths, selectedPath, toggleExpand, setSelectedFile, onFileClick, handleFileRightClick]
+  )
 
   return (
     <div className="h-full flex flex-col bg-vscode-sidebar-bg">
@@ -210,30 +302,21 @@ export const FileTreeView = ({
         </button>
       </div>
 
-      {/* Tree content */}
-      <div className="flex-1 overflow-auto">
-        {tree.length === 0 ? (
+      {/* Tree content with virtual scrolling */}
+      <div ref={containerRef} className="flex-1 overflow-hidden">
+        {flattenedTree.length === 0 ? (
           <div className="text-center text-vscode-fg-secondary text-sm py-4">
             Empty directory
           </div>
         ) : (
-          tree.map((node) => (
-            <FileTreeItem
-              key={node.path}
-              node={node}
-              level={0}
-              expandedPaths={expandedPaths}
-              selectedPath={selectedPath}
-              onToggleExpand={toggleExpand}
-              onFileClick={(path) => {
-                // Update store with selected file
-                setSelectedFile(path)
-                // Call original handler if provided
-                onFileClick?.(path)
-              }}
-              onFileRightClick={handleFileRightClick}
-            />
-          ))
+          <List
+            height={containerHeight}
+            rowCount={flattenedTree.length}
+            rowHeight={28} // Height of each tree item (px-2 py-1 = ~28px)
+            className="scrollbar-thin w-full"
+            rowComponent={RowComponent}
+            rowProps={{}}
+          />
         )}
       </div>
 

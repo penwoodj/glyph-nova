@@ -7,6 +7,7 @@
  * Reference: Report 07 (VSCode icons integration)
  */
 
+import { memo } from 'react'
 import { Folder, FolderOpen } from 'lucide-react'
 import { getFileIcon } from 'src/lib/fileIcons'
 
@@ -16,7 +17,7 @@ interface FileIconProps {
   expanded?: boolean
 }
 
-export const FileIcon = ({ fileName, isDirectory, expanded = false }: FileIconProps) => {
+export const FileIcon = memo(({ fileName, isDirectory, expanded = false }: FileIconProps) => {
   if (isDirectory) {
     const FolderIcon = expanded ? FolderOpen : Folder
     return (
@@ -31,5 +32,7 @@ export const FileIcon = ({ fileName, isDirectory, expanded = false }: FileIconPr
   const { Icon, className } = getFileIcon(fileName, false)
 
   return <Icon className={`h-4 w-4 mr-2 flex-shrink-0 ${className}`} />
-}
+})
+
+FileIcon.displayName = 'FileIcon'
 

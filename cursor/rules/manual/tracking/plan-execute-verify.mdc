@@ -10,10 +10,11 @@
 
 **ALL work must follow this exact sequence:**
 
-1. **⚡ EXECUTE** - Work on the updated plan
-2. **✅ VERIFY** - Ensure real-world criteria are met
-3. **📊 UPDATE TRANSCRIPT** - Document at the end
-4. **📋 UPDATE PLAN** - At the End of every response with progress
+1. **⚡ EXECUTE** - Work on plan items, continue through multiple items
+2. **✅ VERIFY** - After feature completion: Build → Verify feature works
+3. **📋 UPDATE PLAN** - After successful build/verification: Document progress
+4. **🔄 CONTINUE** - Immediately proceed to next plan item (don't stop)
+5. **📊 UPDATE TRANSCRIPT** - Document at the end (if stopping)
 
 **This cycle is MANDATORY for:**
 - Feature development tasks
@@ -23,9 +24,16 @@
 - Documentation updates
 - ANY development task
 
+**Key Principle:** Continue working through plan items for as long as possible. Only update plan after feature completion + build + verification. Then immediately continue to next item.
+
 ### 🎯 PLAN UPDATE REQUIREMENTS
 
-**At the beginning of EVERY response, update the plan using this template:**
+**After completing a feature or major task:**
+1. **Build and verify:** Run build command and verify feature works
+2. **Update plan file:** Document progress using the template below
+3. **Continue immediately:** Proceed to next plan item without stopping
+
+**Update the plan using this template:**
 
 ```markdown
 ## Plan Update - [YYYY-MM-DD HH:MM]
@@ -63,6 +71,8 @@
 - Apply TDD principles (test first, then implement)
 - Follow security best practices
 - Document decisions and reasoning as you work
+- **Continue working through plan items** - Keep executing plan tasks as long as possible without getting stuck
+- **Build strategically** - Only build at key milestones (see Build Strategy below)
 
 **Real-world execution criteria:**
 - All tests must pass (not just some)
@@ -72,15 +82,33 @@
 - API calls must return expected results
 - Scripts must execute successfully
 
+**Build Strategy - Build Less Often:**
+- ❌ **DO NOT build after every small change**
+- ✅ **DO build only at these key milestones:**
+  1. **After completing a feature or major task** - When a complete feature is implemented
+  2. **Before updating plan file** - Verify build succeeds before documenting progress
+  3. **When encountering build-related errors** - If TypeScript/linting errors are suspected
+  4. **At the end of a work session** - Final verification before stopping
+- **During active development:** Rely on TypeScript checking, linting, and code review instead of full builds
+- **Build command:** `yarn rw build web` or `yarn rw build api` (only when needed per milestones above)
+
 ### ✅ VERIFICATION REQUIREMENTS
 
-**Before concluding any response, verify:**
+**After completing a feature or major task:**
+1. **Build verification:** Run `yarn rw build web` or `yarn rw build api` and verify it succeeds
+2. **Feature verification:** Verify the implemented feature works as expected
+3. **Update plan file:** Document progress in plan file with current status
+4. **Continue with plan:** Immediately proceed to next plan item without stopping
+
+**Before concluding any response (if stopping):**
 - All tests are passing (run test suite)
 - Implementation works as expected (test manually)
 - No security vulnerabilities introduced
 - All files are properly formatted
 - Documentation is updated if needed
 - Git status is clean (no untracked sensitive files)
+- **Build verification:** Build succeeds (if feature was completed)
+- **Localhost verification:** At the end of every major phase, check `http://localhost:8912/` and read all browser console outputs (console.log, console.error, console.warn)
 
 **Verification methods:**
 - Run test suite: `npm test` or equivalent
@@ -88,6 +116,15 @@
 - Check linting: `npm run lint` or equivalent
 - Validate security: Check for credentials, validate inputs
 - Test functionality: Manual verification of features
+- **Build check:** `yarn rw build web` or `yarn rw build api` (for the section being modified)
+- **Localhost check:** Access `http://localhost:8912/` and inspect browser console (F12 → Console tab) for:
+  - JavaScript errors
+  - Console.log statements
+  - Console.error statements
+  - Console.warn statements
+  - Network errors
+  - React warnings
+  - GraphQL errors
 
 ### 📊 TRANSCRIPT UPDATE REQUIREMENTS
 
@@ -121,21 +158,29 @@
 
 ## 🔄 CONTINUOUS PROGRESS RULE
 
-**NEVER stop until real-world criteria are met:**
+**Continue working through plan items for as long as possible:**
 
-❌ **FORBIDDEN:**
-- Stopping when tests fail
-- Stopping when API calls don't return expected results
-- Stopping when scripts have errors
-- Stopping when implementation is incomplete
-- Stopping for minor formatting issues
+✅ **CONTINUE WORKING:**
+- After successful build and feature verification → Update plan file → Continue to next plan item
+- After completing a task → Update plan file → Continue to next task
+- When implementation is working → Continue to next feature
+- Keep executing plan items sequentially without stopping
+- Only stop when you encounter a blocking bug that requires investigation
+- Only stop when you run out of context/tokens
+- Only stop when user explicitly requests it
 
-✅ **ALLOWED:**
-- Stopping only when ALL tests pass
-- Stopping only when implementation is complete AND functional
-- Stopping only when real-world verification succeeds
-- Stopping only when user explicitly requests it
-- Stopping when approaching token limits (with clear status update)
+❌ **DO NOT STOP:**
+- After every small change (keep working)
+- After every build (only build at milestones)
+- For minor issues (document and continue)
+- When tests pass (continue to next item)
+- When a feature works (continue to next feature)
+
+**Workflow Pattern:**
+1. Complete feature/task → Build → Verify → Update plan → Continue to next item
+2. Repeat until: blocking bug encountered, context exhausted, or user stops
+3. When stuck on bug: Document in bugs.md, attempt fix (max 2 attempts), then either fix or move to "Hard to Solve" and continue with plan
+4. When bug blocks feature: Mark feature INCOMPLETE in plan, continue with other plan items
 
 ## 🎯 REAL-WORLD VERIFICATION CRITERIA
 
@@ -147,8 +192,14 @@
 - **Integration:** Works with existing codebase
 - **Documentation:** Updated and accurate
 
-**Verification checklist:**
+**Verification checklist (after feature completion):**
 ```
+□ Build verification: Build succeeds (yarn rw build web/api)
+□ Feature verification: Feature works as expected
+□ Plan file updated: Progress documented with current status
+□ Continue to next plan item: Don't stop, keep working
+
+**Verification checklist (at end of major phase):**
 □ All unit tests pass
 □ Integration tests pass
 □ Manual testing confirms functionality
@@ -157,6 +208,10 @@
 □ Documentation updated
 □ Git status clean
 □ Performance acceptable
+□ Localhost check: http://localhost:8912/ checked, console outputs read
+□ Bugs documented: All issues added to bugs.md
+□ Bugs resolved: All critical/high priority bugs fixed
+□ Plan updated: Link to bugs.md added in plan file
 ```
 
 ## 🚀 IMPLEMENTATION GUIDELINES
@@ -176,11 +231,28 @@
 5. **Verify each step** before moving to next
 
 ### Verification Process
-1. **Run all tests** and ensure they pass
-2. **Test functionality** manually
-3. **Check security** for vulnerabilities
-4. **Validate performance** and resource usage
-5. **Confirm integration** with existing code
+1. **After completing a feature:**
+   - Build verification: Run `yarn rw build web` or `yarn rw build api` and verify success
+   - Feature verification: Verify feature works as expected
+   - Update plan file: Document progress and current status
+   - Continue immediately: Proceed to next plan item without stopping
+2. **During active development:**
+   - Use TypeScript checking and linting for immediate feedback
+   - Don't build after every change - only at milestones
+3. **At end of major phases:**
+   - Run all tests and ensure they pass
+   - Test functionality manually
+   - Check security for vulnerabilities
+   - Validate performance and resource usage
+   - Confirm integration with existing code
+   - Localhost verification: Check `http://localhost:8912/` and read browser console outputs
+   - Bug tracking: Document all issues found in bugs.md file (see Bug Tracking section below)
+4. **When encountering bugs:**
+   - Document in bugs.md immediately
+   - Attempt fix (max 2 attempts)
+   - If fixable: Fix and continue
+   - If blocking: Mark feature INCOMPLETE, continue with other plan items
+   - If hard to solve: Move to "Hard to Solve", continue with plan
 
 ### Transcript Update Process
 1. **Document progress** toward overall goal
@@ -189,14 +261,217 @@
 4. **Note verification** results
 5. **Plan next actions** clearly
 
+## 🐛 BUG TRACKING REQUIREMENTS
+
+### 🚨 MANDATORY BUG TRACKING WORKFLOW
+
+**At the end of EVERY major phase, you MUST:**
+
+1. **Check localhost:** Access `http://localhost:8912/` and read ALL browser console outputs
+2. **Check browser:** Use browser tools (F12 → Console, Network, Elements tabs) to inspect:
+   - JavaScript errors (red errors in console)
+   - Console warnings (yellow warnings)
+   - Network errors (failed requests in Network tab)
+   - React warnings (component warnings)
+   - GraphQL errors (query/mutation failures)
+   - Visual rendering issues (Elements tab inspection)
+3. **Document bugs:** Create or update bugs.md file in `/home/jon/code/glyph-nova/cursor/docs/bugs/`
+4. **Link to bugs:** Add link to bugs.md file in the plan.md file
+5. **Block progress:** DO NOT proceed with plan.md file until ALL Critical/High Priority bugs in bugs.md are resolved
+6. **Track fix attempts:** Document each fix attempt, move to "Hard to Solve" after 2+ failed attempts
+7. **Update plan for unfixable bugs:** If bug blocks feature, mark feature as INCOMPLETE in plan.md
+8. **Split files:** If bugs.md exceeds 50 bugs or 2000 lines, split unfixed bugs into a new bugs-YYYY-MM-DD.md file
+
+### Bug File Structure
+
+**Location:** `/home/jon/code/glyph-nova/cursor/docs/bugs/bugs.md` (or `bugs-YYYY-MM-DD.md` for split files)
+
+**Template:**
+```markdown
+# Bugs Found - [Phase Name] - [YYYY-MM-DD]
+
+## Critical Bugs (Block Progress)
+- [ ] **BUG-001:** [Description]
+  - **Location:** [File:Line]
+  - **Error:** [Exact error message from browser console]
+  - **Impact:** [What functionality is broken]
+  - **Steps to Reproduce:** [How to see the bug]
+  - **Status:** 🔴 OPEN
+  - **Found:** [YYYY-MM-DD HH:MM]
+  - **Fixed:** [YYYY-MM-DD HH:MM] (if resolved)
+
+## High Priority Bugs
+- [ ] **BUG-002:** [Description]
+  - **Location:** [File:Line]
+  - **Error:** [Exact error message]
+  - **Impact:** [What's affected]
+  - **Status:** 🟡 OPEN
+  - **Found:** [YYYY-MM-DD HH:MM]
+
+## Medium Priority Bugs
+- [ ] **BUG-003:** [Description]
+  - **Location:** [File:Line]
+  - **Warning:** [Console warning message]
+  - **Impact:** [What's affected]
+  - **Status:** 🟠 OPEN
+  - **Found:** [YYYY-MM-DD HH:MM]
+
+## Low Priority / Warnings
+- [ ] **BUG-004:** [Description]
+  - **Location:** [File:Line]
+  - **Warning:** [Console warning]
+  - **Impact:** [Minor issue]
+  - **Status:** 🟢 OPEN
+  - **Found:** [YYYY-MM-DD HH:MM]
+
+## Hard to Solve Bugs (Requires Dedicated Plan)
+- [ ] **BUG-XXX:** [Description]
+  - **Location:** [File:Line]
+  - **Error:** [Exact error message]
+  - **Impact:** [What functionality is broken]
+  - **Status:** 🔵 HARD_TO_SOLVE
+  - **Found:** [YYYY-MM-DD HH:MM]
+  - **Attempt History:**
+    - **Attempt #1:** [YYYY-MM-DD] - [What was tried] - [Why it failed]
+    - **Attempt #2:** [YYYY-MM-DD] - [What was tried] - [Why it failed]
+    - **Attempt #3:** [YYYY-MM-DD] - [What was tried] - [Why it failed]
+  - **Plan Required:** Yes - Use plan-generation.mdc rule to create dedicated fix plan
+  - **Plan File:** [Link to plan file when created]
+
+## Resolved Bugs
+- [x] **BUG-001:** [Description]
+  - **Fixed:** [YYYY-MM-DD HH:MM]
+  - **Solution:** [How it was fixed]
+```
+
+### Bug Tracking Rules
+
+**When to create/update bugs.md:**
+- At the end of every major phase completion
+- When checking localhost and finding console errors/warnings
+- When build fails or produces warnings
+- When tests fail
+- When functionality doesn't work as expected
+
+**When to split bugs.md:**
+- File exceeds 50 bugs
+- File exceeds 2000 lines
+- More than 30 days have passed since last split
+- Create new file: `bugs-YYYY-MM-DD.md` and move unfixed bugs there
+- Keep "Hard to Solve" bugs in current file for plan generation
+
+### Hard to Solve Bug Workflow
+
+**When bug has 2+ failed fix attempts:**
+1. Move bug to "Hard to Solve Bugs" section in bugs.md
+2. Document all fix attempts with dates and failure reasons
+3. Mark status as 🔵 HARD_TO_SOLVE
+4. If bug blocks a feature in plan.md:
+   - Update plan.md to mark feature as ⚠️ INCOMPLETE
+   - Add explanation of why feature is incomplete
+   - Link to bug in bugs.md
+   - Example format:
+     ```markdown
+     ### Phase X.Y: Feature Name
+     **Status:** ⚠️ INCOMPLETE - Blocked by BUG-XXX
+     **Reason:** [Detailed explanation of why feature cannot be completed]
+     **Blocking Bug:** See [bugs.md](../bugs/bugs.md#BUG-XXX)
+     **Fix Attempts:** [Number] attempts made, all failed
+     **Next Steps:**
+     - Create dedicated plan using plan-generation.mdc rule
+     - Plan file: [link when created]
+     **Original Status:** Was marked as ✅ COMPLETE but bug discovery revealed incompleteness
+     ```
+5. Generate fix plan using plan-generation.mdc rule:
+   - Use rule: `/home/jon/code/glyph-nova/cursor/rules/manual/tracking/plan-generation.mdc`
+   - Create comprehensive plan to fix the bug
+   - Save plan in `cursor/docs/plans/` directory
+   - Name plan: `fix-bug-XXX-[description].md`
+   - Link plan file in bugs.md under the bug entry
+6. Plan should include:
+   - Root cause analysis
+   - Multiple solution approaches
+   - Step-by-step fix strategy
+   - Testing and validation steps
+   - Rollback procedures
+
+**Bug Resolution Workflow:**
+1. Fix bug in code
+2. Verify fix works (build + localhost check + browser console check)
+3. Update bug status in bugs.md: `- [x]` and add "Fixed" date
+4. Move to "Resolved Bugs" section
+5. Only then proceed with next plan item
+
+**Bug Resolution Attempt Tracking:**
+- Track each fix attempt in bugs.md with:
+  - **Attempt #1:** [Date] - [What was tried] - [Why it failed]
+  - **Attempt #2:** [Date] - [What was tried] - [Why it failed]
+  - **Attempt #3+:** After 2 failed attempts where bug was thought to be solved, move to "Hard to Solve" category
+
+**Blocking Rule:**
+- ❌ **NEVER proceed with plan.md file if bugs.md has any Critical or High Priority bugs marked as OPEN**
+- ✅ **ONLY proceed when all Critical and High Priority bugs are resolved**
+- ⚠️ **Medium and Low priority bugs can be tracked but don't block progress unless they affect core functionality**
+- 🔵 **Hard to Solve bugs don't block progress but require dedicated plan files**
+
+**Unfixable Bug Workflow:**
+1. **If bug cannot be fixed after 2+ attempts:**
+   - Move bug to "Hard to Solve" category
+   - Document all attempts and why they failed
+   - Mark as requiring dedicated plan file
+2. **If bug blocks a feature in plan.md:**
+   - Update plan.md to mark feature as INCOMPLETE
+   - Add section explaining why feature is incomplete
+   - Link to bug in bugs.md
+   - Example format:
+     ```markdown
+     ### Phase X.Y: Feature Name
+     **Status:** ⚠️ INCOMPLETE - Blocked by BUG-XXX
+     **Reason:** [Why feature cannot be completed]
+     **Blocking Bug:** See [bugs.md](../bugs/bugs.md#BUG-XXX)
+     **Next Steps:** Create dedicated plan using plan-generation.mdc rule
+     ```
+3. **Create plan for hard-to-solve bugs:**
+   - Use `/home/jon/code/glyph-nova/cursor/rules/manual/tracking/plan-generation.mdc` rule
+   - Generate comprehensive plan to fix the bug
+   - Save plan in `cursor/docs/plans/` directory
+   - Link plan file in bugs.md under the bug entry
+
+### Linking Bugs to Plan
+
+**In plan.md file, add this section after each major phase:**
+```markdown
+### 🐛 Bugs Found
+- See [bugs.md](../bugs/bugs.md) for all issues discovered during this phase
+- **Status:** [X] Critical bugs, [Y] High priority, [Z] Medium/Low priority, [W] Hard to solve
+- **Blocking:** [Yes/No] - [Reason if blocking]
+```
+
+**If bug blocks a feature, update the feature status:**
+```markdown
+### Phase X.Y: Feature Name
+**Status:** ⚠️ INCOMPLETE - Blocked by BUG-XXX
+**Reason:** [Detailed explanation of why feature cannot be completed]
+**Blocking Bug:** See [bugs.md](../bugs/bugs.md#BUG-XXX)
+**Fix Attempts:** [Number] attempts made, all failed
+**Next Steps:**
+- Create dedicated plan using plan-generation.mdc rule
+- Plan file: [link when created]
+**Original Status:** Was marked as ✅ COMPLETE but bug discovery revealed incompleteness
+```
+
 ## 🎯 SUCCESS METRICS
 
 **This rule is successful when:**
-- Plan is updated at start of every response
-- Execution follows systematic approach
-- Real-world verification criteria are met
-- Transcript is updated at end of every response
-- User achieves desired outcomes with minimal iterations
+- Plan is updated after feature completion and before continuing
+- Execution follows systematic approach through multiple plan items
+- Real-world verification criteria are met after feature completion
+- Plan file updated with progress after successful builds
+- Work continues through plan items without unnecessary stops
+- **Build verification completed only at milestones (after features, not every change)**
+- **Localhost checked and bugs documented at end of major phases**
+- **Bugs handled efficiently: fixed quickly or moved to "Hard to Solve" to continue progress**
+- **Maximum progress made per session by continuing through plan items**
 
 ## 🔧 CONFIGURATION OPTIONS
 
@@ -216,46 +491,103 @@
 **Planning Questions:**
 ```
 - What's the main goal we're trying to achieve?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 
 - What are the specific success criteria?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 
 - Are there any dependencies or blockers?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 ```
 
 **Execution Questions:**
 ```
 - Should I follow TDD approach for this task?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 
 - Are there any security considerations?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 
 - What's the priority: speed or thoroughness?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 ```
 
 **Verification Questions:**
 ```
 - What constitutes "working" for this feature?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 
 - How should I verify the implementation?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 
 - Are there any edge cases to test?
-- Me: 
-- Side Notes: 
+- Me:
+- Side Notes:
 ```
 
 **REMEMBER: This rule ensures systematic progress through plan-execute-verify cycles with complete documentation. Focus on real-world working criteria and continuous progress toward user goals.**
+
+## 🔍 LOCALHOST & BROWSER VERIFICATION CHECKLIST
+
+**At the end of EVERY major phase, perform these checks:**
+
+1. **Start dev server** (if not running): `yarn rw dev`
+2. **Access localhost:** Open `http://localhost:8912/` in browser
+3. **Open browser developer tools:** Press F12
+4. **Console Tab (F12 → Console):**
+   - Red error messages (console.error)
+   - Yellow warnings (console.warn)
+   - Blue info messages (console.info)
+   - Gray log messages (console.log)
+   - React warnings (missing keys, hooks violations, etc.)
+   - GraphQL errors
+   - JavaScript runtime errors
+   - Copy exact error messages with stack traces
+5. **Network Tab (F12 → Network):**
+   - Failed requests (red status codes)
+   - Slow requests (>1 second)
+   - Missing resources (404 errors)
+   - GraphQL query failures
+   - API endpoint errors
+   - Check request/response payloads for errors
+6. **Elements Tab (F12 → Elements):**
+   - Visual rendering issues
+   - Missing DOM elements
+   - CSS styling problems
+   - Component structure issues
+7. **Application Tab (F12 → Application):**
+   - LocalStorage errors
+   - SessionStorage issues
+   - Cookie problems
+   - Cache issues
+8. **Sources Tab (F12 → Sources):**
+   - Source map errors
+   - Missing files
+   - Compilation errors
+9. **Document all findings:**
+   - Copy exact error messages with full stack traces
+   - Note file locations and line numbers
+   - Record steps to reproduce
+   - Screenshot visual issues if applicable
+   - Add to bugs.md file with full context
+10. **Visual inspection:**
+    - Does the page load completely?
+    - Are all components rendering?
+    - Any visual errors or layout issues?
+    - Are interactive elements working?
+    - Check responsive behavior
+
+**Only proceed to next phase when:**
+- ✅ No critical errors in console
+- ✅ All errors documented in bugs.md
+- ✅ Critical bugs resolved (or moved to Hard to Solve if unfixable)
+- ✅ Build succeeds
+- ✅ Features marked as INCOMPLETE in plan.md if blocked by bugs

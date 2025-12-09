@@ -10,6 +10,7 @@
 import { gql } from '@apollo/client'
 import type { ApolloClient } from '@apollo/client'
 import type { FileContext } from 'src/state/store'
+import { clearFileCache } from './context'
 
 /**
  * Edit request interface
@@ -375,6 +376,8 @@ export const applyEdit = async (
     })
 
     if (result.data.writeFile.success) {
+      // Clear cache for this file to ensure fresh content on next read
+      clearFileCache(edit.filePath)
       return { success: true }
     } else {
       return {

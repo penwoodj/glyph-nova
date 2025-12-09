@@ -7,6 +7,7 @@
  * Reference: Report 07 (Recursive tree item component)
  */
 
+import { memo, useCallback } from 'react'
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import { FileTreeNode } from './types'
 import { FileIcon } from './FileIcon'
@@ -21,7 +22,7 @@ interface FileTreeItemProps {
   onFileRightClick?: (path: string, event: React.MouseEvent) => void
 }
 
-export const FileTreeItem = ({
+export const FileTreeItem = memo(({
   node,
   level,
   expandedPaths,
@@ -35,18 +36,21 @@ export const FileTreeItem = ({
   const hasChildren = node.children && node.children.length > 0
   const showChildren = node.type === 'directory' && isExpanded && hasChildren
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (node.type === 'directory') {
       onToggleExpand(node)
     } else {
       onFileClick?.(node.path)
     }
-  }
+  }, [node.type, node.path, onToggleExpand, onFileClick])
 
-  const handleRightClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    onFileRightClick?.(node.path, e)
-  }
+  const handleRightClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      onFileRightClick?.(node.path, e)
+    },
+    [node.path, onFileRightClick]
+  )
 
   const indentWidth = level * 16
 
@@ -101,5 +105,24 @@ export const FileTreeItem = ({
         ))}
     </>
   )
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  // Only re-render if relevant props changed
+  const prevExpanded = prevProps.expandedPaths.has(prevProps.node.path)
+  const nextExpanded = nextProps.expandedPaths.has(nextProps.node.path)
+
+  return (
+    prevProps.node.path === nextProps.node.path &&
+    prevProps.node.name === nextProps.node.name &&
+    prevProps.level === nextProps.level &&
+    prevProps.selectedPath === nextProps.selectedPath &&
+    prevExpanded === nextExpanded &&
+    prevProps.node.children?.length === nextProps.node.children?.length &&
+    prevProps.onToggleExpand === nextProps.onToggleExpand &&
+    prevProps.onFileClick === nextProps.onFileClick &&
+    prevProps.onFileRightClick === nextProps.onFileRightClick
+  )
+})
+
+FileTreeItem.displayName = 'FileTreeItem'
 

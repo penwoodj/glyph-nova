@@ -2,7 +2,21 @@
 
 A desktop application for chatting with local LLMs (via Ollama) with integrated file editing and automatic file context loading.
 
-> 🎯 **Long-Term Vision:** A transparency-first, local-LLM text editor with customizable agentic behavior that replaces Cursor for advanced context engineering. See **[Project Vision](.cursor/docs/reports/project-vision.md)** for the full roadmap.
+> ## 🎯 **Long-Term Vision:**
+>
+> A transparency-first, local-LLM text editor with customizable agentic behavior that replaces Cursor for advanced context engineering. See **[Project Vision](.cursor/docs/reports/project-vision.md)** for the full roadmap.
+>
+> ### Tool Utility Milestones:
+>
+> ##### When you use this Tool more than Cursor to
+> - Edit a specific kind of file
+> - Use it more for writing certain scripts
+> - Create and iterate on kinds of Software
+>
+> #### When Automatic Encoding of Agentic behavior
+> - Becomes actually useful
+> - Speeds up Chat Based text generation Workflows
+> -
 
 ## Documentation
 
@@ -24,6 +38,7 @@ A desktop application for chatting with local LLMs (via Ollama) with integrated 
 ### Current Functionality
 
 **Core Features Implemented:**
+
 - ✅ **File Tree** - Expand/collapse directories, file selection, context menu with "Copy Path" and "Copy Path to Chat"
 - ✅ **Unified Editor** - Markdown preview (Vditor) and code syntax highlighting (80+ languages), file save (Ctrl/Cmd+S)
 - ✅ **Chat Interface** - Real-time streaming responses, Ollama model selector, file context loading, message history
@@ -31,6 +46,7 @@ A desktop application for chatting with local LLMs (via Ollama) with integrated 
 - ✅ **File Context Integration** - Automatic file content loading when paths are mentioned in chat
 
 **Technical Implementation:**
+
 - ✅ GraphQL API for file operations and chat
 - ✅ Streaming chat responses from Ollama
 - ✅ VSCode dark theme styling
@@ -39,6 +55,7 @@ A desktop application for chatting with local LLMs (via Ollama) with integrated 
 ### Limitations
 
 **Known Limitations:**
+
 - ⚠️ **Syntax Highlighting** - No syntax highlighting while editing; minimal functional styling in the editor
 - ⚠️ **Chat-to-Editor Communication** - LLM cannot directly edit files from chat responses (parsing and applying edits not implemented)
 - ⚠️ **Desktop App Compatibility** - Desktop app requires:
@@ -55,13 +72,14 @@ For detailed implementation status and remaining work, see [Implementation Statu
 
 The following screenshots demonstrate the application flow and key features:
 
-| Screenshot | Description |
-|------------|-------------|
-| <img src="assets/screenshots/0.0.0/copy-path-to-chat.png"/> | **File Tree Context Menu** - Right-click any file to copy its path to clipboard or append to chat input |
-| ![Chat Sent Message](assets/screenshots/0.0.0/chat-sent-message-thinking.png) | **Sending Message** - Type a message with file context and send to Ollama |
-| ![Streaming Response](assets/screenshots/0.0.0/chat-response-writing.png) | **Streaming Response** - Real-time streaming of LLM response as it's generated |
-| ![Response Start](assets/screenshots/0.0.0/chat-response-result-start.png) | **Response Beginning** - Formatted markdown response starts appearing |
-| ![Response Complete](assets/screenshots/0.0.0/chat-response-result-end.png) | **Complete Response** - Fully rendered markdown response with code blocks |
+
+| Screenshot                                                                    | Description                                                                                             |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| <img src="assets/screenshots/0.0.0/copy-path-to-chat.png"/>                   | **File Tree Context Menu** - Right-click any file to copy its path to clipboard or append to chat input |
+| ![Chat Sent Message](assets/screenshots/0.0.0/chat-sent-message-thinking.png) | **Sending Message** - Type a message with file context and send to Ollama                               |
+| ![Streaming Response](assets/screenshots/0.0.0/chat-response-writing.png)     | **Streaming Response** - Real-time streaming of LLM response as it's generated                          |
+| ![Response Start](assets/screenshots/0.0.0/chat-response-result-start.png)    | **Response Beginning** - Formatted markdown response starts appearing                                   |
+| ![Response Complete](assets/screenshots/0.0.0/chat-response-result-end.png)   | **Complete Response** - Fully rendered markdown response with code blocks                               |
 
 ## Prerequisites
 
@@ -126,17 +144,18 @@ yarn rw serve
 **Platform Compatibility:**
 
 - ✅ **Linux** - x64 and ARM64
+
   - Tested on Pop!_OS (Ubuntu-based)
   - Output formats: `.deb`, `.rpm`, `.AppImage`
   - No specific minimum OS version requirement
-
 - ✅ **macOS** - x64 (Intel) and ARM64 (Apple Silicon)
+
   - **Minimum OS Version:** macOS 10.15 (Catalina) or later
   - Output format: `.dmg` (disk image)
   - Uses native WKWebView (included in macOS)
   - Apple Silicon (M1/M2/M3) fully supported
-
 - ✅ **Windows** - x64 and ARM64
+
   - **Minimum OS Version:** Windows 7 or later
   - **WebView2 Requirement:**
     - Included in Windows 10 version 20H2 (October 2020 Update) and later
@@ -145,6 +164,7 @@ yarn rw serve
   - Architecture: x64 (64-bit) and ARM64
 
 **Build Notes:**
+
 - The desktop app build output depends on your system architecture
 - Cross-compilation (building for different platforms) is experimental and may require additional setup
 - Current config builds for all platforms (`targets: "all"`)
@@ -158,6 +178,7 @@ yarn tauri dev
 ```
 
 The built application will be in `src-tauri/target/release/bundle/` with platform-specific installers:
+
 - Linux: `.deb`, `.rpm`, `.AppImage`
 - macOS: `.dmg`
 - Windows: `.exe` or `.msi`
@@ -206,6 +227,7 @@ DEFAULT_FOLDER_PATH=/path/to/your/projects
 ### Ports
 
 Default ports (configured in `redwood.toml`):
+
 - Web: **8912**
 - API: **8911**
 
@@ -246,6 +268,7 @@ glyph-nova/
 ## Technologies Used
 
 ### Frontend
+
 - **Redwood.js** - Full-stack React framework
 - **React** - UI library
 - **Zustand** - State management
@@ -255,11 +278,13 @@ glyph-nova/
 - **Tailwind CSS** - Styling
 
 ### Backend
+
 - **GraphQL** - API layer
 - **Node.js** - Runtime
 - **Ollama** - LLM integration
 
 ### Desktop (Optional)
+
 - **Tauri** - Desktop app framework
 
 ## Troubleshooting
@@ -267,16 +292,17 @@ glyph-nova/
 ### Ollama Not Connecting
 
 1. Verify Ollama is running:
+
    ```bash
    ollama list  # Should show installed models
    ```
-
 2. Check Ollama is accessible:
+
    ```bash
    curl http://localhost:11434/api/tags
    ```
-
 3. Restart Ollama:
+
    ```bash
    # Linux/macOS
    ollama serve

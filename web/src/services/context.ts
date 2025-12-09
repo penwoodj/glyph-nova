@@ -21,7 +21,23 @@ export const READ_FILE_QUERY = gql`
 `
 
 // Cache for loaded file content
+// Using Map with size limit to prevent memory issues
 const fileContentCache = new Map<string, string>()
+
+// Maximum cache size (number of files)
+const MAX_CACHE_SIZE = 100
+
+/**
+ * Evict oldest entries if cache exceeds size limit
+ */
+const evictCacheIfNeeded = () => {
+  if (fileContentCache.size > MAX_CACHE_SIZE) {
+    // Remove oldest entries (first in Map)
+    const entriesToRemove = fileContentCache.size - MAX_CACHE_SIZE
+    const keysToRemove = Array.from(fileContentCache.keys()).slice(0, entriesToRemove)
+    keysToRemove.forEach((key) => fileContentCache.delete(key))
+  }
+}
 
 /**
  * Detect file paths in a message
@@ -71,6 +87,8 @@ export const loadFileContent = async (
       const content = data.readFile.content
       // Cache the content
       fileContentCache.set(path, content)
+      // Evict old entries if cache is too large
+      evictCacheIfNeeded()
       return content
     }
 
@@ -131,7 +149,17 @@ export const clearFileCache = (path?: string): void => {
 export const getCacheStats = () => {
   return {
     size: fileContentCache.size,
+    maxSize: MAX_CACHE_SIZE,
     paths: Array.from(fileContentCache.keys()),
   }
+}
+
+/**
+ * Update cache with new content (useful when file is written)
+ * This ensures cache stays in sync with file system
+ */
+export const updateFileCache = (path: string, content: string): void => {
+  fileContentCache.set(path, content)
+  evictCacheIfNeeded()
 }
 

@@ -7,6 +7,7 @@
  * Reference: Report 08 (Chat Interface Patterns - Message rendering section)
  */
 
+import { memo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -17,7 +18,7 @@ interface ChatMessageProps {
   message: ChatMessageType
 }
 
-export const ChatMessage = ({ message }: ChatMessageProps) => {
+export const ChatMessage = memo(({ message }: ChatMessageProps) => {
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
 
@@ -186,7 +187,17 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
       )}
     </div>
   )
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if message content, streaming status, or file context changed
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.content === nextProps.message.content &&
+    prevProps.message.isStreaming === nextProps.message.isStreaming &&
+    prevProps.message.fileContext?.length === nextProps.message.fileContext?.length
+  )
+})
+
+ChatMessage.displayName = 'ChatMessage'
 
 export default ChatMessage
 

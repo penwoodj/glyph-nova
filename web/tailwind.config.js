@@ -29,6 +29,24 @@ module.exports = {
         'vscode-focus-border': '#007acc',
         'vscode-tree-indent': '#383838',
       },
+      fontSize: {
+        // Consistent typography scale matching VSCode
+        'xs': ['12px', { lineHeight: '1.5' }],      // File tree items, small labels
+        'sm': ['14px', { lineHeight: '1.5' }],      // Body text, buttons, inputs
+        'base': ['14px', { lineHeight: '1.5' }],    // Default body (matches VSCode)
+        'lg': ['18px', { lineHeight: '1.5' }],     // Headings, emphasis
+      },
+      spacing: {
+        // Consistent spacing scale
+        '0.5': '2px',   // Minimal spacing
+        '1': '4px',     // Tight spacing
+        '1.5': '6px',   // Compact spacing
+        '2': '8px',     // Standard small spacing
+        '3': '12px',    // Medium spacing
+        '4': '16px',    // Standard spacing
+        '6': '24px',    // Large spacing
+        '8': '32px',    // Extra large spacing
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

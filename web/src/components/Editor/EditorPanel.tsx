@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useMutation } from '@redwoodjs/web'
 import { gql } from '@apollo/client'
 import { useAppStore } from 'src/state/store'
+import { clearFileCache } from 'src/services/context'
 import FileEditorCell from './FileEditorCell'
 import { UnifiedEditor } from './UnifiedEditor'
 
@@ -59,8 +60,11 @@ export const EditorPanel = () => {
         })
 
         if (result.data?.writeFile?.success) {
+          // Clear cache for this file to ensure fresh content on next read
+          clearFileCache(selectedFilePath)
           setUnsavedChanges(false)
-          console.log('File saved successfully:', selectedFilePath)
+          // Debug: File saved (disabled in production)
+          // console.log('File saved successfully:', selectedFilePath)
         } else {
           console.error('Failed to save file:', result.data?.writeFile?.message)
           alert(`Failed to save file: ${result.data?.writeFile?.message}`)

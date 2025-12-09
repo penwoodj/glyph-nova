@@ -8,6 +8,7 @@
  */
 
 import type { FileContext } from 'src/state/store'
+import { retryFetch, OLLAMA_RETRY_OPTIONS } from './retry'
 
 export interface StreamChatOptions {
   message: string
@@ -163,17 +164,22 @@ export const streamChatResponseDirect = async ({
       }
     }
 
-    const response = await fetch('http://localhost:11434/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    // Use retry logic for initial connection (streaming can't be retried once started)
+    const response = await retryFetch(
+      'http://localhost:11434/api/chat',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: formattedMessages,
+          stream: true,
+        }),
       },
-      body: JSON.stringify({
-        model,
-        messages: formattedMessages,
-        stream: true,
-      }),
-    })
+      OLLAMA_RETRY_OPTIONS
+    )
 
     if (!response.ok) {
       throw new Error(`Ollama API error: ${response.statusText}`)

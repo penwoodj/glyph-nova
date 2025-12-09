@@ -10,6 +10,7 @@
 import { useState } from 'react'
 import { useQuery } from '@redwoodjs/web'
 import { Metadata } from '@redwoodjs/web'
+import { gql } from '@apollo/client'
 import { DesktopLayout } from 'src/components/Layouts/DesktopLayout/DesktopLayout'
 import { FileTreeView } from 'src/components/FileTree/FileTreeView'
 import { EditorPanel } from 'src/components/Editor/EditorPanel'
@@ -55,7 +56,8 @@ const HomePage = () => {
   const { data, loading, error } = useQuery(DIRECTORY_QUERY, {
     variables: { path: rootPath },
     onCompleted: (data) => {
-      console.log('✅ Query completed:', data)
+      // Debug: Query completed (disabled in production)
+      // console.log('✅ Query completed:', data)
       setOpenFolder(rootPath)
     },
     onError: (error) => {
@@ -63,8 +65,8 @@ const HomePage = () => {
     },
   })
 
-  // Debug logging
-  console.log('HomePage render:', { loading, error: error?.message, hasData: !!data, directoryContents: data?.directoryContents })
+  // Debug logging (disabled in production - enable only when debugging)
+  // console.log('HomePage render:', { loading, error: error?.message, hasData: !!data, directoryContents: data?.directoryContents })
 
   return (
     <>
