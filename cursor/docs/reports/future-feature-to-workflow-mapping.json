@@ -1,0 +1,4168 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-01-27",
+    "description": "Mapping of workflow types to features, including high-level connections, behavior sequences, and implementation details for n8n workflow creation",
+    "purpose": "Guide for implementing workflows in n8n based on feature requirements and workflow relationships"
+  },
+  "workflowTypes": {
+    "basicSummarization": {
+      "id": "basic-summarization",
+      "name": "Basic Summarization Workflow",
+      "description": "Iteratively summarizes content with decreasing detail levels using line restrictions and maximums, with navigable citations",
+      "featureConnections": [
+        "context-engineering",
+        "smart-chunking-memory",
+        "transparency-observability"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["file", "text", "markdown", "code"],
+          "required": ["sourceContent"],
+          "optional": ["maxLines", "detailLevel", "citationStyle"]
+        },
+        "output": {
+          "types": ["summary", "citations", "metadata"],
+          "structure": {
+            "summary": "string",
+            "citations": "array",
+            "lineCount": "number",
+            "detailLevel": "number",
+            "tokenCount": "number"
+          }
+        },
+        "behavior": {
+          "iterative": true,
+          "citations": true,
+          "lineRestrictions": true,
+          "detailReduction": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Initial Content Analysis",
+            "prompt": "Analyze the input content to determine structure, key sections, and optimal summarization strategy",
+            "input": {
+              "sourceContent": "string",
+              "metadata": "object"
+            },
+            "output": {
+              "analysis": "object",
+              "structure": "object",
+              "recommendedStrategy": "string"
+            },
+            "tools": ["file-reader", "content-analyzer"],
+            "conditions": {
+              "if": "content.length > 10000",
+              "then": "useChunkingStrategy",
+              "else": "processDirectly"
+            }
+          },
+          {
+            "step": 2,
+            "name": "First Pass Summarization",
+            "prompt": "Create initial summary maintaining key information with citations to original line numbers and sections",
+            "input": {
+              "content": "string",
+              "maxLines": "number",
+              "citationStyle": "string"
+            },
+            "output": {
+              "summary": "string",
+              "citations": "array",
+              "lineCount": "number"
+            },
+            "tools": ["llm-summarizer", "citation-generator"],
+            "loop": {
+              "condition": "lineCount > maxLines",
+              "action": "reduceDetailLevel",
+              "maxIterations": 5
+            }
+          },
+          {
+            "step": 3,
+            "name": "Iterative Detail Reduction",
+            "prompt": "Reduce summary detail while preserving essential information, maintaining citation accuracy",
+            "input": {
+              "previousSummary": "string",
+              "targetLines": "number",
+              "currentDetailLevel": "number"
+            },
+            "output": {
+              "refinedSummary": "string",
+              "updatedCitations": "array",
+              "newLineCount": "number",
+              "newDetailLevel": "number"
+            },
+            "tools": ["llm-refiner", "citation-updater"],
+            "loop": {
+              "condition": "newLineCount > targetLines AND currentDetailLevel < maxDetailLevel",
+              "action": "continueReduction",
+              "incrementDetailLevel": true
+            }
+          },
+          {
+            "step": 4,
+            "name": "Citation Validation",
+            "prompt": "Verify all citations are accurate, navigable, and reference correct source locations",
+            "input": {
+              "summary": "string",
+              "citations": "array",
+              "sourceContent": "string"
+            },
+            "output": {
+              "validatedCitations": "array",
+              "citationMap": "object",
+              "navigationLinks": "array"
+            },
+            "tools": ["citation-validator", "link-generator"],
+            "conditions": {
+              "if": "citations.length === 0",
+              "then": "generateCitations",
+              "else": "validateExisting"
+            }
+          },
+          {
+            "step": 5,
+            "name": "Output Generation",
+            "prompt": "Format final summary with properly structured citations and metadata",
+            "input": {
+              "summary": "string",
+              "citations": "array",
+              "metadata": "object"
+            },
+            "output": {
+              "formattedOutput": "object",
+              "files": ["summary.md", "citations.json", "metadata.json"]
+            },
+            "tools": ["formatter", "file-writer"],
+            "fileCreation": [
+              {
+                "path": "output/summary.md",
+                "content": "summary",
+                "format": "markdown"
+              },
+              {
+                "path": "output/citations.json",
+                "content": "citations",
+                "format": "json"
+              },
+              {
+                "path": "output/metadata.json",
+                "content": "metadata",
+                "format": "json"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "retryWithReducedScope",
+          "maxRetries": 3,
+          "fallback": "basicSummaryWithoutCitations"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["multiLevelCitationSummary", "documentationGeneration", "testGeneration"],
+        "uses": ["contextGathering", "citationSystem"],
+        "n8nImplementation": {
+          "nodes": [
+            "content-analyzer-node",
+            "llm-summarizer-node",
+            "citation-generator-node",
+            "iterative-refiner-node",
+            "file-writer-node"
+          ],
+          "connections": "sequential-with-loops"
+        }
+      }
+    },
+    "multiLevelCitationSummary": {
+      "id": "multi-level-citation-summary",
+      "name": "Multi-Level Citation Summary Workflow",
+      "description": "Creates hierarchical summaries with navigable citations that can drill down through multiple levels of detail",
+      "featureConnections": [
+        "context-engineering",
+        "smart-chunking-memory",
+        "workflows",
+        "editor-experience"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["summary", "citations", "sourceContent", "scopePrompt"],
+          "required": ["baseSummary", "citations"],
+          "optional": ["maxLevels", "detailProgression", "scopePrompt"]
+        },
+        "output": {
+          "types": ["hierarchicalSummary", "navigationStructure", "citationTree"],
+          "structure": {
+            "levels": "array",
+            "navigation": "object",
+            "citationTree": "object"
+          }
+        },
+        "behavior": {
+          "hierarchical": true,
+          "navigable": true,
+          "multiLevel": true,
+          "citationDriven": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Scope Prompt Processing",
+            "prompt": "Process scope prompt if provided, using it to guide citation analysis and level generation",
+            "input": {
+              "scopePrompt": "string",
+              "baseSummary": "string",
+              "citations": "array"
+            },
+            "output": {
+              "scopeContext": "object",
+              "scopeConstraints": "array",
+              "scopePriorities": "object"
+            },
+            "tools": ["scope-processor", "workflow-invoker"],
+            "workflowCall": {
+              "workflow": "scopeGeneration",
+              "parameters": {
+                "input": "scopePrompt",
+                "context": "baseSummary"
+              },
+              "conditions": {
+                "if": "scopePrompt.provided",
+                "then": "processScopePrompt",
+                "else": "skipScopeProcessing"
+              }
+            }
+          },
+          {
+            "step": 2,
+            "name": "Citation Analysis",
+            "prompt": "Analyze citations from base summary to identify citation clusters and relationships, guided by scope if provided",
+            "input": {
+              "baseSummary": "string",
+              "citations": "array",
+              "sourceContent": "string",
+              "scopeContext": "object"
+            },
+            "output": {
+              "citationClusters": "array",
+              "relationships": "object",
+              "hierarchyMap": "object"
+            },
+            "tools": ["citation-analyzer", "relationship-mapper"],
+            "conditions": {
+              "if": "citations.length === 0",
+              "then": "requestBasicSummarization",
+              "else": "processCitations"
+            }
+          },
+          {
+            "step": 2,
+            "name": "Level Generation",
+            "prompt": "Generate multiple detail levels for each citation cluster, creating expandable summary sections",
+            "input": {
+              "citationClusters": "array",
+              "sourceContent": "string",
+              "maxLevels": "number"
+            },
+            "output": {
+              "summaryLevels": "array",
+              "levelMetadata": "object",
+              "progressionMap": "object"
+            },
+            "tools": ["level-generator", "detail-progression-builder"],
+            "loop": {
+              "condition": "currentLevel < maxLevels",
+              "action": "generateNextLevel",
+              "detailIncrement": "progressive"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Navigation Structure Creation",
+            "prompt": "Create navigation structure allowing users to drill down through citation levels",
+            "input": {
+              "summaryLevels": "array",
+              "citationTree": "object"
+            },
+            "output": {
+              "navigationStructure": "object",
+              "breadcrumbs": "array",
+              "expandableSections": "array"
+            },
+            "tools": ["navigation-builder", "ui-structure-generator"],
+            "fileCreation": [
+              {
+                "path": "output/navigation.json",
+                "content": "navigationStructure",
+                "format": "json"
+              }
+            ]
+          },
+          {
+            "step": 5,
+            "name": "Integration with Basic Summarization",
+            "prompt": "Use basic summarization workflow to generate summaries for each citation level",
+            "input": {
+              "citationClusters": "array",
+              "sourceContent": "string"
+            },
+            "output": {
+              "levelSummaries": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "basicSummarization",
+              "parameters": {
+                "sourceContent": "citationCluster.content",
+                "maxLines": "levelSpecificMax",
+                "detailLevel": "currentLevel"
+              },
+              "loop": {
+                "iterateOver": "citationClusters",
+                "parallel": false
+              }
+            }
+          },
+          {
+            "step": 5,
+            "name": "Output Assembly",
+            "prompt": "Assemble hierarchical summary with navigation and citation tree",
+            "input": {
+              "levelSummaries": "array",
+              "navigationStructure": "object",
+              "citationTree": "object"
+            },
+            "output": {
+              "hierarchicalOutput": "object",
+              "files": ["hierarchical-summary.md", "navigation.json", "citation-tree.json"]
+            },
+            "tools": ["assembler", "file-writer"],
+            "fileCreation": [
+              {
+                "path": "output/hierarchical-summary.md",
+                "content": "hierarchicalOutput",
+                "format": "markdown"
+              },
+              {
+                "path": "output/citation-tree.json",
+                "content": "citationTree",
+                "format": "json"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToSingleLevel",
+          "maxRetries": 2,
+          "fallback": "basicSummaryWithSimpleCitations"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["documentationGeneration", "testGeneration", "contextGathering", "navigation", "scopeGeneration"],
+        "uses": ["basicSummarization", "citationSystem", "navigationSystem", "scopeGeneration"],
+        "n8nImplementation": {
+          "nodes": [
+            "citation-analyzer-node",
+            "level-generator-node",
+            "workflow-invoker-node",
+            "navigation-builder-node",
+            "assembler-node"
+          ],
+          "connections": "sequential-with-nested-workflows"
+        }
+      }
+    },
+    "documentationGeneration": {
+      "id": "documentation-generation",
+      "name": "Documentation Generation Workflow",
+      "description": "Generates comprehensive documentation using summarization workflows, creating tests and context for feature implementation",
+      "featureConnections": [
+        "workflows",
+        "editor-experience",
+        "context-engineering",
+        "agentic-mode-system"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["code", "featureSpec", "workflowDefinition"],
+          "required": ["sourceCode", "featureDescription"],
+          "optional": ["documentationStyle", "testFramework"]
+        },
+        "output": {
+          "types": ["documentation", "tests", "examples", "apiDocs"],
+          "structure": {
+            "documentation": "markdown",
+            "tests": "code",
+            "examples": "code",
+            "metadata": "object"
+          }
+        },
+        "behavior": {
+          "multiOutput": true,
+          "testGeneration": true,
+          "exampleGeneration": true,
+          "citationBased": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Source Analysis",
+            "prompt": "Analyze source code and feature specification to understand structure and requirements",
+            "input": {
+              "sourceCode": "string",
+              "featureDescription": "string",
+              "workflowDefinition": "object"
+            },
+            "output": {
+              "codeStructure": "object",
+              "featureRequirements": "array",
+              "implementationPoints": "array"
+            },
+            "tools": ["code-analyzer", "requirement-extractor"],
+            "conditions": {
+              "if": "workflowDefinition.exists",
+              "then": "analyzeWorkflowStructure",
+              "else": "analyzeCodeOnly"
+            }
+          },
+          {
+            "step": 2,
+            "name": "Context Summarization",
+            "prompt": "Use basic summarization workflow to create context summaries for documentation",
+            "input": {
+              "sourceCode": "string",
+              "codeStructure": "object"
+            },
+            "output": {
+              "contextSummaries": "array",
+              "citationReferences": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "basicSummarization",
+              "parameters": {
+                "sourceContent": "sourceCode",
+                "maxLines": 50,
+                "detailLevel": 1,
+                "citationStyle": "lineNumbers"
+              },
+              "parallel": false
+            }
+          },
+          {
+            "step": 3,
+            "name": "Multi-Level Documentation Creation",
+            "prompt": "Use multi-level citation summary to create hierarchical documentation structure",
+            "input": {
+              "contextSummaries": "array",
+              "featureRequirements": "array",
+              "citationReferences": "array"
+            },
+            "output": {
+              "documentationStructure": "object",
+              "hierarchicalDocs": "object"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "multiLevelCitationSummary",
+              "parameters": {
+                "baseSummary": "contextSummaries",
+                "citations": "citationReferences",
+                "maxLevels": 3
+              }
+            }
+          },
+          {
+            "step": 4,
+            "name": "Test Generation",
+            "prompt": "Generate test cases based on feature requirements and code structure, using documentation as context",
+            "input": {
+              "featureRequirements": "array",
+              "codeStructure": "object",
+              "documentationStructure": "object",
+              "testFramework": "string"
+            },
+            "output": {
+              "testCases": "array",
+              "testCode": "string",
+              "testMetadata": "object"
+            },
+            "tools": ["test-generator", "code-writer"],
+            "fileCreation": [
+              {
+                "path": "output/tests/{featureName}.test.{ext}",
+                "content": "testCode",
+                "format": "code"
+              }
+            ],
+            "conditions": {
+              "if": "testFramework === 'jest'",
+              "then": "generateJestTests",
+              "else": "generateGenericTests"
+            }
+          },
+          {
+            "step": 5,
+            "name": "Example Generation",
+            "prompt": "Create usage examples based on documentation and feature requirements",
+            "input": {
+              "documentationStructure": "object",
+              "featureRequirements": "array",
+              "codeStructure": "object"
+            },
+            "output": {
+              "examples": "array",
+              "exampleCode": "string"
+            },
+            "tools": ["example-generator", "code-writer"],
+            "fileCreation": [
+              {
+                "path": "output/examples/{featureName}.example.{ext}",
+                "content": "exampleCode",
+                "format": "code"
+              }
+            ]
+          },
+          {
+            "step": 6,
+            "name": "Documentation Assembly",
+            "prompt": "Assemble final documentation with all components, citations, and navigation",
+            "input": {
+              "hierarchicalDocs": "object",
+              "testCases": "array",
+              "examples": "array",
+              "metadata": "object"
+            },
+            "output": {
+              "finalDocumentation": "object",
+              "files": ["README.md", "API.md", "EXAMPLES.md", "TEST_GUIDE.md"]
+            },
+            "tools": ["documentation-assembler", "file-writer"],
+            "fileCreation": [
+              {
+                "path": "output/README.md",
+                "content": "finalDocumentation.overview",
+                "format": "markdown"
+              },
+              {
+                "path": "output/API.md",
+                "content": "finalDocumentation.api",
+                "format": "markdown"
+              },
+              {
+                "path": "output/EXAMPLES.md",
+                "content": "finalDocumentation.examples",
+                "format": "markdown"
+              },
+              {
+                "path": "output/TEST_GUIDE.md",
+                "content": "finalDocumentation.testGuide",
+                "format": "markdown"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "partialGeneration",
+          "maxRetries": 2,
+          "fallback": "basicDocumentationOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["n8nWorkflowImplementation", "featureImplementation", "contextGathering"],
+        "uses": ["basicSummarization", "multiLevelCitationSummary", "testGeneration"],
+        "n8nImplementation": {
+          "nodes": [
+            "code-analyzer-node",
+            "workflow-invoker-node",
+            "test-generator-node",
+            "example-generator-node",
+            "documentation-assembler-node"
+          ],
+          "connections": "sequential-with-nested-workflows",
+          "note": "This workflow creates context that can be used for implementing the workflow itself in n8n"
+        }
+      }
+    },
+    "contextGathering": {
+      "id": "context-gathering",
+      "name": "Context Gathering Workflow",
+      "description": "Intelligently gathers context from multiple sources (files, MCP, RAG) with smart chunking and ranking",
+      "featureConnections": [
+        "context-engineering",
+        "multi-source-integration",
+        "smart-chunking-memory",
+        "agentic-mode-system"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["query", "mode", "budget"],
+          "required": ["query"],
+          "optional": ["mode", "tokenBudget", "contextSources"]
+        },
+        "output": {
+          "types": ["aggregatedContext", "rankedContext", "metadata"],
+          "structure": {
+            "context": "array",
+            "ranking": "object",
+            "tokenUsage": "object",
+            "sources": "array"
+          }
+        },
+        "behavior": {
+          "multiSource": true,
+          "ranking": true,
+          "budgetAware": true,
+          "chunking": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Query Analysis",
+            "prompt": "Analyze user query to determine required context types and sources",
+            "input": {
+              "query": "string",
+              "mode": "string",
+              "currentContext": "object"
+            },
+            "output": {
+              "contextRequirements": "array",
+              "sourcePriorities": "object",
+              "estimatedBudget": "number"
+            },
+            "tools": ["query-analyzer", "requirement-extractor"]
+          },
+          {
+            "step": 2,
+            "name": "Parallel Context Gathering",
+            "prompt": "Gather context from all required sources in parallel",
+            "input": {
+              "contextRequirements": "array",
+              "sourcePriorities": "object",
+              "tokenBudget": "number"
+            },
+            "output": {
+              "fileContext": "array",
+              "mcpData": "array",
+              "ragResults": "array",
+              "gitData": "object"
+            },
+            "tools": ["file-reader", "mcp-query", "rag-search", "git-query"],
+            "parallel": true,
+            "loop": {
+              "iterateOver": "contextRequirements",
+              "condition": "budgetRemaining > 0",
+              "action": "gatherFromSource"
+            }
+          },
+          {
+            "step": 3,
+            "name": "Smart Chunking",
+            "prompt": "Chunk gathered context using semantic strategies based on file types",
+            "input": {
+              "fileContext": "array",
+              "chunkingStrategy": "string",
+              "maxChunkSize": "number"
+            },
+            "output": {
+              "chunks": "array",
+              "chunkMetadata": "object"
+            },
+            "tools": ["chunker", "semantic-analyzer"],
+            "conditions": {
+              "if": "fileType === 'code'",
+              "then": "chunkByFunctions",
+              "elseIf": "fileType === 'markdown'",
+              "then": "chunkBySections",
+              "else": "chunkByLines"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Relevance Ranking",
+            "prompt": "Rank all context chunks by relevance to query using multiple factors",
+            "input": {
+              "chunks": "array",
+              "query": "string",
+              "history": "object"
+            },
+            "output": {
+              "rankedContext": "array",
+              "scores": "object",
+              "rankingFactors": "object"
+            },
+            "tools": ["ranker", "similarity-calculator"],
+            "rankingFactors": {
+              "semanticSimilarity": 0.4,
+              "recency": 0.2,
+              "graphProximity": 0.2,
+              "explicitMention": 0.1,
+              "historicalSuccess": 0.1
+            }
+          },
+          {
+            "step": 5,
+            "name": "Budget Allocation",
+            "prompt": "Select top-ranked context within token budget constraints",
+            "input": {
+              "rankedContext": "array",
+              "tokenBudget": "number",
+              "fixedAllocations": "object"
+            },
+            "output": {
+              "selectedContext": "array",
+              "tokenUsage": "object",
+              "truncated": "boolean"
+            },
+            "tools": ["budget-allocator", "token-counter"],
+            "loop": {
+              "condition": "currentTokens < tokenBudget AND hasMoreContext",
+              "action": "addNextContext",
+              "stopWhen": "budgetExceeded OR allRelevantContextAdded"
+            }
+          },
+          {
+            "step": 6,
+            "name": "Context Assembly",
+            "prompt": "Assemble final context with proper ordering and formatting",
+            "input": {
+              "selectedContext": "array",
+              "tokenUsage": "object",
+              "metadata": "object"
+            },
+            "output": {
+              "aggregatedContext": "object",
+              "contextBreakdown": "object"
+            },
+            "tools": ["context-assembler", "formatter"]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToBasicGathering",
+          "maxRetries": 2,
+          "fallback": "simpleFileContextOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["allWorkflows"],
+        "uses": ["smartChunking", "rankingSystem", "mcpIntegration", "ragIntegration"],
+        "n8nImplementation": {
+          "nodes": [
+            "query-analyzer-node",
+            "parallel-gatherer-node",
+            "chunker-node",
+            "ranker-node",
+            "budget-allocator-node",
+            "context-assembler-node"
+          ],
+          "connections": "parallel-then-sequential"
+        }
+      }
+    },
+    "modeSelection": {
+      "id": "mode-selection",
+      "name": "Mode Selection Workflow",
+      "description": "Automatically selects appropriate workflow mode based on user input and context",
+      "featureConnections": [
+        "agentic-mode-system",
+        "context-engineering",
+        "self-improvement-system"
+      ],
+      "workflowFormat": "n8n-config",
+      "canBePreprocessed": false,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["userInput", "context", "history"],
+          "required": ["userInput"],
+          "optional": ["currentContext", "sessionHistory"]
+        },
+        "output": {
+          "types": ["selectedMode", "confidence", "alternatives"],
+          "structure": {
+            "mode": "string",
+            "confidence": "number",
+            "alternatives": "array",
+            "reasoning": "string"
+          }
+        },
+        "behavior": {
+          "automatic": true,
+          "configurable": true,
+          "learnable": true,
+          "overridable": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Input Analysis",
+            "prompt": "Analyze user input for keywords, intent signals, and task type",
+            "input": {
+              "userInput": "string",
+              "currentContext": "object"
+            },
+            "output": {
+              "keywords": "array",
+              "intent": "string",
+              "taskType": "string",
+              "signals": "object"
+            },
+            "tools": ["keyword-extractor", "intent-classifier"]
+          },
+          {
+            "step": 2,
+            "name": "Context Analysis",
+            "prompt": "Analyze current context (open files, git state, project structure)",
+            "input": {
+              "openFiles": "array",
+              "gitState": "object",
+              "projectStructure": "object"
+            },
+            "output": {
+              "contextSignals": "object",
+              "fileTypes": "array",
+              "projectType": "string"
+            },
+            "tools": ["context-analyzer", "file-type-detector"]
+          },
+          {
+            "step": 3,
+            "name": "Mode Matching",
+            "prompt": "Match input and context against available mode definitions",
+            "input": {
+              "keywords": "array",
+              "intent": "string",
+              "contextSignals": "object",
+              "availableModes": "array"
+            },
+            "output": {
+              "matches": "array",
+              "scores": "object",
+              "topMatches": "array"
+            },
+            "tools": ["mode-matcher", "scorer"],
+            "loop": {
+              "iterateOver": "availableModes",
+              "action": "calculateMatchScore",
+              "condition": "score > threshold"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Historical Pattern Check",
+            "prompt": "Check historical patterns for similar inputs and their successful mode selections",
+            "input": {
+              "matches": "array",
+              "sessionHistory": "object",
+              "learnedPatterns": "array"
+            },
+            "output": {
+              "historicalMatches": "array",
+              "patternScores": "object",
+              "adjustedScores": "object"
+            },
+            "tools": ["pattern-matcher", "history-analyzer"],
+            "conditions": {
+              "if": "learnedPatterns.length > 0",
+              "then": "applyHistoricalAdjustments",
+              "else": "useCurrentScoresOnly"
+            }
+          },
+          {
+            "step": 5,
+            "name": "Selection and Confidence",
+            "prompt": "Select best mode and calculate confidence score",
+            "input": {
+              "adjustedScores": "object",
+              "matches": "array"
+            },
+            "output": {
+              "selectedMode": "string",
+              "confidence": "number",
+              "alternatives": "array",
+              "reasoning": "string"
+            },
+            "tools": ["selector", "confidence-calculator"],
+            "conditions": {
+              "if": "confidence < 0.7",
+              "then": "suggestAlternatives",
+              "else": "autoSelect"
+            }
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToDefaultMode",
+          "maxRetries": 1,
+          "fallback": "generalChatMode"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["allWorkflows"],
+        "uses": ["contextGathering", "patternLearning"],
+        "n8nImplementation": {
+          "nodes": [
+            "input-analyzer-node",
+            "context-analyzer-node",
+            "mode-matcher-node",
+            "pattern-matcher-node",
+            "selector-node"
+          ],
+          "connections": "sequential-with-conditional-branches"
+        }
+      }
+    },
+    "selfImprovement": {
+      "id": "self-improvement",
+      "name": "Self-Improvement Workflow",
+      "description": "Analyzes logs and patterns to improve workflows automatically using scoped summary workflows",
+      "featureConnections": [
+        "self-improvement-system",
+        "smart-chunking-memory",
+        "transparency-observability",
+        "workflows"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["logs", "patterns", "scope"],
+          "required": ["logs", "scope"],
+          "optional": ["targetWorkflow", "improvementGoal"]
+        },
+        "output": {
+          "types": ["improvements", "updatedWorkflows", "summaries"],
+          "structure": {
+            "improvements": "array",
+            "workflowUpdates": "array",
+            "summaries": "array",
+            "metrics": "object"
+          }
+        },
+        "behavior": {
+          "scoped": true,
+          "iterative": true,
+          "workflowUpdating": true,
+          "summaryBased": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Scope Definition",
+            "prompt": "Define improvement scope based on goal (e.g., minimize back-and-forth, optimize context order)",
+            "input": {
+              "improvementGoal": "string",
+              "scope": "string"
+            },
+            "output": {
+              "scopeDefinition": "object",
+              "analysisCriteria": "array",
+              "targetMetrics": "object"
+            },
+            "tools": ["scope-definer", "criteria-extractor"]
+          },
+          {
+            "step": 2,
+            "name": "Log Analysis",
+            "prompt": "Analyze logs based on scope to find patterns and issues",
+            "input": {
+              "logs": "array",
+              "scopeDefinition": "object",
+              "analysisCriteria": "array"
+            },
+            "output": {
+              "patterns": "array",
+              "issues": "array",
+              "statistics": "object"
+            },
+            "tools": ["log-analyzer", "pattern-detector"],
+            "loop": {
+              "iterateOver": "logs",
+              "condition": "matchesScope",
+              "action": "extractPattern"
+            }
+          },
+          {
+            "step": 3,
+            "name": "Scoped Summary Generation",
+            "prompt": "Generate summaries of patterns using basic summarization workflow",
+            "input": {
+              "patterns": "array",
+              "issues": "array",
+              "scope": "string"
+            },
+            "output": {
+              "summaries": "array",
+              "keyInsights": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "basicSummarization",
+              "parameters": {
+                "sourceContent": "patterns",
+                "maxLines": 100,
+                "detailLevel": 2
+              },
+              "parallel": false
+            }
+          },
+          {
+            "step": 4,
+            "name": "Workflow Update Generation",
+            "prompt": "Generate proposed workflow updates based on summaries and insights",
+            "input": {
+              "summaries": "array",
+              "keyInsights": "array",
+              "targetWorkflow": "string"
+            },
+            "output": {
+              "proposedUpdates": "array",
+              "workflowDiffs": "array",
+              "expectedImprovements": "object"
+            },
+            "tools": ["workflow-updater", "diff-generator"],
+            "conditions": {
+              "if": "targetWorkflow.exists",
+              "then": "updateExistingWorkflow",
+              "else": "createNewWorkflow"
+            }
+          },
+          {
+            "step": 5,
+            "name": "Improvement Validation",
+            "prompt": "Validate improvements through testing or user approval",
+            "input": {
+              "proposedUpdates": "array",
+              "workflowDiffs": "array"
+            },
+            "output": {
+              "validatedUpdates": "array",
+              "approvalStatus": "object"
+            },
+            "tools": ["validator", "approval-manager"],
+            "conditions": {
+              "if": "requiresApproval",
+              "then": "requestUserApproval",
+              "else": "autoApplyIfSafe"
+            }
+          },
+          {
+            "step": 6,
+            "name": "Workflow Update Application",
+            "prompt": "Apply approved updates to workflows",
+            "input": {
+              "validatedUpdates": "array",
+              "approvalStatus": "object"
+            },
+            "output": {
+              "updatedWorkflows": "array",
+              "backupFiles": "array",
+              "updateMetadata": "object"
+            },
+            "tools": ["workflow-applier", "file-writer", "backup-creator"],
+            "fileCreation": [
+              {
+                "path": "workflows/{workflowName}.md",
+                "content": "updatedWorkflow",
+                "format": "markdown",
+                "backup": true
+              }
+            ]
+          },
+          {
+            "step": 7,
+            "name": "Metrics Tracking",
+            "prompt": "Track metrics to measure improvement success",
+            "input": {
+              "updatedWorkflows": "array",
+              "targetMetrics": "object"
+            },
+            "output": {
+              "metrics": "object",
+              "improvementReport": "object"
+            },
+            "tools": ["metrics-tracker", "report-generator"],
+            "fileCreation": [
+              {
+                "path": "reports/improvement-{timestamp}.json",
+                "content": "improvementReport",
+                "format": "json"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "rollbackChanges",
+          "maxRetries": 1,
+          "fallback": "keepOriginalWorkflow"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["allWorkflows"],
+        "uses": ["basicSummarization", "workflowSystem", "loggingSystem"],
+        "n8nImplementation": {
+          "nodes": [
+            "log-analyzer-node",
+            "pattern-detector-node",
+            "workflow-invoker-node",
+            "workflow-updater-node",
+            "validator-node",
+            "metrics-tracker-node"
+          ],
+          "connections": "sequential-with-approval-gates"
+        }
+      }
+    },
+    "codeReview": {
+      "id": "code-review",
+      "name": "Code Review Workflow",
+      "description": "Reviews code for issues, standards compliance, and improvements",
+      "featureConnections": [
+        "agentic-mode-system",
+        "context-engineering",
+        "transparency-observability"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["code", "file", "dependencies"],
+          "required": ["code"],
+          "optional": ["standards", "testResults", "gitHistory"]
+        },
+        "output": {
+          "types": ["review", "issues", "suggestions"],
+          "structure": {
+            "criticalIssues": "array",
+            "warnings": "array",
+            "suggestions": "array",
+            "positiveObservations": "array"
+          }
+        },
+        "behavior": {
+          "analysis": true,
+          "ranking": true,
+          "citationBased": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Code Analysis",
+            "prompt": "Analyze code structure, dependencies, and patterns",
+            "input": {
+              "code": "string",
+              "filePath": "string"
+            },
+            "output": {
+              "structure": "object",
+              "dependencies": "array",
+              "patterns": "array"
+            },
+            "tools": ["code-analyzer", "ast-parser"]
+          },
+          {
+            "step": 2,
+            "name": "Context Gathering",
+            "prompt": "Gather context from git history, tests, and code standards",
+            "input": {
+              "filePath": "string",
+              "dependencies": "array"
+            },
+            "output": {
+              "gitHistory": "object",
+              "testResults": "object",
+              "codeStandards": "object"
+            },
+            "tools": ["workflow-invoker", "git-query", "test-runner"],
+            "workflowCall": {
+              "workflow": "contextGathering",
+              "parameters": {
+                "query": "code review context",
+                "sources": ["git", "tests", "standards"]
+              }
+            }
+          },
+          {
+            "step": 3,
+            "name": "Issue Detection",
+            "prompt": "Detect issues, bugs, and code smells",
+            "input": {
+              "code": "string",
+              "structure": "object",
+              "context": "object"
+            },
+            "output": {
+              "issues": "array",
+              "severity": "object",
+              "locations": "array"
+            },
+            "tools": ["issue-detector", "severity-classifier"],
+            "loop": {
+              "iterateOver": "codeSections",
+              "action": "detectIssues"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Standards Compliance Check",
+            "prompt": "Check compliance with code standards and best practices",
+            "input": {
+              "code": "string",
+              "codeStandards": "object",
+              "issues": "array"
+            },
+            "output": {
+              "complianceIssues": "array",
+              "suggestions": "array"
+            },
+            "tools": ["standards-checker", "best-practices-analyzer"]
+          },
+          {
+            "step": 5,
+            "name": "Review Assembly",
+            "prompt": "Assemble ranked review with citations and suggestions",
+            "input": {
+              "issues": "array",
+              "complianceIssues": "array",
+              "suggestions": "array"
+            },
+            "output": {
+              "review": "object",
+              "rankedIssues": "array"
+            },
+            "tools": ["review-assembler", "ranker"]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "basicReviewOnly",
+          "maxRetries": 1,
+          "fallback": "syntaxCheckOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["allWorkflows"],
+        "uses": ["contextGathering", "issueDetection"],
+        "n8nImplementation": {
+          "nodes": [
+            "code-analyzer-node",
+            "context-gatherer-node",
+            "issue-detector-node",
+            "standards-checker-node",
+            "review-assembler-node"
+          ],
+          "connections": "sequential-with-context-gathering"
+        }
+      }
+    },
+    "research": {
+      "id": "research",
+      "name": "Research Workflow",
+      "description": "Researches topics using RAG, web search, and documentation",
+      "featureConnections": [
+        "multi-source-integration",
+        "context-engineering",
+        "agentic-mode-system"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["query", "topic"],
+          "required": ["query"],
+          "optional": ["ragIndices", "webSearch", "codeExamples"]
+        },
+        "output": {
+          "types": ["research", "findings", "sources"],
+          "structure": {
+            "summary": "string",
+            "findings": "array",
+            "sources": "array",
+            "codeExamples": "array"
+          }
+        },
+        "behavior": {
+          "multiSource": true,
+          "synthesis": true,
+          "citationBased": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "RAG Query",
+            "prompt": "Query RAG indices for existing knowledge",
+            "input": {
+              "query": "string",
+              "ragIndices": "array"
+            },
+            "output": {
+              "ragResults": "array",
+              "relevanceScores": "object"
+            },
+            "tools": ["rag-query", "vector-search"]
+          },
+          {
+            "step": 2,
+            "name": "Web Search",
+            "prompt": "Search web if no local docs found or for latest info",
+            "input": {
+              "query": "string",
+              "ragResults": "array"
+            },
+            "output": {
+              "webResults": "array"
+            },
+            "tools": ["web-search", "mcp-query"],
+            "conditions": {
+              "if": "ragResults.length === 0 OR needsLatestInfo",
+              "then": "performWebSearch",
+              "else": "skipWebSearch"
+            }
+          },
+          {
+            "step": 3,
+            "name": "Code Example Search",
+            "prompt": "Search for related code examples if applicable",
+            "input": {
+              "query": "string",
+              "findings": "array"
+            },
+            "output": {
+              "codeExamples": "array"
+            },
+            "tools": ["code-search", "example-finder"],
+            "conditions": {
+              "if": "query.includesCodeRequest",
+              "then": "searchCodeExamples",
+              "else": "skipCodeSearch"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Synthesis",
+            "prompt": "Synthesize findings with examples and cite all sources",
+            "input": {
+              "ragResults": "array",
+              "webResults": "array",
+              "codeExamples": "array"
+            },
+            "output": {
+              "synthesis": "object",
+              "findings": "array",
+              "sources": "array"
+            },
+            "tools": ["synthesizer", "citation-generator"]
+          },
+          {
+            "step": 5,
+            "name": "Output Formatting",
+            "prompt": "Format research output with structured findings and sources",
+            "input": {
+              "synthesis": "object",
+              "findings": "array",
+              "sources": "array"
+            },
+            "output": {
+              "formattedOutput": "object"
+            },
+            "tools": ["formatter"]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToRAGOnly",
+          "maxRetries": 1,
+          "fallback": "basicRAGQuery"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["documentationGeneration", "contextGathering"],
+        "uses": ["ragIntegration", "webSearch", "citationSystem"],
+        "n8nImplementation": {
+          "nodes": [
+            "rag-query-node",
+            "web-search-node",
+            "code-search-node",
+            "synthesizer-node",
+            "formatter-node"
+          ],
+          "connections": "conditional-parallel-then-sequential"
+        }
+      }
+    },
+    "scopeGeneration": {
+      "id": "scope-generation",
+      "name": "Scope Generation Workflow",
+      "description": "Generates scope prompts that narrow scope at various levels of abstraction. Creates summaries which are a kind of compression from everything to something specific about the document or goal itself. Used to create targeted context by compressing broad context into focused scope",
+      "featureConnections": [
+        "agentic-mode-system",
+        "context-engineering",
+        "workflows",
+        "self-improvement-system"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["generalGoal", "chatMessage", "context", "existingScope"],
+          "required": ["input"],
+          "optional": ["context", "scopeType", "abstractionLevel"]
+        },
+        "output": {
+          "types": ["scopePrompt", "scopeConstraints", "scopePriorities"],
+          "structure": {
+            "scopePrompt": "string",
+            "scopeConstraints": "array",
+            "scopePriorities": "object",
+            "abstractionLevel": "number",
+            "scopeMetadata": "object"
+          }
+        },
+        "behavior": {
+          "recursive": true,
+          "iterative": true,
+          "selfGenerating": true,
+          "contextAware": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Input Analysis",
+            "prompt": "Analyze input to determine if it's a general goal, chat message, or existing scope",
+            "input": {
+              "input": "string",
+              "inputType": "string",
+              "context": "object"
+            },
+            "output": {
+              "inputClassification": "string",
+              "inputStructure": "object",
+              "scopeRequirements": "array"
+            },
+            "tools": ["input-analyzer", "classifier"],
+            "conditions": {
+              "if": "inputType === 'generalGoal'",
+              "then": "generateScopeFromGoal",
+              "elseIf": "inputType === 'chatMessage'",
+              "then": "generateScopeFromChat",
+              "else": "refineExistingScope"
+            }
+          },
+          {
+            "step": 2,
+            "name": "Context Gathering for Scope",
+            "prompt": "Gather context needed to generate appropriate scope",
+            "input": {
+              "input": "string",
+              "inputClassification": "string",
+              "context": "object"
+            },
+            "output": {
+              "scopeContext": "object",
+              "relevantInformation": "array"
+            },
+            "tools": ["workflow-invoker", "context-gatherer"],
+            "workflowCall": {
+              "workflow": "contextGathering",
+              "parameters": {
+                "query": "input",
+                "mode": "scopeGeneration"
+              },
+              "conditions": {
+                "if": "context.needed",
+                "then": "gatherContext",
+                "else": "useProvidedContext"
+              }
+            }
+          },
+          {
+            "step": 3,
+            "name": "Recursive Scope Generation with Compression",
+            "prompt": "Generate scope prompt that compresses from everything to something specific. Narrow scope at various abstraction levels, creating summaries as compression from broad context to focused scope about document or goal",
+            "input": {
+              "input": "string",
+              "scopeContext": "object",
+              "scopeRequirements": "array"
+            },
+            "output": {
+              "scopePrompt": "string",
+              "subScopes": "array",
+              "scopeHierarchy": "object"
+            },
+            "tools": ["scope-generator", "workflow-invoker"],
+            "workflowCall": {
+              "workflow": "scopeGeneration",
+              "parameters": {
+                "input": "subScopeGoal",
+                "context": "scopeContext",
+                "abstractionLevel": "currentLevel + 1"
+              },
+              "recursive": true,
+              "conditions": {
+                "if": "requiresSubScopes",
+                "then": "generateSubScopes",
+                "else": "generateSingleScope"
+              },
+              "loop": {
+                "iterateOver": "subScopeRequirements",
+                "maxDepth": 5,
+                "action": "generateSubScope"
+              }
+            }
+          },
+          {
+            "step": 4,
+            "name": "Scope Refinement",
+            "prompt": "Refine scope prompt based on constraints and priorities",
+            "input": {
+              "scopePrompt": "string",
+              "scopeConstraints": "array",
+              "scopePriorities": "object"
+            },
+            "output": {
+              "refinedScopePrompt": "string",
+              "scopeMetadata": "object"
+            },
+            "tools": ["scope-refiner", "constraint-applier"],
+            "loop": {
+              "condition": "scopeNeedsRefinement",
+              "action": "refineScope",
+              "maxIterations": 3
+            }
+          },
+          {
+            "step": 5,
+            "name": "Scope Output Generation",
+            "prompt": "Format scope prompt for use by other workflows",
+            "input": {
+              "refinedScopePrompt": "string",
+              "scopeMetadata": "object",
+              "scopeHierarchy": "object"
+            },
+            "output": {
+              "finalScopePrompt": "string",
+              "scopeOutput": "object"
+            },
+            "tools": ["formatter", "scope-assembler"],
+            "fileCreation": [
+              {
+                "path": "output/scope-{timestamp}.md",
+                "content": "finalScopePrompt",
+                "format": "markdown"
+              },
+              {
+                "path": "output/scope-metadata-{timestamp}.json",
+                "content": "scopeMetadata",
+                "format": "json"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToBasicScope",
+          "maxRetries": 2,
+          "fallback": "simpleScopeFromInput"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["multiLevelCitationSummary", "navigation", "documentationGeneration", "contextGathering"],
+        "uses": ["contextGathering", "scopeGeneration"],
+        "recursiveUses": ["scopeGeneration"],
+        "n8nImplementation": {
+          "nodes": [
+            "input-analyzer-node",
+            "context-gatherer-node",
+            "scope-generator-node",
+            "recursive-scope-invoker-node",
+            "scope-refiner-node",
+            "formatter-node"
+          ],
+          "connections": "sequential-with-recursive-nesting"
+        }
+      }
+    },
+    "navigation": {
+      "id": "navigation",
+      "name": "Navigation Workflow",
+      "description": "Navigates through varying levels of abstraction in multiLevelCitationSummary results to generate prompts or results. Also navigates context to answer questions in conditional behavior workflows",
+      "featureConnections": [
+        "workflows",
+        "context-engineering",
+        "agentic-mode-system",
+        "editor-experience"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["multiLevelSummary", "abstractionLevel", "navigationGoal", "query"],
+          "required": ["multiLevelSummary"],
+          "optional": ["abstractionLevel", "navigationGoal", "query"]
+        },
+        "output": {
+          "types": ["navigationResult", "generatedPrompt", "abstractionPath", "selectedContent"],
+          "structure": {
+            "navigationResult": "object",
+            "generatedPrompt": "string",
+            "abstractionPath": "array",
+            "selectedContent": "array",
+            "navigationMetadata": "object"
+          }
+        },
+        "behavior": {
+          "multiLevel": true,
+          "abstractionAware": true,
+          "promptGenerating": true,
+          "iterative": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Abstraction Level Analysis",
+            "prompt": "Analyze multiLevelCitationSummary to identify available abstraction levels and their content",
+            "input": {
+              "multiLevelSummary": "object",
+              "navigationGoal": "string"
+            },
+            "output": {
+              "availableLevels": "array",
+              "levelContent": "object",
+              "levelRelationships": "object"
+            },
+            "tools": ["level-analyzer", "abstraction-mapper"]
+          },
+          {
+            "step": 2,
+            "name": "Navigation Goal Processing",
+            "prompt": "Process navigation goal or questions from conditional behavior workflows to determine which abstraction levels to explore",
+            "input": {
+              "navigationGoal": "string",
+              "availableLevels": "array",
+              "query": "string"
+            },
+            "output": {
+              "targetLevels": "array",
+              "navigationPath": "array",
+              "explorationStrategy": "string"
+            },
+            "tools": ["goal-processor", "path-planner"],
+            "conditions": {
+              "if": "navigationGoal === 'answerQuestion'",
+              "then": "planQuestionAnsweringPath",
+              "elseIf": "navigationGoal === 'generatePrompt'",
+              "then": "planPromptGenerationPath",
+              "elseIf": "navigationGoal === 'findContent'",
+              "then": "planContentSearchPath",
+              "else": "planGeneralNavigation"
+            },
+            "questionAnswering": {
+              "canAnswerQuestions": true,
+              "usedBy": ["conditionalBehavior"],
+              "answersFromContext": true
+            }
+          },
+          {
+            "step": 3,
+            "name": "Multi-Level Exploration",
+            "prompt": "Navigate through abstraction levels, using multiLevelCitationSummary at different levels",
+            "input": {
+              "multiLevelSummary": "object",
+              "targetLevels": "array",
+              "navigationPath": "array"
+            },
+            "output": {
+              "exploredContent": "array",
+              "levelInsights": "object",
+              "abstractionPath": "array"
+            },
+            "tools": ["workflow-invoker", "level-navigator"],
+            "workflowCall": {
+              "workflow": "multiLevelCitationSummary",
+              "parameters": {
+                "baseSummary": "levelContent",
+                "citations": "levelCitations",
+                "scopePrompt": "levelSpecificScope",
+                "maxLevels": "targetLevel"
+              },
+              "loop": {
+                "iterateOver": "targetLevels",
+                "action": "exploreLevel",
+                "condition": "hasMoreLevelsToExplore"
+              }
+            }
+          },
+          {
+            "step": 4,
+            "name": "Scope Generation for Navigation",
+            "prompt": "Generate scope prompts based on navigation insights at different abstraction levels",
+            "input": {
+              "exploredContent": "array",
+              "levelInsights": "object",
+              "navigationGoal": "string"
+            },
+            "output": {
+              "scopePrompts": "array",
+              "levelScopes": "object"
+            },
+            "tools": ["workflow-invoker", "scope-generator"],
+            "workflowCall": {
+              "workflow": "scopeGeneration",
+              "parameters": {
+                "input": "levelInsight",
+                "context": "exploredContent",
+                "scopeType": "navigationScope"
+              },
+              "loop": {
+                "iterateOver": "levelInsights",
+                "action": "generateScopeForLevel",
+                "parallel": true
+              }
+            }
+          },
+          {
+            "step": 5,
+            "name": "Prompt or Result Generation",
+            "prompt": "Generate prompts or results based on navigation through abstraction levels",
+            "input": {
+              "exploredContent": "array",
+              "scopePrompts": "array",
+              "abstractionPath": "array",
+              "navigationGoal": "string"
+            },
+            "output": {
+              "generatedPrompt": "string",
+              "navigationResult": "object",
+              "selectedContent": "array"
+            },
+            "tools": ["prompt-generator", "result-assembler"],
+            "conditions": {
+              "if": "navigationGoal === 'generatePrompt'",
+              "then": "generatePromptFromNavigation",
+              "else": "assembleNavigationResult"
+            }
+          },
+          {
+            "step": 6,
+            "name": "Iterative Navigation Refinement",
+            "prompt": "Refine navigation based on results, potentially navigating to different abstraction levels",
+            "input": {
+              "navigationResult": "object",
+              "generatedPrompt": "string",
+              "abstractionPath": "array"
+            },
+            "output": {
+              "refinedNavigation": "object",
+              "updatedAbstractionPath": "array"
+            },
+            "tools": ["navigation-refiner", "workflow-invoker"],
+            "loop": {
+              "condition": "navigationNeedsRefinement",
+              "action": "refineNavigation",
+              "maxIterations": 5,
+              "workflowCall": {
+                "workflow": "navigation",
+                "parameters": {
+                  "multiLevelSummary": "updatedSummary",
+                  "abstractionLevel": "newLevel",
+                  "navigationGoal": "refinedGoal"
+                },
+                "recursive": true
+              }
+            }
+          },
+          {
+            "step": 7,
+            "name": "Output Assembly",
+            "prompt": "Assemble final navigation output with prompts, results, and abstraction path",
+            "input": {
+              "generatedPrompt": "string",
+              "navigationResult": "object",
+              "abstractionPath": "array",
+              "selectedContent": "array"
+            },
+            "output": {
+              "finalOutput": "object",
+              "navigationMetadata": "object"
+            },
+            "tools": ["assembler", "formatter"],
+            "fileCreation": [
+              {
+                "path": "output/navigation-{timestamp}.json",
+                "content": "finalOutput",
+                "format": "json"
+              },
+              {
+                "path": "output/navigation-path-{timestamp}.md",
+                "content": "abstractionPath",
+                "format": "markdown"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToSingleLevel",
+          "maxRetries": 2,
+          "fallback": "basicNavigation"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["allWorkflows", "scopeGeneration", "contextGathering"],
+        "uses": ["multiLevelCitationSummary", "scopeGeneration", "navigation"],
+        "recursiveUses": ["navigation", "multiLevelCitationSummary", "scopeGeneration"],
+        "n8nImplementation": {
+          "nodes": [
+            "level-analyzer-node",
+            "goal-processor-node",
+            "multi-level-explorer-node",
+            "scope-generator-invoker-node",
+            "prompt-generator-node",
+            "navigation-refiner-node",
+            "assembler-node"
+          ],
+          "connections": "sequential-with-recursive-loops"
+        }
+      }
+    },
+    "toolWorkflow": {
+      "id": "tool-workflow",
+      "name": "Tool Workflow",
+      "description": "Generates files by running CLIs, terminal commands, browsers, or applications. Creates detailed log files from tool outputs",
+      "featureConnections": [
+        "multi-source-integration",
+        "context-engineering",
+        "workflows"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["toolType", "command", "target", "parameters"],
+          "required": ["toolType", "command"],
+          "optional": ["target", "parameters", "outputFormat"]
+        },
+        "output": {
+          "types": ["logFile", "outputFile", "metadata"],
+          "structure": {
+            "logFile": "string",
+            "outputFile": "string",
+            "metadata": "object",
+            "toolOutput": "string"
+          }
+        },
+        "behavior": {
+          "fileGenerating": true,
+          "toolExecution": true,
+          "highDetail": true,
+          "logCreation": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Tool Selection and Configuration",
+            "prompt": "Select and configure appropriate tool based on tool type (terminal, browser, search, etc.)",
+            "input": {
+              "toolType": "string",
+              "command": "string",
+              "parameters": "object"
+            },
+            "output": {
+              "toolConfiguration": "object",
+              "executionPlan": "object"
+            },
+            "tools": ["tool-selector", "configurator"],
+            "conditions": {
+              "if": "toolType === 'terminal'",
+              "then": "configureTerminal",
+              "elseIf": "toolType === 'browser'",
+              "then": "configureBrowser",
+              "elseIf": "toolType === 'search'",
+              "then": "configureSearch",
+              "else": "configureGenericTool"
+            }
+          },
+          {
+            "step": 2,
+            "name": "Tool Execution",
+            "prompt": "Execute tool command and capture output",
+            "input": {
+              "toolConfiguration": "object",
+              "command": "string",
+              "parameters": "object"
+            },
+            "output": {
+              "toolOutput": "string",
+              "executionMetadata": "object",
+              "exitCode": "number"
+            },
+            "tools": ["terminal-executor", "browser-controller", "search-executor"],
+            "conditions": {
+              "if": "toolType === 'terminal'",
+              "then": "executeTerminalCommand",
+              "elseIf": "toolType === 'browser'",
+              "then": "captureBrowserOutput",
+              "elseIf": "toolType === 'search'",
+              "then": "executeSearch",
+              "else": "executeGenericTool"
+            },
+            "browserCapture": {
+              "elements": true,
+              "css": true,
+              "console": true,
+              "network": true
+            },
+            "terminalCapture": {
+              "stdout": true,
+              "stderr": true,
+              "exitCode": true
+            }
+          },
+          {
+            "step": 3,
+            "name": "Log File Generation",
+            "prompt": "Create detailed log file from tool output",
+            "input": {
+              "toolOutput": "string",
+              "executionMetadata": "object",
+              "toolType": "string"
+            },
+            "output": {
+              "logFile": "string",
+              "logMetadata": "object"
+            },
+            "tools": ["log-generator", "file-writer"],
+            "fileCreation": [
+              {
+                "path": "logs/{toolType}-{timestamp}.log",
+                "content": "toolOutput",
+                "format": "text",
+                "highDetail": true
+              },
+              {
+                "path": "logs/{toolType}-{timestamp}-metadata.json",
+                "content": "executionMetadata",
+                "format": "json"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "retryWithFallback",
+          "maxRetries": 3,
+          "fallback": "basicLogOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["goalBasedBehavior", "executionWorkflow", "conditionalBehavior"],
+        "uses": ["fileSystem", "terminalSystem", "browserSystem", "searchSystem"],
+        "n8nImplementation": {
+          "nodes": [
+            "tool-selector-node",
+            "terminal-executor-node",
+            "browser-controller-node",
+            "search-executor-node",
+            "log-generator-node"
+          ],
+          "connections": "sequential-with-tool-specific-branches"
+        }
+      }
+    },
+    "goalBasedBehavior": {
+      "id": "goal-based-behavior",
+      "name": "Goal-Based Behavior Workflow",
+      "description": "Uses tool workflows to create multiLevelCitationSummary results across custom formatted markdown files with links",
+      "featureConnections": [
+        "workflows",
+        "agentic-mode-system",
+        "context-engineering"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["goal", "toolWorkflows", "targetFiles"],
+          "required": ["goal"],
+          "optional": ["toolWorkflows", "targetFiles", "abstractionLevels"]
+        },
+        "output": {
+          "types": ["multiLevelSummary", "interconnectedFiles", "abstractionDescriptions"],
+          "structure": {
+            "multiLevelSummary": "object",
+            "interconnectedFiles": "array",
+            "abstractionDescriptions": "array",
+            "links": "array"
+          }
+        },
+        "behavior": {
+          "goalDriven": true,
+          "toolOrchestration": true,
+          "fileCreation": true,
+          "linkGeneration": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Goal Analysis",
+            "prompt": "Analyze goal to determine required tool workflows and abstraction levels",
+            "input": {
+              "goal": "string",
+              "context": "object"
+            },
+            "output": {
+              "goalBreakdown": "array",
+              "requiredTools": "array",
+              "abstractionLevels": "array"
+            },
+            "tools": ["goal-analyzer", "tool-planner"]
+          },
+          {
+            "step": 2,
+            "name": "Tool Workflow Execution",
+            "prompt": "Execute tool workflows to generate log files",
+            "input": {
+              "requiredTools": "array",
+              "goalBreakdown": "array"
+            },
+            "output": {
+              "logFiles": "array",
+              "toolOutputs": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "toolWorkflow",
+              "parameters": {
+                "toolType": "requiredTool.type",
+                "command": "requiredTool.command",
+                "parameters": "requiredTool.parameters"
+              },
+              "loop": {
+                "iterateOver": "requiredTools",
+                "action": "executeToolWorkflow",
+                "parallel": true
+              }
+            }
+          },
+          {
+            "step": 3,
+            "name": "Multi-Level Summary Creation",
+            "prompt": "Use multiLevelCitationSummary to create interconnected abstraction descriptions across markdown files",
+            "input": {
+              "logFiles": "array",
+              "toolOutputs": "array",
+              "abstractionLevels": "array"
+            },
+            "output": {
+              "multiLevelSummary": "object",
+              "abstractionDescriptions": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "multiLevelCitationSummary",
+              "parameters": {
+                "baseSummary": "logFiles",
+                "citations": "toolOutputs",
+                "maxLevels": "abstractionLevels.length"
+              }
+            }
+          },
+          {
+            "step": 4,
+            "name": "Interconnected File Creation",
+            "prompt": "Create custom formatted markdown files with links between abstraction levels",
+            "input": {
+              "multiLevelSummary": "object",
+              "abstractionDescriptions": "array"
+            },
+            "output": {
+              "interconnectedFiles": "array",
+              "links": "array"
+            },
+            "tools": ["file-generator", "link-creator"],
+            "fileCreation": [
+              {
+                "path": "output/{abstractionLevel}-{goalName}.md",
+                "content": "abstractionDescription",
+                "format": "markdown",
+                "links": "linksToOtherLevels"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "partialFileCreation",
+          "maxRetries": 2,
+          "fallback": "basicSummaryOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["goalWorkflow", "executionWorkflow"],
+        "uses": ["toolWorkflow", "multiLevelCitationSummary"],
+        "n8nImplementation": {
+          "nodes": [
+            "goal-analyzer-node",
+            "tool-workflow-invoker-node",
+            "multi-level-summary-invoker-node",
+            "file-generator-node",
+            "link-creator-node"
+          ],
+          "connections": "sequential-with-parallel-tool-execution"
+        }
+      }
+    },
+    "contextNavigation": {
+      "id": "context-navigation",
+      "name": "Context Navigation Workflow",
+      "description": "Navigates abstraction levels in file hierarchies to gather context at the right abstraction level. Acts like a quality natural language compression algorithm",
+      "featureConnections": [
+        "context-engineering",
+        "smart-chunking-memory",
+        "workflows"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["fileHierarchy", "goal", "scope", "abstractionLevel"],
+          "required": ["fileHierarchy", "goal"],
+          "optional": ["scope", "abstractionLevel", "targetAbstraction"]
+        },
+        "output": {
+          "types": ["contextSummary", "abstractionPath", "selectedContent"],
+          "structure": {
+            "contextSummary": "string",
+            "abstractionPath": "array",
+            "selectedContent": "array",
+            "abstractionLevel": "number",
+            "relevanceScore": "number"
+          }
+        },
+        "behavior": {
+          "hierarchyAware": true,
+          "abstractionAware": true,
+          "compressionLike": true,
+          "intelligentChunking": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "File Hierarchy Analysis",
+            "prompt": "Analyze file hierarchy to understand structure, interrelationships, and abstraction levels",
+            "input": {
+              "fileHierarchy": "object",
+              "goal": "string"
+            },
+            "output": {
+              "hierarchyStructure": "object",
+              "interrelationships": "object",
+              "abstractionMap": "object"
+            },
+            "tools": ["hierarchy-analyzer", "relationship-mapper"]
+          },
+          {
+            "step": 2,
+            "name": "Goal-Based Navigation Planning",
+            "prompt": "Plan navigation path through abstraction levels to find relevant content for goal",
+            "input": {
+              "goal": "string",
+              "scope": "string",
+              "hierarchyStructure": "object",
+              "abstractionMap": "object"
+            },
+            "output": {
+              "navigationPath": "array",
+              "targetAbstractionLevels": "array",
+              "relevanceCriteria": "object"
+            },
+            "tools": ["navigation-planner", "relevance-calculator"]
+          },
+          {
+            "step": 3,
+            "name": "Intelligent Chunking Across Hierarchy",
+            "prompt": "Navigate folders, sub-folders, files, and inter-file relationships to find relevant chunks",
+            "input": {
+              "navigationPath": "array",
+              "fileHierarchy": "object",
+              "relevanceCriteria": "object"
+            },
+            "output": {
+              "selectedChunks": "array",
+              "chunkMetadata": "object",
+              "abstractionPath": "array"
+            },
+            "tools": ["chunk-navigator", "intelligent-chunker"],
+            "loop": {
+              "iterateOver": "navigationPath",
+              "action": "navigateAndChunk",
+              "condition": "hasMoreRelevantContent",
+              "chunkingStrategy": "intelligent-across-hierarchy"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Abstraction Level Selection",
+            "prompt": "Select appropriate abstraction level for goal, navigating from extreme detail to compressed summary",
+            "input": {
+              "selectedChunks": "array",
+              "goal": "string",
+              "targetAbstraction": "number"
+            },
+            "output": {
+              "selectedContent": "array",
+              "abstractionLevel": "number",
+              "compressionRatio": "number"
+            },
+            "tools": ["abstraction-selector", "compression-analyzer"],
+            "conditions": {
+              "if": "targetAbstraction === 'extremeDetail'",
+              "then": "selectHighDetail",
+              "elseIf": "targetAbstraction === 'compressed'",
+              "then": "selectCompressed",
+              "else": "selectOptimalAbstraction"
+            }
+          },
+          {
+            "step": 5,
+            "name": "Context Summary Generation",
+            "prompt": "Generate context summary at selected abstraction level, acting as quality compression algorithm",
+            "input": {
+              "selectedContent": "array",
+              "abstractionLevel": "number",
+              "goal": "string"
+            },
+            "output": {
+              "contextSummary": "string",
+              "relevanceScore": "number",
+              "abstractionPath": "array"
+            },
+            "tools": ["summary-generator", "compression-engine"],
+            "compressionBehavior": {
+              "qualityPreserving": true,
+              "relevanceFocused": true,
+              "naturalLanguage": true
+            }
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToBasicNavigation",
+          "maxRetries": 2,
+          "fallback": "simpleFileSearch"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["executionWorkflow", "goalWorkflow", "conditionalBehavior", "contextSelfImprovement"],
+        "uses": ["fileSystem", "hierarchySystem", "chunkingSystem"],
+        "answersQuestions": true,
+        "usedForQuestionAnswering": ["conditionalBehavior"],
+        "n8nImplementation": {
+          "nodes": [
+            "hierarchy-analyzer-node",
+            "navigation-planner-node",
+            "chunk-navigator-node",
+            "abstraction-selector-node",
+            "compression-engine-node"
+          ],
+          "connections": "sequential-with-intelligent-loops"
+        }
+      }
+    },
+    "refactoringAlgorithm": {
+      "id": "refactoring-algorithm",
+      "name": "Refactoring Algorithm Workflow",
+      "description": "Improves quality without length change through permanent file editing for self-improvement workflows",
+      "featureConnections": [
+        "self-improvement-system",
+        "workflows",
+        "editor-experience"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["file", "qualityMetrics", "improvementGoals"],
+          "required": ["file"],
+          "optional": ["qualityMetrics", "improvementGoals", "preserveLength"]
+        },
+        "output": {
+          "types": ["refactoredFile", "qualityImprovements", "changeLog"],
+          "structure": {
+            "refactoredFile": "string",
+            "qualityImprovements": "object",
+            "changeLog": "array",
+            "lengthPreserved": "boolean"
+          }
+        },
+        "behavior": {
+          "qualityImproving": true,
+          "lengthPreserving": true,
+          "permanentEditing": true,
+          "selfImproving": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Quality Analysis",
+            "prompt": "Analyze file to identify quality improvement opportunities",
+            "input": {
+              "file": "string",
+              "qualityMetrics": "object"
+            },
+            "output": {
+              "qualityIssues": "array",
+              "improvementOpportunities": "array",
+              "currentMetrics": "object"
+            },
+            "tools": ["quality-analyzer", "metric-calculator"]
+          },
+          {
+            "step": 2,
+            "name": "Refactoring Plan",
+            "prompt": "Create refactoring plan that improves quality while preserving file length",
+            "input": {
+              "qualityIssues": "array",
+              "improvementOpportunities": "array",
+              "currentLength": "number"
+            },
+            "output": {
+              "refactoringPlan": "object",
+              "expectedImprovements": "object",
+              "lengthPreservationStrategy": "object"
+            },
+            "tools": ["refactoring-planner", "length-preserver"]
+          },
+          {
+            "step": 3,
+            "name": "Refactoring Execution",
+            "prompt": "Execute refactoring while maintaining exact file length",
+            "input": {
+              "file": "string",
+              "refactoringPlan": "object",
+              "lengthPreservationStrategy": "object"
+            },
+            "output": {
+              "refactoredFile": "string",
+              "changes": "array",
+              "lengthMaintained": "boolean"
+            },
+            "tools": ["refactoring-engine", "length-validator"],
+            "constraints": {
+              "preserveLength": true,
+              "improveQuality": true,
+              "permanentEdit": true
+            }
+          },
+          {
+            "step": 4,
+            "name": "Quality Verification",
+            "prompt": "Verify quality improvements and length preservation",
+            "input": {
+              "refactoredFile": "string",
+              "originalFile": "string",
+              "qualityMetrics": "object"
+            },
+            "output": {
+              "qualityImprovements": "object",
+              "verificationResult": "object",
+              "changeLog": "array"
+            },
+            "tools": ["quality-verifier", "metric-comparator"]
+          },
+          {
+            "step": 5,
+            "name": "Permanent File Update",
+            "prompt": "Apply refactored file as permanent edit",
+            "input": {
+              "refactoredFile": "string",
+              "changeLog": "array",
+              "verificationResult": "object"
+            },
+            "output": {
+              "updatedFile": "string",
+              "backupFile": "string"
+            },
+            "tools": ["file-updater", "backup-creator"],
+            "fileCreation": [
+              {
+                "path": "backups/{filename}-{timestamp}.bak",
+                "content": "originalFile",
+                "format": "original"
+              }
+            ],
+            "fileUpdate": {
+              "path": "originalFilePath",
+              "content": "refactoredFile",
+              "permanent": true
+            }
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "restoreFromBackup",
+          "maxRetries": 1,
+          "fallback": "keepOriginalFile"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["selfImprovement", "compressionWorkflow"],
+        "uses": ["metricWorkflow", "fileSystem"],
+        "n8nImplementation": {
+          "nodes": [
+            "quality-analyzer-node",
+            "refactoring-planner-node",
+            "refactoring-engine-node",
+            "length-validator-node",
+            "file-updater-node"
+          ],
+          "connections": "sequential-with-constraints"
+        }
+      }
+    },
+    "compressionWorkflow": {
+      "id": "compression-workflow",
+      "name": "Compression Workflow",
+      "description": "Removes detail based on metrics, acts as cleaner that removes irrelevant context from markdown files while maintaining accuracy",
+      "featureConnections": [
+        "context-engineering",
+        "smart-chunking-memory",
+        "workflows"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["file", "metrics", "relevanceCriteria", "targetCompression"],
+          "required": ["file"],
+          "optional": ["metrics", "relevanceCriteria", "targetCompression", "purpose"]
+        },
+        "output": {
+          "types": ["compressedFile", "removedContent", "compressionMetrics"],
+          "structure": {
+            "compressedFile": "string",
+            "removedContent": "array",
+            "compressionMetrics": "object",
+            "relevanceScore": "number"
+          }
+        },
+        "behavior": {
+          "detailRemoving": true,
+          "metricBased": true,
+          "relevanceAware": true,
+          "accuracyPreserving": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Purpose and Metric Analysis",
+            "prompt": "Analyze file purpose and determine relevance metrics",
+            "input": {
+              "file": "string",
+              "purpose": "string",
+              "metrics": "object"
+            },
+            "output": {
+              "purposeAnalysis": "object",
+              "relevanceMetrics": "object",
+              "compressionTarget": "object"
+            },
+            "tools": ["purpose-analyzer", "metric-workflow-invoker"],
+            "workflowCall": {
+              "workflow": "metricWorkflow",
+              "parameters": {
+                "file": "file",
+                "purpose": "purpose"
+              }
+            }
+          },
+          {
+            "step": 2,
+            "name": "Relevance Assessment",
+            "prompt": "Assess relevance of content sections using metric workflow results",
+            "input": {
+              "file": "string",
+              "relevanceMetrics": "object",
+              "purposeAnalysis": "object"
+            },
+            "output": {
+              "relevanceScores": "array",
+              "irrelevantSections": "array",
+              "relevantSections": "array"
+            },
+            "tools": ["relevance-assessor", "section-analyzer"]
+          },
+          {
+            "step": 3,
+            "name": "Multi-Level Summary Result Removal",
+            "prompt": "Remove irrelevant multiLevelCitationSummary results while maintaining accuracy",
+            "input": {
+              "file": "string",
+              "irrelevantSections": "array",
+              "relevanceScores": "array"
+            },
+            "output": {
+              "compressedFile": "string",
+              "removedContent": "array",
+              "accuracyMaintained": "boolean"
+            },
+            "tools": ["content-remover", "accuracy-validator"],
+            "conditions": {
+              "if": "section.relevanceScore < threshold",
+              "then": "removeSection",
+              "else": "keepSection"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Compression Verification",
+            "prompt": "Verify compression maintains accuracy and serves purpose",
+            "input": {
+              "compressedFile": "string",
+              "originalFile": "string",
+              "purpose": "string"
+            },
+            "output": {
+              "compressionMetrics": "object",
+              "accuracyScore": "number",
+              "purposeServed": "boolean"
+            },
+            "tools": ["workflow-invoker", "accuracy-verifier"],
+            "workflowCall": {
+              "workflow": "metricWorkflow",
+              "parameters": {
+                "file": "compressedFile",
+                "purpose": "purpose"
+              }
+            }
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "restoreOriginal",
+          "maxRetries": 1,
+          "fallback": "minimalCompression"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["selfImprovement", "contextNavigation"],
+        "uses": ["metricWorkflow", "relevanceWorkflow"],
+        "n8nImplementation": {
+          "nodes": [
+            "purpose-analyzer-node",
+            "metric-workflow-invoker-node",
+            "relevance-assessor-node",
+            "content-remover-node",
+            "accuracy-verifier-node"
+          ],
+          "connections": "sequential-with-metric-validation"
+        }
+      }
+    },
+    "metricWorkflow": {
+      "id": "metric-workflow",
+      "name": "Metric Workflow",
+      "description": "Measures through abstract reasoning how well a file serves specific purposes",
+      "featureConnections": [
+        "self-improvement-system",
+        "transparency-observability",
+        "workflows"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["file", "purpose", "metrics"],
+          "required": ["file", "purpose"],
+          "optional": ["metrics", "abstractionLevel"]
+        },
+        "output": {
+          "types": ["metricResults", "relevanceScore", "purposeScore"],
+          "structure": {
+            "metricResults": "object",
+            "relevanceScore": "number",
+            "purposeScore": "number",
+            "abstractReasoning": "string"
+          }
+        },
+        "behavior": {
+          "abstractReasoning": true,
+          "purposeAware": true,
+          "metricCalculating": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Purpose Analysis",
+            "prompt": "Analyze purpose to determine relevant metrics",
+            "input": {
+              "purpose": "string",
+              "file": "string"
+            },
+            "output": {
+              "purposeBreakdown": "object",
+              "relevantMetrics": "array"
+            },
+            "tools": ["purpose-analyzer", "metric-selector"]
+          },
+          {
+            "step": 2,
+            "name": "Abstract Reasoning",
+            "prompt": "Use abstract reasoning to assess how well file serves purpose",
+            "input": {
+              "file": "string",
+              "purposeBreakdown": "object",
+              "relevantMetrics": "array"
+            },
+            "output": {
+              "abstractReasoning": "string",
+              "reasoningSteps": "array",
+              "preliminaryScores": "object"
+            },
+            "tools": ["abstract-reasoner", "llm-analyzer"]
+          },
+          {
+            "step": 3,
+            "name": "Metric Calculation",
+            "prompt": "Calculate metrics based on abstract reasoning",
+            "input": {
+              "abstractReasoning": "string",
+              "preliminaryScores": "object",
+              "relevantMetrics": "array"
+            },
+            "output": {
+              "metricResults": "object",
+              "relevanceScore": "number",
+              "purposeScore": "number"
+            },
+            "tools": ["metric-calculator", "score-generator"]
+          },
+          {
+            "step": 4,
+            "name": "Result Assembly",
+            "prompt": "Assemble metric results with reasoning",
+            "input": {
+              "metricResults": "object",
+              "abstractReasoning": "string",
+              "relevanceScore": "number",
+              "purposeScore": "number"
+            },
+            "output": {
+              "finalMetrics": "object"
+            },
+            "tools": ["result-assembler"]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToBasicMetrics",
+          "maxRetries": 1,
+          "fallback": "simpleRelevanceCheck"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["compressionWorkflow", "refactoringAlgorithm", "selfImprovement"],
+        "uses": ["abstractReasoning", "purposeAnalysis"],
+        "n8nImplementation": {
+          "nodes": [
+            "purpose-analyzer-node",
+            "abstract-reasoner-node",
+            "metric-calculator-node",
+            "result-assembler-node"
+          ],
+          "connections": "sequential-with-reasoning"
+        }
+      }
+    },
+    "goalWorkflow": {
+      "id": "goal-workflow",
+      "name": "Goal Workflow",
+      "description": "Creates conditional behavior workflows that generate researchable questions, answers to which create execution workflows",
+      "featureConnections": [
+        "agentic-mode-system",
+        "workflows",
+        "self-improvement-system"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["goal", "context", "constraints"],
+          "required": ["goal"],
+          "optional": ["context", "constraints", "researchDepth"]
+        },
+        "output": {
+          "types": ["conditionalBehavior", "researchQuestions", "executionWorkflow"],
+          "structure": {
+            "conditionalBehavior": "object",
+            "researchQuestions": "array",
+            "executionWorkflow": "object",
+            "workflowSpec": "object"
+          }
+        },
+        "behavior": {
+          "goalDriven": true,
+          "questionGenerating": true,
+          "workflowCreating": true,
+          "conditional": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Goal Analysis",
+            "prompt": "Analyze goal to determine required research and execution steps",
+            "input": {
+              "goal": "string",
+              "context": "object",
+              "constraints": "object"
+            },
+            "output": {
+              "goalBreakdown": "array",
+              "researchNeeds": "array",
+              "executionNeeds": "array"
+            },
+            "tools": ["goal-analyzer", "needs-identifier"]
+          },
+          {
+            "step": 2,
+            "name": "Conditional Behavior Workflow Creation",
+            "prompt": "Create conditional behavior workflow structure",
+            "input": {
+              "goalBreakdown": "array",
+              "researchNeeds": "array",
+              "executionNeeds": "array"
+            },
+            "output": {
+              "conditionalBehavior": "object",
+              "behaviorStructure": "object"
+            },
+            "tools": ["behavior-creator", "structure-builder"]
+          },
+          {
+            "step": 3,
+            "name": "Research Question Generation",
+            "prompt": "Generate researchable questions that will inform execution workflow",
+            "input": {
+              "researchNeeds": "array",
+              "goalBreakdown": "array",
+              "behaviorStructure": "object"
+            },
+            "output": {
+              "researchQuestions": "array",
+              "questionDependencies": "object"
+            },
+            "tools": ["question-generator", "dependency-mapper"]
+          },
+          {
+            "step": 4,
+            "name": "Question Answering and Workflow Creation",
+            "prompt": "Answer research questions and create execution workflow based on answers",
+            "input": {
+              "researchQuestions": "array",
+              "questionDependencies": "object"
+            },
+            "output": {
+              "answers": "array",
+              "executionWorkflow": "object",
+              "workflowSpec": "object"
+            },
+            "tools": ["question-answerer", "workflow-creator"],
+            "loop": {
+              "iterateOver": "researchQuestions",
+              "action": "answerQuestionAndUpdateWorkflow",
+              "condition": "hasMoreQuestions",
+              "workflowCall": {
+                "workflow": "research",
+                "parameters": {
+                  "query": "researchQuestion"
+                }
+              }
+            }
+          },
+          {
+            "step": 5,
+            "name": "Execution Workflow Assembly",
+            "prompt": "Assemble final execution workflow from answers and conditional behavior",
+            "input": {
+              "answers": "array",
+              "executionWorkflow": "object",
+              "conditionalBehavior": "object"
+            },
+            "output": {
+              "finalExecutionWorkflow": "object",
+              "workflowSpec": "object"
+            },
+            "tools": ["workflow-assembler", "spec-generator"],
+            "fileCreation": [
+              {
+                "path": "workflows/execution-{goalName}-{timestamp}.md",
+                "content": "finalExecutionWorkflow",
+                "format": "markdown"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToBasicWorkflow",
+          "maxRetries": 2,
+          "fallback": "simpleExecutionOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["allWorkflows"],
+        "uses": ["research", "conditionalBehavior", "executionWorkflow"],
+        "creates": ["executionWorkflow", "conditionalBehavior"],
+        "n8nImplementation": {
+          "nodes": [
+            "goal-analyzer-node",
+            "behavior-creator-node",
+            "question-generator-node",
+            "question-answerer-node",
+            "workflow-creator-node",
+            "workflow-assembler-node"
+          ],
+          "connections": "sequential-with-research-loops"
+        }
+      }
+    },
+    "executionWorkflow": {
+      "id": "execution-workflow",
+      "name": "Execution Workflow",
+      "description": "Uses navigation workflows and tool workflows to execute tasks based on goal workflow specifications",
+      "featureConnections": [
+        "workflows",
+        "agentic-mode-system",
+        "multi-source-integration"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["workflowSpec", "goal", "context"],
+          "required": ["workflowSpec"],
+          "optional": ["goal", "context", "executionMode"]
+        },
+        "output": {
+          "types": ["executionResult", "outputFiles", "executionLog"],
+          "structure": {
+            "executionResult": "object",
+            "outputFiles": "array",
+            "executionLog": "object",
+            "success": "boolean"
+          }
+        },
+        "behavior": {
+          "taskExecuting": true,
+          "workflowOrchestrating": true,
+          "resultGenerating": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Workflow Spec Analysis",
+            "prompt": "Analyze workflow specification to determine required navigation and tool workflows",
+            "input": {
+              "workflowSpec": "object",
+              "goal": "string"
+            },
+            "output": {
+              "requiredNavigations": "array",
+              "requiredTools": "array",
+              "executionPlan": "object"
+            },
+            "tools": ["spec-analyzer", "execution-planner"]
+          },
+          {
+            "step": 2,
+            "name": "Context Navigation",
+            "prompt": "Use context navigation workflow to gather required context",
+            "input": {
+              "requiredNavigations": "array",
+              "goal": "string"
+            },
+            "output": {
+              "contextSummary": "object",
+              "navigatedContent": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "contextNavigation",
+              "parameters": {
+                "fileHierarchy": "requiredNavigation.hierarchy",
+                "goal": "goal",
+                "scope": "requiredNavigation.scope"
+              },
+              "loop": {
+                "iterateOver": "requiredNavigations",
+                "action": "navigateContext",
+                "parallel": false
+              }
+            }
+          },
+          {
+            "step": 3,
+            "name": "Tool Workflow Execution",
+            "prompt": "Execute tool workflows to perform required actions",
+            "input": {
+              "requiredTools": "array",
+              "contextSummary": "object",
+              "executionPlan": "object"
+            },
+            "output": {
+              "toolResults": "array",
+              "outputFiles": "array"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "toolWorkflow",
+              "parameters": {
+                "toolType": "requiredTool.type",
+                "command": "requiredTool.command",
+                "parameters": "requiredTool.parameters"
+              },
+              "loop": {
+                "iterateOver": "requiredTools",
+                "action": "executeTool",
+                "parallel": true
+              }
+            }
+          },
+          {
+            "step": 4,
+            "name": "Result Assembly",
+            "prompt": "Assemble execution results from navigation and tool outputs",
+            "input": {
+              "toolResults": "array",
+              "contextSummary": "object",
+              "outputFiles": "array"
+            },
+            "output": {
+              "executionResult": "object",
+              "executionLog": "object"
+            },
+            "tools": ["result-assembler", "log-generator"]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "partialExecution",
+          "maxRetries": 2,
+          "fallback": "basicExecutionOnly"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["goalWorkflow", "conditionalBehavior"],
+        "uses": ["contextNavigation", "toolWorkflow"],
+        "n8nImplementation": {
+          "nodes": [
+            "spec-analyzer-node",
+            "context-navigation-invoker-node",
+            "tool-workflow-invoker-node",
+            "result-assembler-node"
+          ],
+          "connections": "sequential-with-parallel-tools"
+        }
+      }
+    },
+    "conditionalBehavior": {
+      "id": "conditional-behavior",
+      "name": "Conditional Behavior Workflow",
+      "description": "Defines conditional behavior structures created by goal workflows, containing research questions and execution logic",
+      "featureConnections": [
+        "agentic-mode-system",
+        "workflows"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["conditions", "researchQuestions", "executionLogic"],
+          "required": ["conditions"],
+          "optional": ["researchQuestions", "executionLogic"]
+        },
+        "output": {
+          "types": ["behaviorSpec", "conditionalLogic"],
+          "structure": {
+            "behaviorSpec": "object",
+            "conditionalLogic": "object",
+            "executionPath": "array"
+          }
+        },
+        "behavior": {
+          "conditional": true,
+          "questionBased": true,
+          "executionDefining": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Condition Analysis",
+            "prompt": "Analyze conditions to determine behavior paths",
+            "input": {
+              "conditions": "object",
+              "researchQuestions": "array"
+            },
+            "output": {
+              "behaviorPaths": "array",
+              "conditionMapping": "object"
+            },
+            "tools": ["condition-analyzer", "path-mapper"]
+          },
+          {
+            "step": 2,
+            "name": "Research Question Integration",
+            "prompt": "Integrate research questions into conditional logic",
+            "input": {
+              "researchQuestions": "array",
+              "behaviorPaths": "array"
+            },
+            "output": {
+              "integratedLogic": "object",
+              "questionDependencies": "object"
+            },
+            "tools": ["logic-integrator", "dependency-mapper"]
+          },
+          {
+            "step": 3,
+            "name": "Execution Logic Definition",
+            "prompt": "Define execution logic based on conditions and research answers",
+            "input": {
+              "integratedLogic": "object",
+              "executionLogic": "object"
+            },
+            "output": {
+              "behaviorSpec": "object",
+              "conditionalLogic": "object"
+            },
+            "tools": ["logic-definer", "spec-generator"]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToSimpleConditional",
+          "maxRetries": 1,
+          "fallback": "basicIfThenElse"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["goalWorkflow"],
+        "uses": ["research", "executionWorkflow"],
+        "createdBy": ["goalWorkflow"],
+        "n8nImplementation": {
+          "nodes": [
+            "condition-analyzer-node",
+            "logic-integrator-node",
+            "logic-definer-node"
+          ],
+          "connections": "sequential-with-conditional-branches"
+        }
+      }
+    },
+    "relatednessMetric": {
+      "id": "relatedness-metric",
+      "name": "Relatedness Metric Workflow",
+      "description": "Measures relatedness between ideas, prompts, and documents. Triggers context self-improvement workflow when relevant ideas show up in future prompts or related documents",
+      "featureConnections": [
+        "self-improvement-system",
+        "context-engineering",
+        "smart-chunking-memory"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["idea", "prompt", "document", "contextBase"],
+          "required": ["idea", "contextBase"],
+          "optional": ["prompt", "document", "threshold"]
+        },
+        "output": {
+          "types": ["relatednessScore", "relatedItems", "triggerSignal"],
+          "structure": {
+            "relatednessScore": "number",
+            "relatedItems": "array",
+            "triggerSignal": "boolean",
+            "relatednessDetails": "object"
+          }
+        },
+        "behavior": {
+          "triggering": true,
+          "comparative": true,
+          "thresholdBased": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Idea Analysis",
+            "prompt": "Analyze idea, prompt, or document to extract key concepts and relationships",
+            "input": {
+              "idea": "string",
+              "prompt": "string",
+              "document": "string"
+            },
+            "output": {
+              "keyConcepts": "array",
+              "relationships": "object",
+              "semanticFeatures": "object"
+            },
+            "tools": ["concept-extractor", "semantic-analyzer"]
+          },
+          {
+            "step": 2,
+            "name": "Context Base Comparison",
+            "prompt": "Compare against context base to find related items",
+            "input": {
+              "keyConcepts": "array",
+              "contextBase": "object",
+              "semanticFeatures": "object"
+            },
+            "output": {
+              "relatedItems": "array",
+              "relatednessScores": "object",
+              "topMatches": "array"
+            },
+            "tools": ["comparator", "similarity-calculator"],
+            "loop": {
+              "iterateOver": "contextBase.items",
+              "action": "calculateRelatedness",
+              "condition": "hasMoreItems"
+            }
+          },
+          {
+            "step": 3,
+            "name": "Relatedness Score Calculation",
+            "prompt": "Calculate overall relatedness score and determine if threshold is met",
+            "input": {
+              "relatedItems": "array",
+              "relatednessScores": "object",
+              "threshold": "number"
+            },
+            "output": {
+              "relatednessScore": "number",
+              "triggerSignal": "boolean",
+              "relatednessDetails": "object"
+            },
+            "tools": ["score-calculator", "threshold-evaluator"],
+            "conditions": {
+              "if": "relatednessScore >= threshold",
+              "then": "triggerContextSelfImprovement",
+              "else": "noTrigger"
+            }
+          },
+          {
+            "step": 4,
+            "name": "Trigger Context Self-Improvement",
+            "prompt": "Trigger context self-improvement workflow if relatedness threshold met",
+            "input": {
+              "triggerSignal": "boolean",
+              "relatedItems": "array",
+              "relatednessDetails": "object"
+            },
+            "output": {
+              "triggered": "boolean",
+              "workflowCall": "object"
+            },
+            "tools": ["workflow-invoker"],
+            "workflowCall": {
+              "workflow": "contextSelfImprovement",
+              "parameters": {
+                "relatedItems": "relatedItems",
+                "relatednessDetails": "relatednessDetails",
+                "triggerReason": "relatednessThresholdMet"
+              },
+              "conditions": {
+                "if": "triggerSignal === true",
+                "then": "invokeContextSelfImprovement",
+                "else": "skip"
+              }
+            }
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "fallbackToBasicComparison",
+          "maxRetries": 1,
+          "fallback": "simpleKeywordMatch"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["contextSelfImprovement", "contextNavigation"],
+        "uses": ["contextBase", "semanticAnalysis"],
+        "triggers": ["contextSelfImprovement"],
+        "n8nImplementation": {
+          "nodes": [
+            "concept-extractor-node",
+            "comparator-node",
+            "similarity-calculator-node",
+            "score-calculator-node",
+            "threshold-evaluator-node",
+            "workflow-invoker-node"
+          ],
+          "connections": "sequential-with-trigger-branch"
+        }
+      }
+    },
+    "contextSelfImprovement": {
+      "id": "context-self-improvement",
+      "name": "Context Self-Improvement Workflow",
+      "description": "Loop of expanding, improving, then narrowing context base for goal workflows operating at different time scales. Triggered by relatedness metric workflow when relevant ideas show up",
+      "featureConnections": [
+        "self-improvement-system",
+        "context-engineering",
+        "smart-chunking-memory"
+      ],
+      "workflowFormat": "markdown",
+      "canBePreprocessed": true,
+      "highLevelBehavior": {
+        "input": {
+          "types": ["contextBase", "relatedItems", "goal", "timeScale"],
+          "required": ["contextBase"],
+          "optional": ["relatedItems", "goal", "timeScale", "triggerReason"]
+        },
+        "output": {
+          "types": ["improvedContextBase", "expansionResults", "narrowingResults"],
+          "structure": {
+            "improvedContextBase": "object",
+            "expansionResults": "object",
+            "improvementResults": "object",
+            "narrowingResults": "object",
+            "timeScale": "string"
+          }
+        },
+        "behavior": {
+          "cyclic": true,
+          "expanding": true,
+          "improving": true,
+          "narrowing": true,
+          "timeScaleAware": true
+        }
+      },
+      "behaviorSequence": {
+        "steps": [
+          {
+            "step": 1,
+            "name": "Trigger Analysis",
+            "prompt": "Analyze trigger (relatedness metric or other) to determine improvement needs",
+            "input": {
+              "triggerReason": "string",
+              "relatedItems": "array",
+              "contextBase": "object"
+            },
+            "output": {
+              "improvementNeeds": "array",
+              "expansionAreas": "array",
+              "timeScale": "string"
+            },
+            "tools": ["trigger-analyzer", "needs-identifier"]
+          },
+          {
+            "step": 2,
+            "name": "Context Expansion",
+            "prompt": "Expand context base to include related items and new relevant information",
+            "input": {
+              "contextBase": "object",
+              "relatedItems": "array",
+              "expansionAreas": "array"
+            },
+            "output": {
+              "expandedContext": "object",
+              "expansionResults": "object",
+              "newItems": "array"
+            },
+            "tools": ["context-expander", "workflow-invoker"],
+            "workflowCall": {
+              "workflow": "contextGathering",
+              "parameters": {
+                "query": "relatedItems",
+                "expand": true
+              }
+            }
+          },
+          {
+            "step": 3,
+            "name": "Context Improvement",
+            "prompt": "Improve context base quality through refactoring, compression, and metric-based optimization",
+            "input": {
+              "expandedContext": "object",
+              "improvementNeeds": "array",
+              "timeScale": "string"
+            },
+            "output": {
+              "improvedContext": "object",
+              "improvementResults": "object",
+              "qualityMetrics": "object"
+            },
+            "tools": ["workflow-invoker", "quality-improver"],
+            "workflowCall": {
+              "workflow": "refactoringAlgorithm",
+              "parameters": {
+                "file": "expandedContext",
+                "improvementGoals": "improvementNeeds"
+              }
+            },
+            "parallelWorkflows": [
+              {
+                "workflow": "compressionWorkflow",
+                "parameters": {
+                  "file": "expandedContext",
+                  "metrics": "qualityMetrics"
+                }
+              },
+              {
+                "workflow": "metricWorkflow",
+                "parameters": {
+                  "file": "expandedContext",
+                  "purpose": "contextBase"
+                }
+              }
+            ]
+          },
+          {
+            "step": 4,
+            "name": "Context Narrowing",
+            "prompt": "Narrow context base for goal workflows operating at different time scales using metric workflow relevance ranking",
+            "input": {
+              "improvedContext": "object",
+              "goal": "string",
+              "timeScale": "string",
+              "qualityMetrics": "object"
+            },
+            "output": {
+              "narrowedContext": "object",
+              "narrowingResults": "object",
+              "relevanceRanking": "object"
+            },
+            "tools": ["workflow-invoker", "context-narrower"],
+            "workflowCall": {
+              "workflow": "metricWorkflow",
+              "parameters": {
+                "file": "improvedContext",
+                "purpose": "goal",
+                "relevanceRanking": true
+              }
+            },
+            "timeScaleConsiderations": {
+              "shortTerm": "narrowForImmediateGoals",
+              "mediumTerm": "narrowForProjectGoals",
+              "longTerm": "narrowForStrategicGoals"
+            }
+          },
+          {
+            "step": 5,
+            "name": "Context Base Update",
+            "prompt": "Update context base with improved, narrowed context",
+            "input": {
+              "narrowedContext": "object",
+              "improvementResults": "object",
+              "narrowingResults": "object"
+            },
+            "output": {
+              "improvedContextBase": "object",
+              "updateMetadata": "object"
+            },
+            "tools": ["context-updater", "file-writer"],
+            "fileCreation": [
+              {
+                "path": "context-base/improved-{timestamp}.json",
+                "content": "improvedContextBase",
+                "format": "json"
+              }
+            ]
+          }
+        ],
+        "errorHandling": {
+          "onFailure": "preserveOriginalContext",
+          "maxRetries": 2,
+          "fallback": "minimalImprovement"
+        }
+      },
+      "integrationPoints": {
+        "canBeUsedBy": ["goalWorkflow", "contextNavigation"],
+        "uses": ["relatednessMetric", "contextGathering", "refactoringAlgorithm", "compressionWorkflow", "metricWorkflow"],
+        "triggeredBy": ["relatednessMetric"],
+        "triggers": ["contextNavigation"],
+        "n8nImplementation": {
+          "nodes": [
+            "trigger-analyzer-node",
+            "context-expander-node",
+            "quality-improver-node",
+            "context-narrower-node",
+            "context-updater-node"
+          ],
+          "connections": "cyclic-expand-improve-narrow"
+        }
+      }
+    }
+  },
+  "featureToWorkflowMapping": {
+    "context-engineering": {
+      "primaryWorkflows": ["contextGathering", "basicSummarization", "smartChunking"],
+      "supportingWorkflows": ["multiLevelCitationSummary", "modeSelection"],
+      "workflowRelationships": {
+        "contextGathering": {
+          "uses": ["smartChunking", "rankingSystem"],
+          "enables": ["allWorkflows"]
+        },
+        "basicSummarization": {
+          "usedBy": ["multiLevelCitationSummary", "documentationGeneration"],
+          "enables": ["contextOptimization"]
+        }
+      }
+    },
+    "agentic-mode-system": {
+      "primaryWorkflows": ["modeSelection", "workflowComposition"],
+      "supportingWorkflows": ["contextGathering", "selfImprovement"],
+      "workflowRelationships": {
+        "modeSelection": {
+          "uses": ["contextGathering", "patternLearning"],
+          "enables": ["allWorkflows"]
+        }
+      }
+    },
+    "self-improvement-system": {
+      "primaryWorkflows": ["selfImprovement", "patternLearning"],
+      "supportingWorkflows": ["basicSummarization", "logAnalysis"],
+      "workflowRelationships": {
+        "selfImprovement": {
+          "uses": ["basicSummarization", "workflowSystem"],
+          "improves": ["allWorkflows"]
+        }
+      }
+    },
+    "workflows": {
+      "primaryWorkflows": ["basicSummarization", "multiLevelCitationSummary", "documentationGeneration", "scopeGeneration", "navigation", "toolWorkflow", "goalBasedBehavior", "contextNavigation", "refactoringAlgorithm", "compressionWorkflow", "metricWorkflow", "goalWorkflow", "executionWorkflow", "conditionalBehavior", "relatednessMetric", "contextSelfImprovement"],
+      "supportingWorkflows": ["contextGathering", "modeSelection"],
+      "workflowRelationships": {
+        "basicSummarization": {
+          "usedBy": ["multiLevelCitationSummary", "documentationGeneration"],
+          "creates": ["citations", "summaries"]
+        },
+        "multiLevelCitationSummary": {
+          "uses": ["basicSummarization", "scopeGeneration"],
+          "usedBy": ["documentationGeneration", "contextGathering", "navigation"],
+          "creates": ["navigableCitations", "hierarchicalSummaries"],
+          "acceptsScopePrompts": true
+        },
+        "documentationGeneration": {
+          "uses": ["basicSummarization", "multiLevelCitationSummary"],
+          "creates": ["documentation", "tests", "examples"],
+          "enables": ["n8nWorkflowImplementation"]
+        },
+        "scopeGeneration": {
+          "uses": ["contextGathering", "scopeGeneration"],
+          "usedBy": ["multiLevelCitationSummary", "navigation", "documentationGeneration"],
+          "creates": ["scopePrompts", "scopeConstraints"],
+          "recursiveSelfUse": true,
+          "generatesPromptsFor": ["multiLevelCitationSummary", "navigation", "otherWorkflows"]
+        },
+        "navigation": {
+          "uses": ["multiLevelCitationSummary", "scopeGeneration", "navigation"],
+          "usedBy": ["allWorkflows", "scopeGeneration"],
+          "creates": ["navigationResults", "generatedPrompts", "abstractionPaths"],
+          "recursiveSelfUse": true,
+          "navigatesAbstractionLevels": true
+        },
+        "toolWorkflow": {
+          "uses": ["fileSystem", "terminalSystem", "browserSystem"],
+          "usedBy": ["goalBasedBehavior", "executionWorkflow"],
+          "creates": ["logFiles", "outputFiles"],
+          "generatesHighDetail": true
+        },
+        "goalBasedBehavior": {
+          "uses": ["toolWorkflow", "multiLevelCitationSummary"],
+          "usedBy": ["goalWorkflow", "executionWorkflow"],
+          "creates": ["interconnectedFiles", "abstractionDescriptions", "links"]
+        },
+        "contextNavigation": {
+          "uses": ["fileSystem", "hierarchySystem", "chunkingSystem"],
+          "usedBy": ["executionWorkflow", "goalWorkflow", "conditionalBehavior"],
+          "creates": ["contextSummary", "abstractionPath"],
+          "compressionLike": true
+        },
+        "refactoringAlgorithm": {
+          "uses": ["metricWorkflow", "fileSystem"],
+          "usedBy": ["selfImprovement", "compressionWorkflow"],
+          "creates": ["refactoredFile", "qualityImprovements"],
+          "lengthPreserving": true
+        },
+        "compressionWorkflow": {
+          "uses": ["metricWorkflow", "relevanceWorkflow"],
+          "usedBy": ["selfImprovement", "contextNavigation"],
+          "creates": ["compressedFile", "removedContent"],
+          "accuracyPreserving": true
+        },
+        "metricWorkflow": {
+          "uses": ["abstractReasoning", "purposeAnalysis"],
+          "usedBy": ["compressionWorkflow", "refactoringAlgorithm", "selfImprovement"],
+          "creates": ["metricResults", "relevanceScore", "purposeScore"],
+          "abstractReasoning": true
+        },
+        "goalWorkflow": {
+          "uses": ["research", "conditionalBehavior", "executionWorkflow"],
+          "usedBy": ["allWorkflows"],
+          "creates": ["executionWorkflow", "conditionalBehavior", "researchQuestions"]
+        },
+        "executionWorkflow": {
+          "uses": ["contextNavigation", "toolWorkflow"],
+          "usedBy": ["goalWorkflow", "conditionalBehavior"],
+          "creates": ["executionResult", "outputFiles", "executionLog"]
+        },
+        "conditionalBehavior": {
+          "uses": ["research", "executionWorkflow", "contextNavigation"],
+          "usedBy": ["goalWorkflow"],
+          "createdBy": ["goalWorkflow"],
+          "creates": ["behaviorSpec", "conditionalLogic"],
+          "questionsAnsweredBy": ["contextNavigation"]
+        },
+        "relatednessMetric": {
+          "uses": ["contextBase", "semanticAnalysis"],
+          "usedBy": ["contextSelfImprovement", "contextNavigation"],
+          "triggers": ["contextSelfImprovement"],
+          "creates": ["relatednessScore", "triggerSignal"]
+        },
+        "contextSelfImprovement": {
+          "uses": ["relatednessMetric", "contextGathering", "refactoringAlgorithm", "compressionWorkflow", "metricWorkflow"],
+          "usedBy": ["goalWorkflow", "contextNavigation"],
+          "triggeredBy": ["relatednessMetric", "navigationStart"],
+          "creates": ["improvedContextBase"],
+          "loop": ["expand", "improve", "narrow"]
+        },
+        "contextNavigation": {
+          "uses": ["fileSystem", "hierarchySystem", "chunkingSystem"],
+          "usedBy": ["executionWorkflow", "goalWorkflow", "conditionalBehavior", "contextSelfImprovement"],
+          "creates": ["contextSummary", "abstractionPath", "answers"],
+          "answersQuestions": true,
+          "usedForQuestionAnswering": ["conditionalBehavior"]
+        }
+      }
+    },
+    "multi-source-integration": {
+      "primaryWorkflows": ["contextGathering", "research"],
+      "supportingWorkflows": ["mcpIntegration", "ragIntegration"],
+      "workflowRelationships": {
+        "contextGathering": {
+          "uses": ["mcpIntegration", "ragIntegration"],
+          "enables": ["allWorkflows"]
+        },
+        "research": {
+          "uses": ["ragIntegration", "webSearch"],
+          "usedBy": ["documentationGeneration"]
+        }
+      }
+    },
+    "smart-chunking-memory": {
+      "primaryWorkflows": ["contextGathering", "patternLearning"],
+      "supportingWorkflows": ["basicSummarization", "memoryStorage"],
+      "workflowRelationships": {
+        "contextGathering": {
+          "uses": ["smartChunking", "memoryRetrieval"],
+          "stores": ["successfulPatterns"]
+        }
+      }
+    },
+    "transparency-observability": {
+      "primaryWorkflows": ["logging", "promptVisibility"],
+      "supportingWorkflows": ["selfImprovement", "decisionTracking"],
+      "workflowRelationships": {
+        "logging": {
+          "enables": ["selfImprovement"],
+          "usedBy": ["allWorkflows"]
+        }
+      }
+    }
+  },
+  "workflowComposition": {
+    "commonPatterns": [
+      {
+        "pattern": "summarization-chain",
+        "description": "Basic summarization feeds into multi-level citation summary",
+        "workflows": ["basicSummarization", "multiLevelCitationSummary"],
+        "flow": "sequential",
+        "dataFlow": {
+          "basicSummarization.output": "multiLevelCitationSummary.input"
+        }
+      },
+      {
+        "pattern": "documentation-pipeline",
+        "description": "Summarization workflows create context for documentation generation",
+        "workflows": ["basicSummarization", "multiLevelCitationSummary", "documentationGeneration"],
+        "flow": "sequential",
+        "dataFlow": {
+          "basicSummarization.output": "multiLevelCitationSummary.input",
+          "multiLevelCitationSummary.output": "documentationGeneration.input"
+        }
+      },
+      {
+        "pattern": "context-aware-execution",
+        "description": "All workflows use context gathering for intelligent execution",
+        "workflows": ["contextGathering", "anyWorkflow"],
+        "flow": "parallel-then-sequential",
+        "dataFlow": {
+          "contextGathering.output": "anyWorkflow.context"
+        }
+      },
+      {
+        "pattern": "self-improvement-loop",
+        "description": "Self-improvement analyzes logs and updates workflows",
+        "workflows": ["logging", "selfImprovement", "workflowUpdate"],
+        "flow": "cyclic",
+        "dataFlow": {
+          "logging.output": "selfImprovement.input",
+          "selfImprovement.output": "workflowUpdate.input",
+          "workflowUpdate.output": "logging.input"
+        }
+      },
+      {
+        "pattern": "scope-guided-summarization",
+        "description": "Scope generation creates prompts for multi-level citation summary, which can be used for chat message scoping",
+        "workflows": ["scopeGeneration", "multiLevelCitationSummary"],
+        "flow": "sequential-with-recursion",
+        "dataFlow": {
+          "scopeGeneration.output.scopePrompt": "multiLevelCitationSummary.input.scopePrompt",
+          "multiLevelCitationSummary.output": "scopeGeneration.input.context"
+        },
+        "recursive": {
+          "scopeGeneration": {
+            "canCallSelf": true,
+            "purpose": "Generate sub-scopes from general goal prompts"
+          }
+        }
+      },
+      {
+        "pattern": "recursive-prompt-generation",
+        "description": "Workflows generate prompts for each other recursively - scope generation can take general goals and generate scopes, which feed into multi-level summaries, which navigation uses to generate new prompts",
+        "workflows": ["scopeGeneration", "multiLevelCitationSummary", "navigation"],
+        "flow": "recursive-cyclic",
+        "dataFlow": {
+          "scopeGeneration.output.scopePrompt": "multiLevelCitationSummary.input.scopePrompt",
+          "multiLevelCitationSummary.output": "navigation.input.multiLevelSummary",
+          "navigation.output.generatedPrompt": "scopeGeneration.input.generalGoal",
+          "navigation.output": "scopeGeneration.input.context"
+        },
+        "recursive": {
+          "scopeGeneration": {
+            "canCallSelf": true,
+            "maxDepth": 5,
+            "purpose": "Generate scopes from general goals, then refine based on results"
+          },
+          "navigation": {
+            "canCallSelf": true,
+            "maxDepth": 5,
+            "purpose": "Navigate through abstraction levels iteratively"
+          }
+        }
+      },
+      {
+        "pattern": "abstraction-level-navigation",
+        "description": "Navigation workflow uses multi-level citation summary at varying abstraction levels to generate prompts or results",
+        "workflows": ["navigation", "multiLevelCitationSummary", "scopeGeneration"],
+        "flow": "iterative-recursive",
+        "dataFlow": {
+          "multiLevelCitationSummary.output": "navigation.input.multiLevelSummary",
+          "navigation.output.levelInsights": "scopeGeneration.input",
+          "scopeGeneration.output.scopePrompt": "multiLevelCitationSummary.input.scopePrompt",
+          "navigation.output": "navigation.input.refinedSummary"
+        },
+        "iterative": {
+          "navigation": {
+            "iteratesOver": "abstractionLevels",
+            "action": "exploreLevelAndGeneratePrompts",
+            "usesMultiLevelAt": "eachAbstractionLevel"
+          }
+        }
+      },
+      {
+        "pattern": "chat-message-scoping",
+        "description": "Scope generation creates scope prompts for chat messages, which feed into multi-level citation summary for context",
+        "workflows": ["scopeGeneration", "multiLevelCitationSummary", "contextGathering"],
+        "flow": "sequential",
+        "dataFlow": {
+          "chatMessage": "scopeGeneration.input.chatMessage",
+          "scopeGeneration.output.scopePrompt": "multiLevelCitationSummary.input.scopePrompt",
+          "multiLevelCitationSummary.output": "contextGathering.input.context"
+        },
+        "useCase": "Scoping out work for a chat message"
+      },
+      {
+        "pattern": "tool-to-summary-pipeline",
+        "description": "Tool workflows generate log files that feed into goal-based behavior workflows creating multi-level summaries",
+        "workflows": ["toolWorkflow", "goalBasedBehavior", "multiLevelCitationSummary"],
+        "flow": "sequential",
+        "dataFlow": {
+          "toolWorkflow.output.logFile": "goalBasedBehavior.input.toolOutputs",
+          "goalBasedBehavior.output.multiLevelSummary": "multiLevelCitationSummary.input"
+        }
+      },
+      {
+        "pattern": "context-navigation-compression",
+        "description": "Context navigation gathers context, compression workflow removes irrelevant detail based on metrics",
+        "workflows": ["contextNavigation", "compressionWorkflow", "metricWorkflow"],
+        "flow": "sequential",
+        "dataFlow": {
+          "contextNavigation.output.contextSummary": "compressionWorkflow.input.file",
+          "metricWorkflow.output.metricResults": "compressionWorkflow.input.metrics"
+        }
+      },
+      {
+        "pattern": "goal-to-execution-chain",
+        "description": "Goal workflow creates conditional behavior and research questions, which create execution workflow",
+        "workflows": ["goalWorkflow", "conditionalBehavior", "executionWorkflow", "contextNavigation", "toolWorkflow"],
+        "flow": "sequential-with-research",
+        "dataFlow": {
+          "goalWorkflow.output.conditionalBehavior": "conditionalBehavior.input",
+          "goalWorkflow.output.researchQuestions": "research.input",
+          "goalWorkflow.output.executionWorkflow": "executionWorkflow.input.workflowSpec",
+          "executionWorkflow.uses": ["contextNavigation", "toolWorkflow"]
+        }
+      },
+      {
+        "pattern": "refactoring-compression-loop",
+        "description": "Refactoring improves quality, compression removes detail, metrics measure results, creating improvement loop",
+        "workflows": ["refactoringAlgorithm", "compressionWorkflow", "metricWorkflow"],
+        "flow": "cyclic",
+        "dataFlow": {
+          "refactoringAlgorithm.output.refactoredFile": "compressionWorkflow.input.file",
+          "compressionWorkflow.output.compressedFile": "metricWorkflow.input.file",
+          "metricWorkflow.output.metricResults": "refactoringAlgorithm.input.qualityMetrics"
+        }
+      }
+    ],
+    "n8nImplementationNotes": {
+      "preprocessing": "Markdown workflows are preprocessed by n8n workflows into executable graphs",
+      "visualization": "Both markdown and n8n config files have visualization modes",
+      "composition": "Workflows can reference and invoke other workflows as nodes",
+      "execution": "Workflows execute tasks, chain other workflows, and create meta-workflows"
+    }
+  },
+  "highLevelProcess": {
+    "description": "The high-level structure that all feature-level workflows use and integrate with",
+    "process": {
+      "step1": {
+        "name": "Get Enough Context for Task",
+        "description": "Initial context gathering phase",
+        "workflows": ["contextGathering", "toolWorkflow"],
+        "output": "contextBase"
+      },
+      "step2a": {
+        "name": "Navigate Context to Answer Questions",
+        "description": "Use context navigation to answer questions in conditional behavior workflows",
+        "workflows": ["contextNavigation", "conditionalBehavior"],
+        "input": "contextBase",
+        "output": "answers"
+      },
+      "step2b": {
+        "name": "Context Self-Improvement Loop",
+        "description": "As navigation starts, also start context self-improvement workflow loop with various triggers (expanding, improving, then narrowing) the context base for goal workflows operating at different time scales in terms of metric workflow relevance ranking",
+        "workflows": ["contextSelfImprovement", "relatednessMetric", "metricWorkflow"],
+        "triggers": {
+          "relatednessMetric": "When relevant idea shows up in future prompt or related document",
+          "navigationStart": "When context navigation begins",
+          "timeScale": "Different scales for different goal workflows"
+        },
+        "loop": {
+          "expand": "Expand context base",
+          "improve": "Improve context quality",
+          "narrow": "Narrow for specific goals using metric workflow relevance ranking"
+        }
+      },
+      "step2c": {
+        "name": "Navigation Workflow",
+        "description": "Navigation workflow continues to operate on context",
+        "workflows": ["contextNavigation"]
+      },
+      "step3": {
+        "name": "Scope Workflows Generate Prompts",
+        "description": "Scope workflows generate prompts that narrow scope at various levels of abstraction. Creates summaries which are a kind of compression from everything to something specific about the document or goal itself",
+        "workflows": ["scopeGeneration", "basicSummarization", "multiLevelCitationSummary"],
+        "compression": {
+          "from": "everything",
+          "to": "something specific about document or goal",
+          "method": "scope prompts at various abstraction levels"
+        }
+      },
+      "step4a": {
+        "name": "Information Processing Pipeline",
+        "description": "Process where we get information using tools, clean that information for context navigability, then navigate that context base to create targeted smart context gathering queries to give just enough context for the level of specificity in a goal",
+        "workflows": ["toolWorkflow", "compressionWorkflow", "contextNavigation", "contextGathering"],
+        "pipeline": [
+          "Get information using tools",
+          "Clean information for context navigability",
+          "Navigate context base",
+          "Create targeted smart context gathering queries",
+          "Give just enough context for goal specificity level"
+        ]
+      },
+      "step4b": {
+        "name": "Autonomous Intelligent Behavior Loop",
+        "description": "Loop of prompt generation (pre, post, or without user prompt) and feeding back to LLMs, file creation and linking, tool calls that result in gathered context files, that result in autonomous intelligent behavior that serves to complete goals of various levels of described abstraction",
+        "workflows": ["allWorkflows"],
+        "loop": {
+          "promptGeneration": {
+            "types": ["preUserPrompt", "postUserPrompt", "withoutUserPrompt"],
+            "workflows": ["scopeGeneration", "goalWorkflow"]
+          },
+          "llmFeedback": {
+            "description": "Feed prompts to LLMs",
+            "workflows": ["basicSummarization", "multiLevelCitationSummary", "documentationGeneration"]
+          },
+          "fileCreationAndLinking": {
+            "description": "Create and link files",
+            "workflows": ["goalBasedBehavior", "documentationGeneration", "multiLevelCitationSummary"]
+          },
+          "toolCalls": {
+            "description": "Execute tool workflows",
+            "workflows": ["toolWorkflow", "executionWorkflow"]
+          },
+          "gatheredContextFiles": {
+            "description": "Result in context files",
+            "workflows": ["contextGathering", "contextNavigation"]
+          },
+          "autonomousIntelligentBehavior": {
+            "description": "Result in autonomous intelligent behavior",
+            "serves": "Complete goals of various levels of described abstraction",
+            "workflows": ["goalWorkflow", "executionWorkflow", "contextSelfImprovement"]
+          }
+        },
+        "goalLevels": [
+          "highAbstraction",
+          "mediumAbstraction",
+          "lowAbstraction",
+          "specificDetail"
+        ]
+      }
+    },
+    "integration": {
+      "description": "This is the high-level structure of all feature-level workflows use and integrate with",
+      "appliesTo": "allFeatureLevelWorkflows"
+    }
+  },
+  "implementationGuidance": {
+    "n8nWorkflowCreation": {
+      "process": [
+        "1. Start with markdown workflow definition",
+        "2. Use documentation generation workflow to create tests and context",
+        "3. Use generated documentation as context for n8n workflow implementation",
+        "4. Implement n8n nodes based on workflow behavior sequence",
+        "5. Connect nodes according to workflow step order and conditions",
+        "6. Add error handling and fallback mechanisms",
+        "7. Test with sample inputs and validate outputs"
+      ],
+      "nodeTypes": {
+        "content-analyzer": "Analyzes input content structure",
+        "llm-summarizer": "Calls LLM for summarization",
+        "citation-generator": "Generates citations with line numbers",
+        "workflow-invoker": "Invokes other workflows",
+        "file-writer": "Writes output files",
+        "context-gatherer": "Gathers context from multiple sources",
+        "ranker": "Ranks context by relevance",
+        "budget-allocator": "Manages token budgets"
+      },
+      "connectionPatterns": {
+        "sequential": "Steps execute one after another",
+        "parallel": "Steps execute simultaneously",
+        "conditional": "Steps execute based on conditions",
+        "loop": "Steps repeat based on conditions",
+        "nested": "Workflows invoke other workflows"
+      }
+    },
+    "cursorIntegration": {
+      "useCase": "Create tests and documentation in Cursor that serve as context for n8n workflow implementation",
+      "workflow": [
+        "1. Use basic summarization workflow to summarize feature requirements",
+        "2. Use multi-level citation summary to create navigable documentation",
+        "3. Use documentation generation workflow to create comprehensive docs and tests",
+        "4. Use generated artifacts as context when implementing workflows in n8n",
+        "5. Iterate based on n8n implementation feedback"
+      ],
+      "benefits": [
+        "Well-documented workflows with citations",
+        "Test cases for workflow validation",
+        "Clear context for implementation",
+        "Navigable documentation structure"
+      ]
+    }
+  },
+  "featureTriggerTypes": {
+    "description": "Various trigger mechanisms that activate workflows in interconnected loops",
+    "triggerTypes": [
+      {
+        "type": "cronBased",
+        "name": "Cron-Based Trigger",
+        "description": "Workflows triggered on schedule using cron expressions",
+        "examples": [
+          "Nightly log analysis",
+          "Daily documentation updates",
+          "Hourly context refresh"
+        ],
+        "configuration": {
+          "cronExpression": "string",
+          "timezone": "string",
+          "enabled": "boolean"
+        }
+      },
+      {
+        "type": "goalBased",
+        "name": "Goal-Based Trigger",
+        "description": "Workflows run until goal is reached based on metric workflows",
+        "examples": [
+          "Run until quality metric threshold reached",
+          "Continue until compression target achieved",
+          "Iterate until relevance score sufficient"
+        ],
+        "configuration": {
+          "goalMetric": "string",
+          "targetValue": "number",
+          "maxIterations": "number",
+          "metricWorkflow": "string"
+        },
+        "workflowCall": {
+          "workflow": "metricWorkflow",
+          "purpose": "measureGoalProgress"
+        }
+      },
+      {
+        "type": "neverStop",
+        "name": "Never-Stop Workflow",
+        "description": "Workflows that run continuously with great versioning",
+        "variants": [
+          {
+            "variant": "versioned",
+            "description": "Never stops, creates new versions on each iteration",
+            "versioning": {
+              "strategy": "timestamp",
+              "backup": true,
+              "history": true
+            }
+          },
+          {
+            "variant": "shadowFiles",
+            "description": "Never stops, uses shadow files that can replace real files on approval",
+            "shadowFileSystem": {
+              "shadowPath": "string",
+              "approvalRequired": true,
+              "autoReplace": false,
+              "versioning": true
+            }
+          }
+        ],
+        "examples": [
+          "Continuous self-improvement",
+          "Ongoing context navigation",
+          "Persistent compression optimization"
+        ]
+      },
+      {
+        "type": "manual",
+        "name": "Manual Trigger",
+        "description": "Workflows triggered by user action",
+        "examples": [
+          "User-initiated documentation generation",
+          "On-demand context gathering",
+          "Manual workflow execution"
+        ]
+      },
+      {
+        "type": "eventBased",
+        "name": "Event-Based Trigger",
+        "description": "Workflows triggered by system or file events",
+        "examples": [
+          "File change triggers refactoring",
+          "New log file triggers summarization",
+          "Workflow completion triggers next workflow"
+        ],
+        "eventTypes": [
+          "fileCreated",
+          "fileModified",
+          "workflowCompleted",
+          "metricThresholdReached"
+        ]
+      },
+      {
+        "type": "conditional",
+        "name": "Conditional Trigger",
+        "description": "Workflows triggered based on conditional behavior workflows",
+        "examples": [
+          "Trigger execution workflow when research questions answered",
+          "Activate compression when relevance drops below threshold",
+          "Start navigation when abstraction level needed"
+        ],
+        "workflowCall": {
+          "workflow": "conditionalBehavior",
+          "purpose": "determineTriggerCondition"
+        }
+      }
+    ],
+    "interconnectedLoops": {
+      "description": "Workflows loop in various interconnected ways through feature trigger types",
+      "patterns": [
+        {
+          "pattern": "metric-driven-loop",
+          "description": "Goal-based trigger uses metric workflow to measure progress, triggers refactoring or compression",
+          "workflows": ["goalBased", "metricWorkflow", "refactoringAlgorithm", "compressionWorkflow"],
+          "flow": "cyclic"
+        },
+        {
+          "pattern": "self-improvement-loop",
+          "description": "Never-stop workflow continuously improves using self-improvement, refactoring, and compression",
+          "workflows": ["neverStop", "selfImprovement", "refactoringAlgorithm", "compressionWorkflow"],
+          "flow": "continuous"
+        },
+        {
+          "pattern": "context-navigation-loop",
+          "description": "Cron-based or event-based triggers context navigation, which generates new context for other workflows",
+          "workflows": ["cronBased", "contextNavigation", "contextGathering", "multiLevelCitationSummary"],
+          "flow": "cyclic"
+        }
+      ]
+    }
+  },
+  "workflowFileExpression": {
+    "description": "Two categories of workflow file expression: .md and n8n-like config files that operate on themselves and log files",
+    "fileTypes": [
+      {
+        "type": "markdown",
+        "extension": ".md",
+        "description": "Markdown workflow documents with structured sections",
+        "capabilities": [
+          "Human-readable workflow specifications",
+          "Structured sections for context, instructions, output format",
+          "Can be preprocessed by n8n workflows",
+          "Can be edited and generated through natural language chat"
+        ],
+        "selfOperation": {
+          "canEditSelf": true,
+          "canGenerateSelf": true,
+          "canOperateOnLogs": true,
+          "throughChat": true
+        }
+      },
+      {
+        "type": "n8nConfig",
+        "extension": ".json",
+        "description": "n8n-like configuration files with workflow graphs",
+        "capabilities": [
+          "Executable workflow graphs",
+          "Visual workflow representation",
+          "Node-based execution",
+          "Can be generated from markdown workflows",
+          "Can be edited and generated through natural language chat"
+        ],
+        "selfOperation": {
+          "canEditSelf": true,
+          "canGenerateSelf": true,
+          "canOperateOnLogs": true,
+          "throughChat": true
+        }
+      },
+      {
+        "type": "logFiles",
+        "extension": ".log",
+        "description": "Log files generated by tool workflows and other workflows",
+        "capabilities": [
+          "High-detail output from tool executions",
+          "Can be summarized by summarization workflows",
+          "Can be processed by context navigation",
+          "Can be used to generate or edit workflow files"
+        ],
+        "workflowOperation": {
+          "canBeSummarized": true,
+          "canBeNavigated": true,
+          "canGenerateWorkflows": true,
+          "throughChat": true
+        }
+      }
+    ],
+    "naturalLanguageChat": {
+      "description": "All three file types (workflow .md, n8n config, log files) can be edited and generated through natural language chat conversations",
+      "capabilities": [
+        "Edit workflow markdown files through chat",
+        "Generate n8n config files through chat",
+        "Process log files through chat",
+        "Create new workflows through conversation",
+        "Modify existing workflows through conversation",
+        "Generate workflow files from log analysis"
+      ],
+      "workflowInvolvement": [
+        {
+          "workflow": "basicSummarization",
+          "purpose": "Summarize log files for chat context"
+        },
+        {
+          "workflow": "multiLevelCitationSummary",
+          "purpose": "Create navigable summaries of workflow files"
+        },
+        {
+          "workflow": "contextNavigation",
+          "purpose": "Navigate workflow files and logs to gather context"
+        },
+        {
+          "workflow": "documentationGeneration",
+          "purpose": "Generate workflow documentation from chat"
+        },
+        {
+          "workflow": "goalWorkflow",
+          "purpose": "Create workflows from chat goals"
+        }
+      ]
+    },
+    "selfReferentialOperation": {
+      "description": "Workflow files operate on themselves and log files",
+      "patterns": [
+        {
+          "pattern": "workflow-edits-workflow",
+          "description": "Workflow markdown files can be edited by workflows (e.g., self-improvement edits workflows)",
+          "example": "Self-improvement workflow analyzes logs, then edits workflow .md files to improve behavior"
+        },
+        {
+          "pattern": "workflow-generates-workflow",
+          "description": "Workflows can generate new workflow files",
+          "example": "Goal workflow creates execution workflow .md files based on research questions"
+        },
+        {
+          "pattern": "log-generates-workflow",
+          "description": "Log files can be processed to generate workflow files",
+          "example": "Tool workflow logs are summarized, then used to generate documentation workflow"
+        },
+        {
+          "pattern": "chat-operates-on-all",
+          "description": "Natural language chat can operate on all file types",
+          "example": "User chats to edit workflow .md, generate n8n config, or process log files"
+        }
+      ]
+    }
+  }
+}
