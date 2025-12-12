@@ -1,16 +1,16 @@
 import { spawn } from 'child_process';
 import { EmbeddingGenerator, cosineSimilarity } from '../indexing/embeddings.js';
-import { SimpleVectorStore, Chunk } from '../indexing/vectorStore.js';
+import { IVectorStore, Chunk } from '../indexing/storeInterface.js';
 
 /**
  * RAG system that retrieves relevant chunks and generates responses using Ollama
  */
 export class RAGSystem {
   private embeddingGenerator: EmbeddingGenerator;
-  private vectorStore: SimpleVectorStore;
+  private vectorStore: IVectorStore;
   private ollamaModel: string;
 
-  constructor(vectorStore: SimpleVectorStore, ollamaModel: string = 'llama2') {
+  constructor(vectorStore: IVectorStore, ollamaModel: string = 'llama2') {
     this.embeddingGenerator = new EmbeddingGenerator();
     this.vectorStore = vectorStore;
     this.ollamaModel = ollamaModel;

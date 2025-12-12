@@ -111,7 +111,7 @@ Researchers/writers first, code editing secondary
 Ans: Context engineers trying to get quality output from local llms through easy to edit and add to fully transparent simple local agentic workflow.
 Notes:
 
-Should Glyph Nova support non-code use cases as first-class citizens?
+Should GlyphNova support non-code use cases as first-class citizens?
 Scientific writing with citations
 Creative writing (novels, essays)
 Personal knowledge management (daily notes, journals)

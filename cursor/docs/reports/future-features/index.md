@@ -1,4 +1,4 @@
-# Glyph Nova - Future Features & Implementation Details
+# GlyphNova - Future Features & Implementation Details
 
 **Status:** Planning Document | **Version:** 0.1.0 | **Last Updated:** 2025-12-07
 

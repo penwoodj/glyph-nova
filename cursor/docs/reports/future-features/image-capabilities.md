@@ -33,7 +33,7 @@ In markdown:
 ![Generate: A modern UI mockup for a chat interface](generate)
 
 In chat:
-User: Create a logo for Glyph Nova
+User: Create a logo for GlyphNova
 AI: [Generates multiple options, shows inline]
 
 In code comments:

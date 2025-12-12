@@ -1,4 +1,4 @@
-# Glyph Nova - Project Vision
+# GlyphNova - Project Vision
 
 **Status:** Living Document | **Version:** 0.1.0 | **Last Updated:** 2025-12-07
 
@@ -61,7 +61,7 @@ Slow Tier (Background) →  Larger models, quality over speed
 
 ## What Makes It Different
 
-| Feature | Cursor | Glyph Nova |
+| Feature | Cursor | GlyphNova |
 |---------|--------|------------|
 | **Transparency** | Hidden prompts & rules | Fully visible & editable |
 | **Context Engine** | Fixed behavior | Smart chunking, self-learning |
@@ -183,7 +183,7 @@ Local Server 3:       Background research tasks
 ## Success Metrics
 
 **The goal is achieved when:**
-1. ✅ I prefer using Glyph Nova over Cursor for daily work
+1. ✅ I prefer using GlyphNova over Cursor for daily work
 2. ✅ Context engineering is faster and more precise
 3. ✅ AI behavior is completely transparent and controllable
 4. ✅ Through opting in, Modes are easily shared and improved by the community

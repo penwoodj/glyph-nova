@@ -6,7 +6,7 @@
 
 ## Overview
 
-The Glyph Nova system uses **two types of agentic workflow files** that work together in a pipeline:
+The GlyphNova system uses **two types of agentic workflow files** that work together in a pipeline:
 
 1. **Markdown workflow descriptions (`.md`)**: Human-friendly agentic workflow specs.
 2. **n8n-like configuration workflows**: Executable workflow graphs with visualization modes.
@@ -610,7 +610,7 @@ interface ContextPattern {
 
 ## Summary
 
-The workflow system in Glyph Nova provides:
+The workflow system in GlyphNova provides:
 
 1. **Two workflow file types**: Markdown documents and n8n-like config files
 2. **Composable workflows**: Workflows can inherit and combine

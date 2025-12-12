@@ -225,7 +225,7 @@ Add a new section "informationProcessingPipeline" that documents:
 
 ## 5-Minute Summary
 
-This session focused on creating a comprehensive JSON mapping file that connects workflow types to features throughout the Glyph Nova project. The task involved analyzing all future-features documentation to understand relationships, then creating a structured JSON file that maps:
+This session focused on creating a comprehensive JSON mapping file that connects workflow types to features throughout the GlyphNova project. The task involved analyzing all future-features documentation to understand relationships, then creating a structured JSON file that maps:
 
 1. **Workflow Types** - 8 major workflow types with detailed behavior sequences
 2. **Feature Connections** - How workflows connect to features like context-engineering, agentic-mode-system, etc.
@@ -615,7 +615,7 @@ All workflows include error handling with fallback strategies. This ensures robu
 
 Successfully created a comprehensive JSON mapping file that documents:
 - 8 major workflow types with detailed behavior sequences
-- Feature-to-workflow relationships across the Glyph Nova project
+- Feature-to-workflow relationships across the GlyphNova project
 - Workflow composition patterns and integration points
 - n8n implementation guidance for creating workflows
 - Cursor integration use cases for creating implementation context

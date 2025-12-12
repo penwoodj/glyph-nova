@@ -19,7 +19,7 @@ settings.json:
 
 keybindings.json:
 ├─ Import all custom bindings
-└─ Map to Glyph Nova actions
+└─ Map to GlyphNova actions
 
 extensions (future):
 ├─ Load VSCode extension API
@@ -41,7 +41,7 @@ interface VSCodeTheme {
   tokenColors: TokenColor[] // Syntax highlighting
 }
 
-// Auto-convert to Glyph Nova theme
+// Auto-convert to GlyphNova theme
 function convertVSCodeTheme(theme: VSCodeTheme): GlyphNovaTheme {
   return {
     editor: mapEditorColors(theme.colors),
