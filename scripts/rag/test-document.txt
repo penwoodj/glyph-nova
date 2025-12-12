@@ -1,0 +1,24 @@
+RAG (Retrieval-Augmented Generation) is a technique that combines information retrieval with language model generation.
+
+How RAG Works:
+
+1. Retrieval: When you ask a question, the system searches a knowledge base (like your codebase or documents) to find relevant information.
+
+2. Augmentation: That retrieved information is added to the prompt as context.
+
+3. Generation: The language model generates a response using both its training data and the retrieved context.
+
+In Cursor's Context:
+
+When you use Cursor, it indexes your codebase files. When you ask a question, it retrieves relevant code snippets from your indexed files. It includes those snippets in the context sent to the AI. The AI generates responses based on your actual code, not just general knowledge.
+
+This is why Cursor can answer questions about your specific codebase, reference your actual functions and classes, provide suggestions that match your code style, and understand your project's architecture.
+
+Benefits:
+
+- More accurate: Uses your actual code, not generic examples
+- Context-aware: Understands your project's specific patterns
+- Up-to-date: Works with your current codebase state
+- Reduces hallucinations: Grounded in real, retrievable information
+
+RAG is what makes Cursor's AI responses relevant to your specific codebase rather than generic programming advice.

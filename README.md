@@ -23,6 +23,7 @@ A desktop application for chatting with local LLMs (via Ollama) with integrated 
 - **Vision:** [Project Vision](.cursor/docs/reports/project-vision.md)
 - **Future Features:** [future-features/index](.cursor/docs/reports/future-features/index.md)
   - Transparency & Observability, Context Engineering, Agentic Mode System, Self-Improvement, Multi-Machine Swarm, Editor Experience, Implementation Roadmap, Design Decisions, and more
+- **RAG CLI:** [RAG System Documentation](scripts/rag/README.md) - Document indexing and semantic search tool
 
 ## Features
 
@@ -183,6 +184,22 @@ The built application will be in `src-tauri/target/release/bundle/` with platfor
 - macOS: `.dmg`
 - Windows: `.exe` or `.msi`
 
+## Scripts
+
+### RAG CLI
+
+The project includes a RAG (Retrieval-Augmented Generation) CLI tool for indexing and querying documents:
+
+```bash
+# Index documents
+yarn rag index <path>              # Index file, folder, or multiple paths
+
+# Query indexed documents
+yarn rag query "your question"    # Ask questions about indexed content
+```
+
+For detailed documentation, see [scripts/rag/README.md](scripts/rag/README.md).
+
 ## Usage
 
 ### File Tree (Left Panel)
@@ -262,6 +279,8 @@ glyph-nova/
 │   │   │   └── context.ts     # File context loading
 │   │   └── state/           # State management
 │   │       └── store.ts       # Zustand store
+├── scripts/                  # Utility scripts
+│   └── rag/                  # RAG CLI tool (see scripts/rag/README.md)
 └── src-tauri/               # Desktop app (Tauri - optional)
 ```
 

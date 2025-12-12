@@ -1,0 +1,417 @@
+---
+description: Create minimal Tauri desktop apps that wrap any website URL in a desktop window, with external links opening in the default browser. Use this rule when converting web apps or websites to standalone desktop applications.
+globs:
+alwaysApply: false
+---
+
+# Web-to-Desktop App Creation Guide
+
+## Purpose
+
+This rule guides the creation of minimal Tauri desktop applications that wrap any website URL in a desktop window. External links automatically open in the user's default browser, keeping the app focused on the primary domain.
+
+## When to Use
+
+- Converting a web app to a desktop app
+- Creating a desktop wrapper for a specific website
+- Building a focused desktop experience for a web service
+- Creating standalone apps that don't need full browser functionality
+
+## Required Setup
+
+### Prerequisites Verification
+```bash
+# Verify Rust is installed
+cargo --version
+rustc --version
+
+# Verify Node.js and package manager
+node --version
+yarn --version  # or npm --version
+```
+
+### Project Structure
+```
+~/code/[app-name]-desktop/
+├── package.json
+├── app-icon.png (1024x1024 PNG source)
+├── web/
+│   └── index.html
+└── src-tauri/
+    ├── Cargo.toml
+    ├── tauri.conf.json
+    ├── build.rs
+    ├── src/
+    │   └── main.rs
+    └── icons/ (generated)
+```
+
+## Implementation Steps
+
+### 1. Initialize Project
+
+```bash
+mkdir -p ~/code/[app-name]-desktop/web
+cd ~/code/[app-name]-desktop
+```
+
+### 2. Create package.json
+
+```json
+{
+  "name": "[app-name]-desktop",
+  "version": "1.0.0",
+  "description": "Desktop app for [website-name]",
+  "main": "index.html",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev --no-watch",
+    "dev:watch": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.0"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.5.0"
+  }
+}
+```
+
+### 3. Create HTML Wrapper (web/index.html)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[App Name]</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="app-frame" src="https://[domain.com]/" allow="fullscreen"></iframe>
+  <script>
+    if (window.__TAURI__) {
+      // Override window.open to intercept external links
+      const originalOpen = window.open;
+      window.open = function(url, target, features) {
+        if (url && typeof url === 'string') {
+          // Check if it's an external link (not the main domain and not relative)
+          const mainDomain = 'https://[domain.com]';
+          if (!url.startsWith(mainDomain) &&
+              !url.startsWith('http://[domain.com]') &&
+              !url.startsWith('/') &&
+              !url.startsWith('#')) {
+            // Open in external browser
+            window.__TAURI__.invoke('open_external', { url: url });
+            return null;
+          }
+        }
+        return originalOpen.call(this, url, target, features);
+      };
+
+      // Listen for messages from iframe (if site uses postMessage)
+      window.addEventListener('message', function(event) {
+        // Only accept messages from the main domain
+        if (event.origin === 'https://[domain.com]' || event.origin === 'http://[domain.com]') {
+          if (event.data && event.data.type === 'open-external') {
+            window.__TAURI__.invoke('open_external', { url: event.data.url });
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+```
+
+**Replace `[domain.com]` with the actual domain** (e.g., `pomofocus.io`)
+
+### 4. Create Rust Backend (src-tauri/src/main.rs)
+
+```rust
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+#[tauri::command]
+async fn open_external(url: String) {
+    let _ = open::that(&url);
+}
+
+fn main() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![open_external])
+        .setup(|_app| {
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+### 5. Create Cargo.toml (src-tauri/Cargo.toml)
+
+```toml
+[package]
+name = "[app-name]-desktop"
+version = "1.0.0"
+description = "Desktop app for [website-name]"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [
+    "window-unmaximize",
+    "window-minimize",
+    "window-start-dragging",
+    "window-close",
+    "window-maximize",
+    "window-unminimize",
+    "window-show",
+    "window-hide",
+    "shell-open"
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+open = "5.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+```
+
+**CRITICAL:** The `custom-protocol` feature mapping is required for local HTML files to work.
+
+### 6. Create build.rs (src-tauri/build.rs)
+
+```rust
+fn main() {
+    tauri_build::build()
+}
+```
+
+### 7. Create tauri.conf.json (src-tauri/tauri.conf.json)
+
+```json
+{
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "../web",
+    "distDir": "../web"
+  },
+  "package": {
+    "productName": "[App Name]",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.[appname].desktop",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
+    },
+    "security": {
+      "csp": null,
+      "dangerousDisableAssetCspModification": true
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "[App Name]",
+        "width": 1200,
+        "height": 800,
+        "url": "index.html"
+      }
+    ]
+  }
+}
+```
+
+### 8. Generate Icons
+
+**Option A: Use tauri icon command (Recommended)**
+```bash
+# Create a 1024x1024 PNG source icon (app-icon.png)
+# Then run:
+yarn tauri icon app-icon.png
+```
+
+**Option B: Create icon programmatically**
+```python
+# create_icon.py
+import zlib
+import struct
+from io import BytesIO
+
+def create_png(width, height, r, g, b):
+    def write_chunk(stream, chunk_type, data):
+        stream.write(struct.pack('>I', len(data)))
+        stream.write(chunk_type)
+        stream.write(data)
+        crc = zlib.crc32(chunk_type + data) & 0xffffffff
+        stream.write(struct.pack('>I', crc))
+
+    png = BytesIO()
+    png.write(b'\x89PNG\r\n\x1a\n')
+
+    ihdr_data = struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)
+    write_chunk(png, b'IHDR', ihdr_data)
+
+    scanline_size = width * 3 + 1
+    pixel_data = bytearray()
+    for y in range(height):
+        pixel_data.append(0)
+        for x in range(width):
+            pixel_data.extend([r, g, b])
+
+    compressed = zlib.compress(bytes(pixel_data))
+    write_chunk(png, b'IDAT', compressed)
+    write_chunk(png, b'IEND', b'')
+
+    return png.getvalue()
+
+with open('app-icon.png', 'wb') as f:
+    f.write(create_png(1024, 1024, 255, 107, 107))  # Adjust RGB as needed
+```
+
+## Common Issues and Solutions
+
+### Issue: "custom-protocol feature not found"
+**Solution:** Ensure Cargo.toml has:
+```toml
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+```
+
+### Issue: "distDir includes node_modules"
+**Solution:** Move HTML to `web/` directory and update `tauri.conf.json`:
+```json
+"devPath": "../web",
+"distDir": "../web"
+```
+
+### Issue: External links not opening in browser
+**Solution:** Verify:
+1. `shell.open` is enabled in allowlist
+2. `open_external` command is registered
+3. JavaScript `window.open` override is working
+4. Domain check in JavaScript matches actual domain
+
+### Issue: Icons missing
+**Solution:**
+1. Create 1024x1024 PNG source
+2. Run `yarn tauri icon app-icon.png`
+3. Verify icons exist in `src-tauri/icons/`
+
+## Verification Checklist
+
+- [ ] `yarn install` completes without errors
+- [ ] `yarn build` creates bundles successfully
+- [ ] `yarn dev` opens app window
+- [ ] Website loads correctly in iframe
+- [ ] External links open in default browser
+- [ ] Window controls work (minimize, maximize, close)
+- [ ] Icons display correctly
+- [ ] No console errors in dev tools
+
+## Customization Points
+
+1. **Window Size:** Adjust `width` and `height` in `tauri.conf.json`
+2. **Window Title:** Change `title` in `tauri.conf.json` and `<title>` in HTML
+3. **App Identifier:** Update `identifier` in `tauri.conf.json` (reverse domain format)
+4. **Icon Colors:** Modify RGB values in icon generation script
+5. **Domain Filtering:** Update domain checks in `index.html` JavaScript
+
+## Best Practices
+
+1. **Always use `web/` directory** for HTML assets (required by Tauri)
+2. **Test external link handling** with various link types (absolute URLs, relative paths, anchors)
+3. **Use `--no-watch` flag** in dev mode when file watching isn't needed (faster startup)
+4. **Keep Rust code minimal** - only add what's needed for the core functionality
+5. **Verify icons** display correctly on target platforms before distribution
+
+## Example: Complete Workflow
+
+```bash
+# 1. Create project
+mkdir -p ~/code/myapp-desktop/web
+cd ~/code/myapp-desktop
+
+# 2. Create package.json (copy template above, replace [app-name])
+
+# 3. Create web/index.html (copy template, replace [domain.com])
+
+# 4. Create src-tauri structure
+mkdir -p src-tauri/src
+# Copy Cargo.toml, build.rs, tauri.conf.json, main.rs templates
+
+# 5. Install dependencies
+yarn install
+
+# 6. Create and generate icons
+python3 create_icon.py  # or use existing icon
+yarn tauri icon app-icon.png
+
+# 7. Build and test
+yarn build
+yarn dev
+```
+
+## Related Documentation
+
+- [Tauri v1.5 Documentation](https://tauri.app/v1/)
+- [Tauri Prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites)
+- [Tauri Configuration](https://tauri.app/v1/api/config/)
+
+---
+
+**Remember:** This creates a minimal, focused desktop app. For more complex needs (native menus, system tray, notifications), refer to Tauri's full feature set.

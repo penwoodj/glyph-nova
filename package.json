@@ -2,7 +2,8 @@
   "private": true,
   "scripts": {
     "kill:dev": "lsof -ti:8912 | xargs -r kill -9 && lsof -ti:8911 | xargs -r kill -9",
-    "kill:port": "bash scripts/kill-port.sh"
+    "kill:port": "bash scripts/kill-port.sh",
+    "rag": "cd scripts/rag && npm run build && node index.js"
   },
   "workspaces": {
     "packages": [
