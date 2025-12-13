@@ -149,3 +149,115 @@ body {
   }
 }
 
+/* Vditor editor styling fixes */
+.vditor {
+  height: 100% !important;
+  width: 100% !important;
+  background: var(--vscode-editor-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+.vditor-content {
+  height: 100% !important;
+  overflow: auto !important;
+  background: var(--vscode-editor-bg) !important;
+}
+
+/* Vditor Dark Theme Overrides */
+.vditor-wysiwyg,
+.vditor-ir,
+.vditor-sv {
+  background: var(--vscode-editor-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+.vditor-wysiwyg pre,
+.vditor-ir pre,
+.vditor-sv pre {
+  background: var(--vscode-editor-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+.vditor-toolbar {
+  background: var(--vscode-sidebar-bg) !important;
+  border-bottom: 1px solid var(--vscode-border) !important;
+}
+
+.vditor-toolbar button {
+  color: var(--vscode-fg) !important;
+}
+
+.vditor-toolbar button:hover {
+  background: var(--vscode-hover-bg) !important;
+}
+
+.vditor-preview {
+  background: var(--vscode-editor-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+.vditor-outline {
+  background: var(--vscode-sidebar-bg) !important;
+  border-left: 1px solid var(--vscode-border) !important;
+}
+
+.vditor-outline__title {
+  color: var(--vscode-fg) !important;
+}
+
+.vditor-outline__content {
+  color: var(--vscode-fg-secondary) !important;
+}
+
+/* Ensure page fits viewport */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#redwood-app {
+  height: 100vh;
+  width: 100vw;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Fix white backgrounds on form elements */
+select {
+  background-color: var(--vscode-input-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+select option {
+  background-color: var(--vscode-input-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--vscode-button-bg) !important;
+  background-color: var(--vscode-input-bg) !important;
+  border-color: var(--vscode-border) !important;
+}
+
+textarea {
+  background-color: var(--vscode-input-bg) !important;
+  color: var(--vscode-fg) !important;
+}
+
+/* Fix button backgrounds - only apply to buttons without explicit classes */
+button:not([class*="bg-"]):not([class*="text-"]) {
+  background-color: var(--vscode-button-bg) !important;
+  color: var(--vscode-button-fg) !important;
+}
+
+button:not([class*="bg-"]):not(:disabled):hover {
+  background-color: var(--vscode-button-hover-bg) !important;
+}
+

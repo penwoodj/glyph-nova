@@ -13,14 +13,15 @@ import { RAGSystem } from './querying/rag.js';
  * Enhanced RAG CLI
  *
  * Usage:
- *   rag index <path> [--json] [--watch]    - Index documents (--json for JSON encoding, --watch for file watching)
- *   rag query <query> [--json]             - Query indexed documents (--json if using JSON encoding)
+ *   rag index <path> [--json] [--watch]              - Index documents (--json for JSON encoding, --watch for file watching)
+ *   rag query <query> [--json] [--expand-queries]    - Query indexed documents (--json if using JSON encoding, --expand-queries for multi-query retrieval)
  *
  * Examples:
- *   rag index ./document.txt                    # Single file (binary encoding, fast)
- *   rag index ./docs --json                    # Folder with JSON encoding (human-readable)
- *   rag index file1.txt file2.md --watch      # Multiple files with auto-reindexing
- *   rag query "What is the main topic?"        # Query (auto-detects encoding)
+ *   rag index ./document.txt                              # Single file (binary encoding, fast)
+ *   rag index ./docs --json                               # Folder with JSON encoding (human-readable)
+ *   rag index file1.txt file2.md --watch                 # Multiple files with auto-reindexing
+ *   rag query "What is the main topic?"                  # Query (auto-detects encoding)
+ *   rag query "What is the main topic?" --expand-queries  # Query with query expansion (improves recall)
  *
  * Encoding Options:
  *   --json    Use JSON encoding (slower, human-readable, easier to debug)
@@ -28,6 +29,9 @@ import { RAGSystem } from './querying/rag.js';
  *
  * File Watching:
  *   --watch   Monitor indexed files for changes and auto-reindex
+ *
+ * Query Options:
+ *   --expand-queries   Use query expansion with multi-query generation and RRF fusion (improves recall for abstract queries)
  */
 
 const COMMANDS = {
@@ -38,19 +42,22 @@ const COMMANDS = {
 function printUsage() {
   console.log(`
 Usage:
-  rag index <path...> [--json] [--watch]   Index file(s), folder(s), or multiple paths
-  rag query <query> [--json]               Query the indexed documents
+  rag index <path...> [--json] [--watch]              Index file(s), folder(s), or multiple paths
+  rag query <query> [--json] [--expand-queries]       Query the indexed documents
 
 Options:
-  --json    Use JSON encoding (slower but human-readable)
-            Default: Binary encoding (faster and more efficient)
-  --watch   Watch indexed files for changes and auto-reindex (index command only)
+  --json            Use JSON encoding (slower but human-readable)
+                    Default: Binary encoding (faster and more efficient)
+  --watch           Watch indexed files for changes and auto-reindex (index command only)
+  --expand-queries  Use query expansion with multi-query generation and RRF fusion (query command only)
+                    Improves recall for abstract queries by generating multiple query variations
 
 Examples:
-  rag index ./document.txt                    # Index with binary encoding (fast)
-  rag index ./docs --json                     # Index with JSON encoding
-  rag index file1.txt file2.md --watch       # Index with file watching
-  rag query "What is the main topic?"         # Query (auto-detects encoding)
+  rag index ./document.txt                              # Index with binary encoding (fast)
+  rag index ./docs --json                               # Index with JSON encoding
+  rag index file1.txt file2.md --watch                  # Index with file watching
+  rag query "What is the main topic?"                   # Query (auto-detects encoding)
+  rag query "What is the main topic?" --expand-queries   # Query with expansion (better recall)
 
 Supported file types: .txt, .md, .js, .ts, .json, .py, .java, .cpp, .c, .h
 `);
@@ -153,7 +160,8 @@ async function indexDocuments(paths: string[], useJson: boolean = false, enableW
   // Embeddings convert text into numerical vectors that capture semantic meaning.
   // Similar texts will have similar embeddings, enabling semantic search.
   console.log(`\n[Step 2/3] Generating embeddings...`);
-  const embeddingGenerator = new EmbeddingGenerator();
+  // Try Ollama embeddings first (nomic-embed-text), fallback to simple if unavailable
+  const embeddingGenerator = new EmbeddingGenerator('llama2', 'nomic-embed-text', 'http://localhost:11434', true);
 
   const texts = allChunks.map(chunk => chunk.text);
   const embeddings = await embeddingGenerator.generateEmbeddings(texts);
@@ -210,7 +218,8 @@ async function reindexSingleFile(filePath: string, useJson: boolean, storeDir: s
   }
 
   const chunker = new DocumentChunker(500, 50);
-  const embeddingGenerator = new EmbeddingGenerator();
+  // Try Ollama embeddings first (nomic-embed-text), fallback to simple if unavailable
+  const embeddingGenerator = new EmbeddingGenerator('llama2', 'nomic-embed-text', 'http://localhost:11434', true);
   const vectorStore = createVectorStore(storeDir, useJson);
 
   // Load existing store to get all file paths
@@ -301,16 +310,17 @@ async function startFileWatcher(filePaths: string[], useJson: boolean): Promise<
  * Query the indexed documents
  *
  * This implements the retrieval-augmented generation (RAG) query process:
- * 1. Generate embedding for the query
- * 2. Find most similar chunks using cosine similarity
+ * 1. Generate embedding for the query (or expand to multiple queries)
+ * 2. Find most similar chunks using cosine similarity (or fuse multiple result sets with RRF)
  * 3. Retrieve top-K most relevant chunks
  * 4. Send chunks + query to LLM (Ollama) for response generation
  *
  * The LLM uses the retrieved context to generate accurate, grounded responses.
  *
  * Auto-detects encoding format (JSON or binary) based on which file exists.
+ * Supports query expansion with multi-query generation and RRF fusion for improved recall.
  */
-async function queryDocuments(query: string, useJson?: boolean) {
+async function queryDocuments(query: string, useJson?: boolean, expandQueries: boolean = false) {
   console.log(`\n=== Querying Documents ===\n`);
   console.log(`Query: "${query}"\n`);
 
@@ -365,7 +375,12 @@ async function queryDocuments(query: string, useJson?: boolean) {
   // - Similarity search in vector store
   // - Context assembly
   // - LLM response generation via Ollama
-  const rag = new RAGSystem(vectorStore, 'llama2');
+  // - Optional query expansion with RRF fusion
+  const rag = new RAGSystem(vectorStore, 'llama2', expandQueries, 3);
+
+  if (expandQueries) {
+    console.log(`Query expansion enabled: Will generate multiple query variations and fuse results\n`);
+  }
 
   // Query
   try {
@@ -433,11 +448,14 @@ async function main() {
       // Parse flags
       const queryParts: string[] = [];
       let useJson: boolean | undefined = undefined;
+      let expandQueries = false;
 
       for (let i = 1; i < args.length; i++) {
         const arg = args[i];
         if (arg === '--json') {
           useJson = true;
+        } else if (arg === '--expand-queries') {
+          expandQueries = true;
         } else {
           queryParts.push(arg);
         }
@@ -450,7 +468,7 @@ async function main() {
       }
 
       const query = queryParts.join(' ');
-      await queryDocuments(query, useJson);
+      await queryDocuments(query, useJson, expandQueries);
     } else {
       console.error(`Error: Unknown command "${command}"`);
       printUsage();

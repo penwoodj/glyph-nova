@@ -59,6 +59,7 @@ export const ChatInterface = () => {
   const [pendingEdits, setPendingEdits] = useState<EditRequest[]>([])
   const [showEditConfirmation, setShowEditConfirmation] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const apolloClient = useApolloClient()
 
   // Get state from store
@@ -102,6 +103,15 @@ export const ChatInterface = () => {
         const separator = prev && !prev.endsWith(' ') ? ' ' : ''
         return `${prev}${separator}${path}`
       })
+      // Focus the input after a short delay to ensure state is updated
+      setTimeout(() => {
+        inputRef.current?.focus()
+        // Move cursor to end of input
+        if (inputRef.current) {
+          const length = inputRef.current.value.length
+          inputRef.current.setSelectionRange(length, length)
+        }
+      }, 0)
     }
 
     window.addEventListener(
@@ -263,7 +273,13 @@ export const ChatInterface = () => {
   return (
     <div className="flex h-full flex-col bg-vscode-editor-bg">
       {/* Header with Model Selector */}
-      <div className="flex items-center justify-between border-b border-vscode-border px-4 py-2">
+      <div
+        className="flex items-center justify-between border-b border-vscode-border"
+        style={{
+          backgroundColor: 'var(--vscode-sidebar-bg)',
+          padding: '0.75rem 1rem',
+        }}
+      >
         <div className="flex items-center gap-4">
           {/* Model Selection */}
           <div className="flex items-center gap-2">
@@ -273,6 +289,7 @@ export const ChatInterface = () => {
               onChange={(e) => setCurrentModel(e.target.value)}
               disabled={modelsLoading || isStreaming}
               className="rounded border border-vscode-border bg-vscode-input-bg px-2 py-1 text-sm text-vscode-fg outline-none focus:border-vscode-focus-border"
+              style={{ backgroundColor: 'var(--vscode-input-bg)', color: 'var(--vscode-fg)' }}
             >
               {modelsLoading ? (
                 <option>Loading models...</option>
@@ -301,7 +318,12 @@ export const ChatInterface = () => {
                 checked={useCliForModels}
                 onChange={(e) => setUseCliForModels(e.target.checked)}
                 disabled={isStreaming}
-                className="h-3 w-3"
+                className="h-3 w-3 cursor-pointer"
+                style={{
+                  accentColor: 'var(--vscode-button-bg)',
+                  backgroundColor: 'var(--vscode-input-bg)',
+                  borderColor: 'var(--vscode-border)',
+                }}
               />
               <span>Use CLI</span>
             </label>
@@ -332,7 +354,10 @@ export const ChatInterface = () => {
       </div>
 
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{ padding: '3px 5px' }}
+      >
         {chatMessages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
@@ -367,9 +392,10 @@ export const ChatInterface = () => {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-vscode-border p-4">
+      <div className="border-t border-vscode-border bg-vscode-sidebar-bg px-4 py-3">
         <div className="flex gap-2">
           <textarea
+            ref={inputRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -377,6 +403,11 @@ export const ChatInterface = () => {
             disabled={isStreaming || loadingContext || !(useCliForModels ? modelsData?.ollamaHealthCLI : modelsData?.ollamaHealth)}
             rows={3}
             className="flex-1 resize-none rounded border border-vscode-border bg-vscode-input-bg px-3 py-2 text-sm text-vscode-fg outline-none placeholder:text-vscode-fg-secondary placeholder:opacity-50 focus:border-vscode-focus-border disabled:opacity-50"
+            style={{
+              backgroundColor: 'var(--vscode-input-bg)',
+              color: 'var(--vscode-fg)',
+            }}
+            style={{ minHeight: '60px', maxHeight: '200px' }}
           />
           <button
             onClick={handleSend}
@@ -387,7 +418,19 @@ export const ChatInterface = () => {
               !(useCliForModels ? modelsData?.ollamaHealthCLI : modelsData?.ollamaHealth) ||
               !currentModel
             }
-            className="rounded bg-vscode-button-bg px-4 py-2 text-sm text-vscode-button-fg transition-colors hover:bg-vscode-button-hover-bg disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              backgroundColor: 'var(--vscode-button-bg)',
+              color: 'var(--vscode-button-fg)',
+            }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = 'var(--vscode-button-hover-bg)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--vscode-button-bg)'
+            }}
           >
             {loadingContext ? 'Loading...' : isStreaming ? 'Sending...' : 'Send'}
           </button>

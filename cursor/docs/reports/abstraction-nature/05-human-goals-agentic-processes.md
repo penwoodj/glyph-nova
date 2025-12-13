@@ -567,6 +567,7 @@ Optimize → Measure → Analyze → Improve → Optimize → Repeat
 - [[02-why-context-expands]] - Understanding expansion
 - [[03-why-context-contracts]] - Understanding contraction
 - [[04-oscillation-pattern]] - Understanding oscillation
+- [[06-rag-abstraction-enabler]] - RAG as practical abstraction mechanism
 
 **External Resources:**
 - [Human-Computer Interaction](https://en.wikipedia.org/wiki/Human%E2%80%93computer_interaction)

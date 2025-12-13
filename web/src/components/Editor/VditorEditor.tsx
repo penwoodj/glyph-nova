@@ -15,7 +15,7 @@ interface VditorEditorProps {
   content: string
   onChange?: (content: string) => void
   onSave?: (content: string) => void
-  mode?: 'instant' | 'wysiwyg' | 'sv' // instant, wysiwyg, split-view
+  mode?: 'ir' | 'wysiwyg' | 'sv' // ir (instant render), wysiwyg, sv (split-view)
   readonly?: boolean
   placeholder?: string
   height?: number | string
@@ -25,7 +25,7 @@ export const VditorEditor = ({
   content,
   onChange,
   onSave,
-  mode = 'instant',
+  mode = 'ir',
   readonly = false,
   placeholder = 'Start typing...',
   height = '100%',
@@ -55,14 +55,32 @@ export const VditorEditor = ({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onSave])
 
-  // Initialize Vditor
+  // Initialize Vditor (only once, don't re-initialize on content changes)
   useEffect(() => {
     if (!containerRef.current || vditorRef.current) return
+
+    // Use content prop or empty string, ensure it's not undefined
+    const initialContent = content || ''
+
+    console.log('[VditorEditor] Initializing Vditor with content length:', initialContent.length)
+    console.log('[VditorEditor] Content preview:', initialContent.substring(0, 100))
+
+    // Ensure container has dimensions before initializing
+    if (!containerRef.current.offsetHeight || !containerRef.current.offsetWidth) {
+      console.warn('[VditorEditor] Container has no dimensions, waiting...')
+      // Try again after a short delay
+      const timer = setTimeout(() => {
+        if (containerRef.current && !vditorRef.current) {
+          // Retry initialization
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
 
     const vditor = new Vditor(containerRef.current, {
       height: typeof height === 'number' ? height : undefined,
       minHeight: typeof height === 'string' ? undefined : 300,
-      mode,
+      mode: mode || 'ir', // Vditor uses 'ir' for instant render mode
       placeholder,
       readonly,
       toolbar: [
@@ -100,7 +118,7 @@ export const VditorEditor = ({
       toolbarConfig: {
         pin: true,
       },
-      value: content,
+      value: initialContent,
       cache: {
         enable: false, // Disable cache for file editing
       },
@@ -171,9 +189,32 @@ export const VditorEditor = ({
           }
         },
       },
+      after: () => {
+        // Callback after Vditor is fully initialized
+        // Wait a bit to ensure Vditor is completely ready
+        setTimeout(() => {
+          console.log('[VditorEditor] Vditor initialized, setting content')
+          if (vditorRef.current && initialContent) {
+            try {
+              // Use setValue - this is the correct method for setting initial content
+              vditorRef.current.setValue(initialContent)
+              contentRef.current = initialContent
+              console.log('[VditorEditor] Content set successfully, length:', initialContent.length)
+            } catch (error) {
+              console.error('[VditorEditor] Failed to set initial Vditor value:', error)
+            }
+          } else {
+            console.warn('[VditorEditor] Vditor ref or content missing:', {
+              hasRef: !!vditorRef.current,
+              hasContent: !!initialContent
+            })
+          }
+        }, 100)
+      },
     })
 
     vditorRef.current = vditor
+    contentRef.current = initialContent
 
     return () => {
       if (vditorRef.current) {
@@ -181,13 +222,20 @@ export const VditorEditor = ({
         vditorRef.current = null
       }
     }
-  }, [mode, placeholder, readonly, height, onChange])
+    // Only re-initialize if mode, placeholder, readonly, or height changes
+    // Do NOT include content or onChange in dependencies - use separate effect for content updates
+  }, [mode, placeholder, readonly, height])
 
   // Update content when prop changes externally
   useEffect(() => {
     if (vditorRef.current && content !== contentRef.current) {
-      vditorRef.current.setValue(content)
-      contentRef.current = content
+      const newContent = content || ''
+      try {
+        vditorRef.current.setValue(newContent)
+        contentRef.current = newContent
+      } catch (error) {
+        console.error('Failed to set Vditor value:', error)
+      }
     }
   }, [content])
 
@@ -212,8 +260,16 @@ export const VditorEditor = ({
   }, [])
 
   return (
-    <div className="h-full w-full bg-vscode-editor-bg">
-      <div ref={containerRef} className="h-full w-full" />
+    <div className="h-full w-full bg-vscode-editor-bg overflow-hidden">
+      <div
+        ref={containerRef}
+        className="h-full w-full"
+        style={{
+          height: '100%',
+          width: '100%',
+          overflow: 'hidden'
+        }}
+      />
     </div>
   )
 }

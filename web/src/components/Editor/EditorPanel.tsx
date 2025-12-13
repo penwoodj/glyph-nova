@@ -31,6 +31,11 @@ export const EditorPanel = () => {
   const lastFileEdit = useAppStore((state) => state.lastFileEdit)
   const [refreshKey, setRefreshKey] = useState(0)
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[EditorPanel] Selected file path:', selectedFilePath)
+  }, [selectedFilePath])
+
   const [writeFile] = useMutation(WRITE_FILE_MUTATION)
 
   // Watch for file edits and refresh editor if current file was edited

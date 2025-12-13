@@ -1,27 +1,62 @@
 import { spawn } from 'child_process';
 import { EmbeddingGenerator, cosineSimilarity } from '../indexing/embeddings.js';
 import { IVectorStore, Chunk } from '../indexing/storeInterface.js';
+import { QueryExpander } from './queryExpansion.js';
+import { ReciprocalRankFusion } from './resultFusion.js';
 
 /**
  * RAG system that retrieves relevant chunks and generates responses using Ollama
+ *
+ * Supports query expansion with multi-query generation and RRF fusion for improved recall.
+ * Reference: [[04-query-expansion-reranking]]
  */
 export class RAGSystem {
   private embeddingGenerator: EmbeddingGenerator;
   private vectorStore: IVectorStore;
   private ollamaModel: string;
+  private queryExpander: QueryExpander | null;
+  private rrf: ReciprocalRankFusion;
+  private useQueryExpansion: boolean;
 
-  constructor(vectorStore: IVectorStore, ollamaModel: string = 'llama2') {
+  constructor(
+    vectorStore: IVectorStore,
+    ollamaModel: string = 'llama2',
+    useQueryExpansion: boolean = false,
+    numQueryVariations: number = 3
+  ) {
     this.embeddingGenerator = new EmbeddingGenerator();
     this.vectorStore = vectorStore;
     this.ollamaModel = ollamaModel;
+    this.useQueryExpansion = useQueryExpansion;
+    this.queryExpander = useQueryExpansion
+      ? new QueryExpander(ollamaModel, 'http://localhost:11434', numQueryVariations)
+      : null;
+    this.rrf = new ReciprocalRankFusion(60);
   }
 
   /**
    * Find most relevant chunks for a query
+   *
+   * If query expansion is enabled, generates multiple query variations,
+   * retrieves chunks for each, and fuses results using RRF.
+   * Otherwise, uses single-query retrieval.
    */
   async retrieveRelevantChunks(query: string, topK: number = 3): Promise<Chunk[]> {
     // console.log(`[RAG] Retrieving relevant chunks for query: "${query}"`);
 
+    if (this.useQueryExpansion && this.queryExpander) {
+      // Multi-query retrieval with RRF fusion
+      return await this.retrieveWithQueryExpansion(query, topK);
+    } else {
+      // Single-query retrieval (original behavior)
+      return await this.retrieveSingleQuery(query, topK);
+    }
+  }
+
+  /**
+   * Single-query retrieval (original behavior)
+   */
+  private async retrieveSingleQuery(query: string, topK: number): Promise<Chunk[]> {
     // Generate query embedding
     const queryEmbedding = await this.embeddingGenerator.generateEmbedding(query);
     // console.log(`[RAG] Generated query embedding`);
@@ -47,6 +82,49 @@ export class RAGSystem {
     // });
 
     return topChunks.map(item => item.chunk);
+  }
+
+  /**
+   * Multi-query retrieval with RRF fusion
+   */
+  private async retrieveWithQueryExpansion(query: string, topK: number): Promise<Chunk[]> {
+    if (!this.queryExpander) {
+      return this.retrieveSingleQuery(query, topK);
+    }
+
+    // console.log(`[RAG] Expanding query into multiple variations...`);
+
+    // Expand query into variations
+    const queryVariations = await this.queryExpander.expandQuery(query);
+    // console.log(`[RAG] Generated ${queryVariations.length} query variations`);
+
+    // Retrieve chunks for each query variation
+    const rankedLists: Chunk[][] = [];
+    const chunks = this.vectorStore.getChunks();
+
+    for (const variation of queryVariations) {
+      // Generate embedding for this variation
+      const variationEmbedding = await this.embeddingGenerator.generateEmbedding(variation);
+
+      // Calculate similarities
+      const similarities = chunks.map((chunk) => ({
+        chunk,
+        similarity: cosineSimilarity(variationEmbedding, chunk.embedding),
+      }));
+
+      // Sort by similarity and get top chunks (retrieve more than topK to improve fusion quality)
+      similarities.sort((a, b) => b.similarity - a.similarity);
+      const topChunks = similarities.slice(0, Math.max(topK * 2, 10)).map(item => item.chunk);
+
+      rankedLists.push(topChunks);
+    }
+
+    // Fuse results using RRF
+    // console.log(`[RAG] Fusing ${rankedLists.length} result sets using RRF...`);
+    const fusedChunks = this.rrf.fuse(rankedLists, topK);
+
+    // console.log(`[RAG] Fused to ${fusedChunks.length} top chunks`);
+    return fusedChunks;
   }
 
   /**

@@ -459,6 +459,7 @@ Quality emphasis
 - [[02-why-context-expands]] - Understanding expansion
 - [[03-why-context-contracts]] - Understanding contraction
 - [[05-human-goals-agentic-processes]] - Practical applications
+- [[06-rag-abstraction-enabler]] - RAG as practical abstraction mechanism
 
 **External Resources:**
 - [Feedback Loops](https://en.wikipedia.org/wiki/Feedback)

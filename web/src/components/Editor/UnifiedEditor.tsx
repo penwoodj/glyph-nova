@@ -30,6 +30,13 @@ export const UnifiedEditor = ({
   placeholder = 'Select a file to view or edit...',
   height = '100%',
 }: UnifiedEditorProps) => {
+  console.log('[UnifiedEditor] Rendering:', JSON.stringify({
+    filePath,
+    contentLength: content?.length || 0,
+    hasContent: !!content,
+    contentPreview: content?.substring(0, 50) || 'empty'
+  }))
+
   // If no file path provided, show placeholder
   if (!filePath) {
     return (
@@ -49,6 +56,7 @@ export const UnifiedEditor = ({
 
   // Detect file type from file path
   const fileType = detectFileType(filePath)
+  console.log('[UnifiedEditor] File type detected:', fileType)
 
   // Render appropriate editor based on file type
   switch (fileType) {
@@ -62,7 +70,7 @@ export const UnifiedEditor = ({
           readonly={readonly}
           placeholder={placeholder}
           height={height}
-          mode="instant" // Instant preview mode for markdown
+          mode="ir" // Instant render mode for markdown (Vditor uses 'ir' not 'instant')
         />
       )
 

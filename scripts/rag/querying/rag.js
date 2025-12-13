@@ -1,22 +1,52 @@
 import { spawn } from 'child_process';
 import { EmbeddingGenerator, cosineSimilarity } from '../indexing/embeddings.js';
+import { QueryExpander } from './queryExpansion.js';
+import { ReciprocalRankFusion } from './resultFusion.js';
 /**
  * RAG system that retrieves relevant chunks and generates responses using Ollama
+ *
+ * Supports query expansion with multi-query generation and RRF fusion for improved recall.
+ * Reference: [[04-query-expansion-reranking]]
  */
 export class RAGSystem {
     embeddingGenerator;
     vectorStore;
     ollamaModel;
-    constructor(vectorStore, ollamaModel = 'llama2') {
+    queryExpander;
+    rrf;
+    useQueryExpansion;
+    constructor(vectorStore, ollamaModel = 'llama2', useQueryExpansion = false, numQueryVariations = 3) {
         this.embeddingGenerator = new EmbeddingGenerator();
         this.vectorStore = vectorStore;
         this.ollamaModel = ollamaModel;
+        this.useQueryExpansion = useQueryExpansion;
+        this.queryExpander = useQueryExpansion
+            ? new QueryExpander(ollamaModel, 'http://localhost:11434', numQueryVariations)
+            : null;
+        this.rrf = new ReciprocalRankFusion(60);
     }
     /**
      * Find most relevant chunks for a query
+     *
+     * If query expansion is enabled, generates multiple query variations,
+     * retrieves chunks for each, and fuses results using RRF.
+     * Otherwise, uses single-query retrieval.
      */
     async retrieveRelevantChunks(query, topK = 3) {
         // console.log(`[RAG] Retrieving relevant chunks for query: "${query}"`);
+        if (this.useQueryExpansion && this.queryExpander) {
+            // Multi-query retrieval with RRF fusion
+            return await this.retrieveWithQueryExpansion(query, topK);
+        }
+        else {
+            // Single-query retrieval (original behavior)
+            return await this.retrieveSingleQuery(query, topK);
+        }
+    }
+    /**
+     * Single-query retrieval (original behavior)
+     */
+    async retrieveSingleQuery(query, topK) {
         // Generate query embedding
         const queryEmbedding = await this.embeddingGenerator.generateEmbedding(query);
         // console.log(`[RAG] Generated query embedding`);
@@ -37,6 +67,39 @@ export class RAGSystem {
         //   console.log(`[RAG]   ${i + 1}. Similarity: ${item.similarity.toFixed(4)}, Chunk ${item.chunk.metadata.chunkIndex}`);
         // });
         return topChunks.map(item => item.chunk);
+    }
+    /**
+     * Multi-query retrieval with RRF fusion
+     */
+    async retrieveWithQueryExpansion(query, topK) {
+        if (!this.queryExpander) {
+            return this.retrieveSingleQuery(query, topK);
+        }
+        // console.log(`[RAG] Expanding query into multiple variations...`);
+        // Expand query into variations
+        const queryVariations = await this.queryExpander.expandQuery(query);
+        // console.log(`[RAG] Generated ${queryVariations.length} query variations`);
+        // Retrieve chunks for each query variation
+        const rankedLists = [];
+        const chunks = this.vectorStore.getChunks();
+        for (const variation of queryVariations) {
+            // Generate embedding for this variation
+            const variationEmbedding = await this.embeddingGenerator.generateEmbedding(variation);
+            // Calculate similarities
+            const similarities = chunks.map((chunk) => ({
+                chunk,
+                similarity: cosineSimilarity(variationEmbedding, chunk.embedding),
+            }));
+            // Sort by similarity and get top chunks (retrieve more than topK to improve fusion quality)
+            similarities.sort((a, b) => b.similarity - a.similarity);
+            const topChunks = similarities.slice(0, Math.max(topK * 2, 10)).map(item => item.chunk);
+            rankedLists.push(topChunks);
+        }
+        // Fuse results using RRF
+        // console.log(`[RAG] Fusing ${rankedLists.length} result sets using RRF...`);
+        const fusedChunks = this.rrf.fuse(rankedLists, topK);
+        // console.log(`[RAG] Fused to ${fusedChunks.length} top chunks`);
+        return fusedChunks;
     }
     /**
      * Generate response using Ollama with retrieved context

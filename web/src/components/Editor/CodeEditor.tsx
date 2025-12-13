@@ -110,7 +110,10 @@ export const CodeEditor = ({
       <div
         ref={containerRef}
         className="h-full w-full overflow-auto bg-vscode-editor-bg"
-        style={{ height }}
+        style={{
+          height,
+          backgroundColor: 'var(--vscode-editor-bg)',
+        }}
       >
         <SyntaxHighlighter
           language={language}
@@ -118,7 +121,7 @@ export const CodeEditor = ({
           customStyle={{
             margin: 0,
             padding: '1rem',
-            background: 'var(--vscode-bg)',
+            background: 'var(--vscode-editor-bg)',
           }}
         >
           {editedContent || placeholder}
@@ -151,6 +154,8 @@ export const CodeEditor = ({
           whiteSpace: 'pre',
           overflow: 'auto',
           caretColor: 'var(--vscode-fg)',
+          backgroundColor: 'var(--vscode-editor-bg)',
+          color: 'var(--vscode-fg)',
         }}
       />
     </div>

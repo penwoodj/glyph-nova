@@ -223,6 +223,17 @@ export const FileTreeView = ({
     // Custom event will be dispatched by ContextMenu
   }, [])
 
+  // Handle file click - set selected file in store
+  const handleFileClick = useCallback(
+    (path: string) => {
+      console.log('[FileTreeView] File clicked:', path)
+      setSelectedFile(path)
+      // Also call the original handler if provided
+      onFileClick?.(path)
+    },
+    [setSelectedFile, onFileClick]
+  )
+
   // Flatten tree into linear list for virtual scrolling
   // Only includes visible nodes (respects expanded/collapsed state)
   const flattenedTree = useMemo(() => {
@@ -275,7 +286,9 @@ export const FileTreeView = ({
             selectedPath={selectedPath}
             onToggleExpand={toggleExpand}
             onFileClick={(path) => {
+              console.log('[FileTreeView] File clicked, setting selected file:', path)
               setSelectedFile(path)
+              console.log('[FileTreeView] Selected file set in store')
               onFileClick?.(path)
             }}
             onFileRightClick={handleFileRightClick}
@@ -295,7 +308,11 @@ export const FileTreeView = ({
         </div>
         <button
           onClick={collapseAll}
-          className="px-2 py-1 text-xs text-vscode-fg-secondary hover:text-vscode-fg hover:bg-vscode-hover-bg rounded transition-colors"
+          className="px-2 py-1 text-xs text-vscode-fg-secondary hover:text-vscode-fg hover:bg-vscode-hover-bg rounded transition-colors border border-vscode-border"
+          style={{
+            backgroundColor: 'var(--vscode-sidebar-bg)',
+            color: 'var(--vscode-fg-secondary)',
+          }}
           title="Collapse All"
         >
           Collapse All

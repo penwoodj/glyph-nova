@@ -119,6 +119,12 @@ export const readFileInternal = async ({
       throw new Error('Path not allowed')
     }
 
+    // Check if path is a directory
+    const stats = await fs.stat(filePath)
+    if (stats.isDirectory()) {
+      throw new Error('Invalid operation: Cannot read file. The path is a directory, not a file.')
+    }
+
     const content = await fs.readFile(filePath, encoding)
     return content
   } catch (error) {

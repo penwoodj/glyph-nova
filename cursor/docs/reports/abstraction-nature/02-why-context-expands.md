@@ -429,6 +429,7 @@ Initial Context → Use Abstraction → Identify Gaps → Expand → Repeat
 - [[03-why-context-contracts]] - Understanding contraction forces
 - [[04-oscillation-pattern]] - How expansion and contraction combine
 - [[05-human-goals-agentic-processes]] - Practical applications
+- [[06-rag-abstraction-enabler]] - RAG as practical abstraction mechanism
 
 **External Resources:**
 - [Information Theory and Context](https://en.wikipedia.org/wiki/Information_theory)

@@ -146,9 +146,22 @@ export const streamChatResponseDirect = async ({
     // Format file context if provided
     let formattedMessages = [...messages]
     if (fileContext && fileContext.length > 0) {
+      console.log(`[chat] Formatting ${fileContext.length} file contexts for LLM`)
       const contextStr = fileContext
-        .map((file) => `File: ${file.path}\n\`\`\`\n${file.content}\n\`\`\``)
+        .map((file) => {
+          const isDirectory = file.content.includes('Directory structure for')
+          if (isDirectory) {
+            // For directories, show the tree structure more prominently
+            return `Directory: ${file.path}\n${file.content}`
+          } else {
+            // For files, show in code block
+            return `File: ${file.path}\n\`\`\`\n${file.content}\n\`\`\``
+          }
+        })
         .join('\n\n')
+
+      console.log(`[chat] Context string length: ${contextStr.length}`)
+      console.log(`[chat] Context preview: ${contextStr.substring(0, 200)}...`)
 
       // Add context to the last user message
       const lastUserMsgIndex = formattedMessages
@@ -161,7 +174,12 @@ export const streamChatResponseDirect = async ({
           ...formattedMessages[lastUserMsgIndex],
           content: formattedMessages[lastUserMsgIndex].content + '\n\nFile Context:\n' + contextStr,
         }
+        console.log(`[chat] Added file context to user message at index ${lastUserMsgIndex}`)
+      } else {
+        console.warn('[chat] No user message found to attach file context to')
       }
+    } else {
+      console.log('[chat] No file context to add')
     }
 
     // Use retry logic for initial connection (streaming can't be retried once started)

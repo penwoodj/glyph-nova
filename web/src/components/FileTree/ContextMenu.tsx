@@ -88,10 +88,11 @@ export const ContextMenu = ({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[180px] bg-vscode-editor-bg border border-vscode-border rounded shadow-lg py-1"
+      className="fixed z-50 min-w-[180px] border border-vscode-border rounded shadow-lg py-1"
       style={{
         left: `${adjustedX}px`,
         top: `${adjustedY}px`,
+        backgroundColor: 'var(--vscode-editor-bg)',
       }}
     >
       <button

@@ -8,6 +8,7 @@
  */
 
 import type { CellSuccessProps, CellFailureProps } from '@redwoodjs/web'
+import { gql } from '@apollo/client'
 import { UnifiedEditor } from '../UnifiedEditor'
 
 export const QUERY = gql`
@@ -82,6 +83,12 @@ export const Success = ({
   onSave,
   readonly = false,
 }: FileEditorSuccessProps) => {
+  console.log('[FileEditorCell] Success - File loaded:', {
+    path: readFile.path,
+    contentLength: readFile.content?.length || 0,
+    contentPreview: readFile.content?.substring(0, 100) || 'empty'
+  })
+
   return (
     <UnifiedEditor
       content={readFile.content}

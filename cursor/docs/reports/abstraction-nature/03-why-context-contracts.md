@@ -485,6 +485,7 @@ Abstract Intent + Rich Context → Contract Using Context → Execute
 - [[02-why-context-expands]] - Understanding expansion forces
 - [[04-oscillation-pattern]] - How expansion and contraction combine
 - [[05-human-goals-agentic-processes]] - Practical applications
+- [[06-rag-abstraction-enabler]] - RAG as practical abstraction mechanism
 
 **External Resources:**
 - [Information Theory and Compression](https://en.wikipedia.org/wiki/Information_theory)

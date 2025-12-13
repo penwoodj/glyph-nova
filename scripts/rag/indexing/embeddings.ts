@@ -2,29 +2,103 @@ import { execSync } from 'child_process';
 
 /**
  * Generate embeddings using Ollama
- * Uses Ollama CLI for embeddings (simpler and more memory efficient)
+ * Uses Ollama API for embeddings (nomic-embed-text) with fallback to simple embeddings
  */
 export class EmbeddingGenerator {
   private ollamaModel: string;
   private embeddingModel: string;
+  private ollamaUrl: string;
+  private useOllama: boolean;
+  private embeddingDimension: number;
 
-  constructor(ollamaModel: string = 'llama2', embeddingModel: string = 'nomic-embed-text') {
+  constructor(
+    ollamaModel: string = 'llama2',
+    embeddingModel: string = 'nomic-embed-text',
+    ollamaUrl: string = 'http://localhost:11434',
+    useOllama: boolean = true
+  ) {
     this.ollamaModel = ollamaModel;
     this.embeddingModel = embeddingModel;
+    this.ollamaUrl = ollamaUrl;
+    this.useOllama = useOllama;
+    // nomic-embed-text produces 768-dimensional embeddings
+    // simple embeddings produce 384-dimensional embeddings
+    this.embeddingDimension = useOllama ? 768 : 384;
+  }
+
+  /**
+   * Get the embedding dimension for this generator
+   */
+  getEmbeddingDimension(): number {
+    return this.embeddingDimension;
+  }
+
+  /**
+   * Generate embedding using Ollama API
+   * Returns 768-dimensional vector from nomic-embed-text model
+   */
+  async ollamaEmbedding(text: string): Promise<number[]> {
+    try {
+      const response = await fetch(`${this.ollamaUrl}/api/embed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: this.embeddingModel,
+          prompt: text,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ollama API error: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.embedding || !Array.isArray(data.embedding)) {
+        throw new Error('Invalid response from Ollama API: missing embedding array');
+      }
+
+      // nomic-embed-text produces 768-dimensional embeddings
+      this.embeddingDimension = data.embedding.length;
+      return data.embedding;
+    } catch (error: any) {
+      // If it's a network error or model not found, fall back to simple embeddings
+      if (error.message.includes('fetch') || error.message.includes('ECONNREFUSED') || error.message.includes('not found')) {
+        console.warn(`[Embeddings] Ollama unavailable or model not found, falling back to simple embeddings: ${error.message}`);
+        return this.simpleTextEmbedding(text);
+      }
+      throw error;
+    }
   }
 
   /**
    * Generate embedding for a single text
-   * Uses simple text-based embedding (open source, no external dependencies)
+   * Tries Ollama first, falls back to simple text-based embedding if unavailable
    */
   async generateEmbedding(text: string): Promise<number[]> {
     // console.log(`[Embeddings] Generating embedding for text (${text.length} chars)`);
 
-    // Use simple text-based embedding (open source approach)
-    const embedding = this.simpleTextEmbedding(text);
-    // console.log(`[Embeddings] Generated embedding with ${embedding.length} dimensions`);
-
-    return embedding;
+    if (this.useOllama) {
+      try {
+        const embedding = await this.ollamaEmbedding(text);
+        // console.log(`[Embeddings] Generated Ollama embedding with ${embedding.length} dimensions`);
+        return embedding;
+      } catch (error: any) {
+        // Fallback to simple embeddings if Ollama fails
+        console.warn(`[Embeddings] Ollama embedding failed, using simple embeddings: ${error.message}`);
+        const embedding = this.simpleTextEmbedding(text);
+        this.embeddingDimension = 384; // Reset to simple embedding dimension
+        return embedding;
+      }
+    } else {
+      // Use simple text-based embedding (open source approach)
+      const embedding = this.simpleTextEmbedding(text);
+      // console.log(`[Embeddings] Generated embedding with ${embedding.length} dimensions`);
+      return embedding;
+    }
   }
 
   /**

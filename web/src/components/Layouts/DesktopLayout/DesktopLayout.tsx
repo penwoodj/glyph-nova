@@ -72,11 +72,20 @@ export const DesktopLayout = ({
   }, [isResizingLeft, isResizingRight, handleMouseMove, handleMouseUp])
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-vscode-bg text-vscode-fg">
+    <div
+      className="flex h-screen w-screen overflow-hidden bg-vscode-bg text-vscode-fg"
+      style={{
+        height: '100vh',
+        width: '100vw',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        overflow: 'hidden'
+      }}
+    >
       {/* Left Panel - File Tree */}
       <div
-        className="relative flex-shrink-0 border-r border-vscode-border bg-vscode-sidebar-bg"
-        style={{ width: `${leftWidth}px` }}
+        className="relative flex-shrink-0 border-r border-vscode-border bg-vscode-sidebar-bg overflow-hidden"
+        style={{ width: `${leftWidth}px`, maxWidth: `${leftWidth}px` }}
       >
         {leftPanel}
         {/* Resize Handle */}
@@ -89,14 +98,17 @@ export const DesktopLayout = ({
       </div>
 
       {/* Center Panel - Editor */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-vscode-editor-bg">
+      <div
+        className="flex-1 flex flex-col overflow-hidden bg-vscode-editor-bg"
+        style={{ minWidth: 0, maxWidth: '100%' }}
+      >
         {centerPanel}
       </div>
 
       {/* Right Panel - Chat */}
       <div
-        className="relative flex-shrink-0 border-l border-vscode-border bg-vscode-sidebar-bg"
-        style={{ width: `${rightWidth}px` }}
+        className="relative flex-shrink-0 border-l border-vscode-border bg-vscode-sidebar-bg overflow-hidden"
+        style={{ width: `${rightWidth}px`, maxWidth: `${rightWidth}px` }}
       >
         {/* Resize Handle */}
         <div

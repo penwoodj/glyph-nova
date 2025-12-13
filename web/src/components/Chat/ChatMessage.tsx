@@ -22,16 +22,28 @@ export const ChatMessage = memo(({ message }: ChatMessageProps) => {
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
 
+  // Calculate lighter shade of sidebar-bg for user messages
+  // Use a slightly lighter version of the sidebar background
+  const userMessageBg = 'var(--vscode-hover-bg)' // This is already a lighter shade
+
   return (
     <div
-      className={`mb-4 rounded-lg p-4 ${
+      className={`rounded-lg ${
         isUser
-          ? 'ml-auto max-w-[80%] bg-vscode-button-bg text-vscode-button-fg'
-          : 'mr-auto max-w-[95%] bg-vscode-sidebar-bg text-vscode-fg'
+          ? 'ml-auto max-w-[80%]'
+          : 'mr-auto max-w-[95%]'
       }`}
+      style={{
+        wordBreak: 'break-word',
+        overflowWrap: 'break-word',
+        padding: '1rem',
+        marginBottom: '1rem',
+        backgroundColor: isUser ? userMessageBg : 'var(--vscode-sidebar-bg)',
+        color: 'var(--vscode-fg)',
+      }}
     >
       {/* Message Header */}
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-3">
         <span className="text-xs font-semibold uppercase opacity-75">
           {isUser ? 'You' : 'Assistant'}
         </span>

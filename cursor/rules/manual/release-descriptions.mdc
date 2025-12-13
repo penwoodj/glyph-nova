@@ -1,0 +1,205 @@
+# Release Description Writing Rule
+
+## Purpose
+
+This rule defines how Cursor should write professional, clean GitHub release descriptions for Glyph Nova desktop app releases. Release descriptions should be human-readable, visually appealing with emojis, technically accurate, and include proper installation instructions.
+
+## Release Description Structure
+
+### Required Sections (in order)
+
+1. **Title** - Version number with emoji prefix
+2. **Summary** - Brief 2-3 sentence overview of the release
+3. **What's New** - Feature additions and enhancements
+4. **Improvements** - Bug fixes, performance improvements, refinements
+5. **Technical Changes** - Behind-the-scenes technical updates (optional, only if significant)
+6. **Installation Instructions** - Platform-specific installation guides
+7. **Download Links** - Automatic (handled by GitHub Actions)
+
+### Format Guidelines
+
+#### Title Format
+```
+🚀 Release v0.1.0
+```
+
+#### Emoji Usage Guidelines
+- Use emojis sparingly and consistently
+- 🚀 for major releases
+- ✨ for new features
+- 🐛 for bug fixes
+- 🔧 for improvements/refinements
+- 📦 for installation/downloads
+- ⚡ for performance improvements
+- 🔒 for security updates
+- 📝 for documentation updates
+
+#### Language Style
+- **Abstract and Human-Readable**: Write for end users, not just developers
+- **Technical Jargon**: Use project-specific terms when they match visible UI elements (e.g., "Chat Interface", "File Tree", "Editor Panel")
+- **Clarity**: Avoid overly technical implementation details unless relevant to users
+- **Conciseness**: Keep descriptions focused and scannable
+
+### Content Guidelines
+
+#### What's New Section
+- List user-visible features
+- Use bullet points with ✨ emoji prefix
+- Describe features from user perspective
+- Reference UI elements by their visible names
+- Example format:
+  ```markdown
+  ✨ **New Features**
+  - Added File Tree context menu with "Copy Path to Chat" option
+  - Implemented real-time streaming in Chat Interface
+  - Added syntax highlighting for code files in Editor Panel
+  ```
+
+#### Improvements Section
+- List bug fixes and enhancements
+- Use bullet points with 🔧 or 🐛 emoji prefix
+- Focus on user-impact
+- Example format:
+  ```markdown
+  🔧 **Improvements**
+  - Fixed chat response rendering for long messages
+  - Improved file tree performance for large directories
+  - Enhanced markdown preview rendering
+  ```
+
+#### Technical Changes (Optional)
+- Only include if significant architectural changes
+- Use 🔧 emoji prefix
+- Keep brief and user-focused
+- Example:
+  ```markdown
+  🔧 **Technical Updates**
+  - Updated to Tauri 2.9.4 for improved performance
+  - Optimized GraphQL API response streaming
+  ```
+
+#### Installation Instructions
+- Must be comprehensive and cover all platforms
+- Use 📦 emoji prefix
+- Include platform-specific steps
+- Reference installer types (`.dmg`, `.exe`, `.deb`, `.AppImage`, etc.)
+- Example format:
+  ```markdown
+  📦 **Installation**
+
+  **macOS:**
+  1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
+  2. Open the downloaded `.dmg` file
+  3. Drag Glyph Nova to your Applications folder
+  4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
+
+  **Windows:**
+  1. Download the `.exe` installer for your architecture (x64 or ARM64)
+  2. Run the installer and follow the setup wizard
+  3. Launch Glyph Nova from the Start menu
+
+  **Linux:**
+  - **Debian/Ubuntu**: Download and install the `.deb` file
+    ```bash
+    sudo dpkg -i glyph-nova_*.deb
+    ```
+  - **Fedora/RHEL**: Download and install the `.rpm` file
+    ```bash
+    sudo rpm -i glyph-nova_*.rpm
+    ```
+  - **AppImage**: Download the `.AppImage` file, make it executable, and run:
+    ```bash
+    chmod +x glyph-nova_*.AppImage
+    ./glyph-nova_*.AppImage
+    ```
+  ```
+
+### Generating Release Descriptions
+
+When generating a release description:
+
+1. **Analyze Git Commits**: Review commits since last release to identify changes
+2. **Categorize Changes**: Group into Features, Improvements, Bug Fixes
+3. **User Impact Focus**: Emphasize user-visible changes over internal refactoring
+4. **UI Element Names**: Use exact names from the UI (File Tree, Chat Interface, Editor Panel, etc.)
+5. **Version Number**: Extract from `src-tauri/tauri.conf.json` or `src-tauri/Cargo.toml`
+6. **Build Artifacts**: Reference the actual build outputs (`.dmg`, `.exe`, `.deb`, `.rpm`, `.AppImage`)
+
+### Example Release Description Template
+
+```markdown
+🚀 Release v0.1.0
+
+This release introduces core desktop app functionality with file management, markdown editing, and local LLM chat integration.
+
+✨ **What's New**
+
+- **File Tree Panel** - Browse and navigate project directories with expand/collapse functionality
+- **Unified Editor** - Edit markdown files with live preview and code files with syntax highlighting
+- **Chat Interface** - Interact with local LLMs via Ollama with real-time streaming responses
+- **File Context Integration** - Automatically load file contents into chat context when paths are mentioned
+- **Cross-Panel Communication** - Seamless integration between File Tree, Editor, and Chat panels
+
+🔧 **Improvements**
+
+- Optimized file tree rendering for better performance with large directories
+- Enhanced markdown rendering with improved code block support
+- Improved chat message formatting and display
+- Better error handling and user feedback
+
+📦 **Installation**
+
+**macOS:**
+1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
+2. Open the downloaded `.dmg` file
+3. Drag Glyph Nova to your Applications folder
+4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
+
+**Windows:**
+1. Download the `.exe` installer for your architecture (x64 or ARM64)
+2. Run the installer and follow the setup wizard
+3. Launch Glyph Nova from the Start menu
+
+**Linux:**
+- **Debian/Ubuntu**: Download and install the `.deb` file
+  ```bash
+  sudo dpkg -i glyph-nova_*.deb
+  ```
+- **Fedora/RHEL**: Download and install the `.rpm` file
+  ```bash
+  sudo rpm -i glyph-nova_*.rpm
+  ```
+- **AppImage**: Download the `.AppImage` file, make it executable, and run:
+  ```bash
+  chmod +x glyph-nova_*.AppImage
+  ./glyph-nova_*.AppImage
+  ```
+
+**System Requirements:**
+- macOS: macOS 10.15 (Catalina) or later
+- Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)
+- Linux: Modern distributions with WebKitGTK
+```
+
+### Quality Checklist
+
+Before finalizing a release description, ensure:
+
+- [ ] Title includes version number with emoji
+- [ ] Summary is clear and concise (2-3 sentences)
+- [ ] Features are user-focused and reference visible UI elements
+- [ ] Installation instructions cover all platforms (macOS, Windows, Linux)
+- [ ] Installer types are correctly referenced (`.dmg`, `.exe`, `.deb`, `.rpm`, `.AppImage`)
+- [ ] Emojis are used consistently and appropriately
+- [ ] Language is accessible to end users (not overly technical)
+- [ ] Technical jargon matches project terminology (UI element names)
+- [ ] All major changes since last release are included
+- [ ] Formatting is clean and scannable with proper markdown
+
+### Version Number Extraction
+
+When generating releases, extract version from:
+- Primary: `src-tauri/tauri.conf.json` → `version` field
+- Secondary: `src-tauri/Cargo.toml` → `version` field in `[package]` section
+
+Both should be kept in sync, but `tauri.conf.json` is the source of truth for the desktop app version.
