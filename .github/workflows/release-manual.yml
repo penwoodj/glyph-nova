@@ -1,0 +1,315 @@
+name: Build and Release Desktop App (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0). Must match version in tauri.conf.json'
+        required: true
+
+env:
+  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+  APPLE_ID: ${{ secrets.APPLE_ID }}
+  APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+  APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+  APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            artifact-name: 'glyph-nova_*_universal.dmg'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+            artifact-name: 'glyph-nova_*_x64.dmg'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            artifact-name: 'glyph-nova_*_amd64.deb,glyph-nova_*_amd64.AppImage,glyph-nova-*.x86_64.rpm'
+          - platform: 'windows-latest'
+            args: ''
+            artifact-name: 'glyph-nova_*_x64_en-US.msi,glyph-nova_*_x64-setup.exe'
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install system dependencies (Linux only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install frontend dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build frontend
+        run: yarn rw build
+
+      - name: Build Tauri app
+        run: |
+          cd src-tauri
+          yarn tauri build ${{ matrix.args }}
+        env:
+          TAURI_PRIVATE_KEY: ${{ env.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ env.TAURI_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ env.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ env.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ env.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ env.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ env.APPLE_TEAM_ID }}
+          APPLE_API_KEY: ${{ env.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ env.APPLE_API_ISSUER }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.args == '--target aarch64-apple-darwin' && 'aarch64' || matrix.args == '--target x86_64-apple-darwin' && 'x64' || 'build' }}
+          path: |
+            src-tauri/target/release/bundle/**/*.dmg
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.AppImage
+            src-tauri/target/release/bundle/**/*.rpm
+            src-tauri/target/release/bundle/**/*.msi
+            src-tauri/target/release/bundle/**/*.exe
+          retention-days: 30
+          if-no-files-found: error
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for changelog generation
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          # Validate semantic versioning format (X.Y.Z)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be X.Y.Z, got: $VERSION"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+          # Verify version matches tauri.conf.json
+          CONFIG_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          if [[ "$VERSION" != "$CONFIG_VERSION" ]]; then
+            echo "Error: Version $VERSION does not match tauri.conf.json version $CONFIG_VERSION"
+            exit 1
+          fi
+
+      - name: Fetch previous release notes
+        id: previous_releases
+        run: |
+          PREVIOUS_RELEASES=$(gh release list --limit 5 --json tagName,body --jq '.[] | "### \(.tagName)\n\n\(.body)\n\n---\n\n"' 2>/dev/null || echo "")
+          printf '%b' "$PREVIOUS_RELEASES" > previous_releases.md
+          echo "previous_releases<<EOF" >> $GITHUB_OUTPUT
+          echo "$PREVIOUS_RELEASES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s|%h" --reverse)
+          else
+            COMMITS=$(git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"%s|%h" --reverse)
+          fi
+
+          VERSION="${{ steps.version.outputs.version }}"
+
+          FEATURES=""
+          IMPROVEMENTS=""
+          BUGFIXES=""
+          OTHER=""
+
+          while IFS='|' read -r subject hash; do
+            subject_lower=$(echo "$subject" | tr '[:upper:]' '[:lower:]')
+
+            if [[ "$subject_lower" =~ ^(feat|add|new|implement).* ]] || [[ "$subject" =~ ✨ ]]; then
+              FEATURES="${FEATURES}- ${subject} (${hash:0:7})\n"
+            elif [[ "$subject_lower" =~ ^(fix|bug|patch).* ]] || [[ "$subject" =~ 🐛 ]]; then
+              BUGFIXES="${BUGFIXES}- ${subject} (${hash:0:7})\n"
+            elif [[ "$subject_lower" =~ ^(improve|enhance|refactor|optimize|update|upgrade|chore:).* ]] || [[ "$subject" =~ (🔧|⚡) ]]; then
+              IMPROVEMENTS="${IMPROVEMENTS}- ${subject} (${hash:0:7})\n"
+            else
+              OTHER="${OTHER}- ${subject} (${hash:0:7})\n"
+            fi
+          done <<< "$COMMITS"
+
+          {
+            echo "🚀 Release v${VERSION}"
+            echo ""
+            echo "This release includes updates and improvements to the Glyph Nova desktop application. Note: minimal, initial app; not yet broadly useful."
+            echo ""
+
+            if [ -n "$FEATURES" ]; then
+              echo "✨ **What's New**"
+              echo ""
+              echo -e "$FEATURES"
+              echo ""
+            fi
+
+            if [ -n "$IMPROVEMENTS" ]; then
+              echo "🔧 **Improvements**"
+              echo ""
+              echo -e "$IMPROVEMENTS"
+              echo ""
+            fi
+
+            if [ -n "$BUGFIXES" ]; then
+              echo "🐛 **Bug Fixes**"
+              echo ""
+              echo -e "$BUGFIXES"
+              echo ""
+            fi
+
+            if [ -n "$OTHER" ] && [ -z "$FEATURES" ] && [ -z "$IMPROVEMENTS" ] && [ -z "$BUGFIXES" ]; then
+              echo "📝 **Changes**"
+              echo ""
+              echo -e "$OTHER"
+              echo ""
+            fi
+
+            if [ -f previous_releases.md ] && [ -s previous_releases.md ]; then
+              echo ""
+              echo "---"
+              echo ""
+              echo "## Previous Releases (for reference to avoid duplication)"
+              echo ""
+              cat previous_releases.md
+            fi
+
+cat << 'INSTALL_EOF'
+📦 **Installation**
+
+**macOS:**
+1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
+2. Open the downloaded `.dmg` file
+3. Drag Glyph Nova to your Applications folder
+4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
+
+**Windows:**
+1. Download the `.exe` installer for your architecture (x64 or ARM64)
+2. Run the installer and follow the setup wizard
+3. Launch Glyph Nova from the Start menu
+
+**Linux:**
+- **Debian/Ubuntu**: Download and install the `.deb` file
+  ```bash
+  sudo dpkg -i glyph-nova_*.deb
+  ```
+- **Fedora/RHEL**: Download and install the `.rpm` file
+  ```bash
+  sudo rpm -i glyph-nova-*.rpm
+  ```
+- **AppImage**: Download the `.AppImage` file, make it executable, and run:
+  ```bash
+  chmod +x glyph-nova_*.AppImage
+  ./glyph-nova_*.AppImage
+  ```
+
+**System Requirements:**
+- macOS: macOS 10.15 (Catalina) or later
+- Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)
+- Linux: Modern distributions with WebKitGTK
+
+---
+
+**Note:** Draft release. Please review and improve with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases. Minimal initial app; not yet broadly useful.
+INSTALL_EOF
+          } > release_notes.md
+
+          cat release_notes.md
+
+      - name: Get or create tag
+        id: tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG_NAME="v${VERSION}"
+
+          if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+            git push origin "$TAG_NAME" || exit 1
+            echo "Created and pushed tag: $TAG_NAME"
+          else
+            echo "Tag $TAG_NAME already exists"
+          fi
+
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          draft: true
+          prerelease: false
+          files: |
+            artifacts/**/*.dmg
+            artifacts/**/*.deb
+            artifacts/**/*.AppImage
+            artifacts/**/*.rpm
+            artifacts/**/*.msi
+            artifacts/**/*.exe
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
