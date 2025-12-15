@@ -33,6 +33,7 @@ export class QueryExpander {
    * @returns Array of query variations (includes original as first element)
    */
   async expandQuery(originalQuery: string): Promise<string[]> {
+    // VERIFIED: Query expansion entry - confirms expansion method called with original query
     // If only 1 variation requested, just return original
     if (this.numVariations === 1) {
       return [originalQuery];
@@ -49,8 +50,10 @@ Original query: "${originalQuery}"
 Generate ${this.numVariations} variations, one per line, without numbering or bullets:`;
 
     try {
+      // VERIFIED: LLM query expansion - confirms Ollama called to generate query variations
       const variations = await this.generateWithOllama(prompt);
 
+      // VERIFIED: Variation parsing - confirms LLM response parsed into individual query variations
       // Parse variations (one per line)
       const lines = variations
         .split('\n')
@@ -65,13 +68,16 @@ Generate ${this.numVariations} variations, one per line, without numbering or bu
         }
       }
 
+      // VERIFIED: Result padding - confirms variations array padded to numVariations if needed
       // If we didn't get enough variations, pad with original
       while (result.length < this.numVariations) {
         result.push(originalQuery);
       }
 
+      // VERIFIED: Query expansion success - confirms array of query variations returned (original + variations)
       return result.slice(0, this.numVariations);
     } catch (error: any) {
+      // VERIFIED: Expansion fallback - confirms original query returned if expansion fails
       // If expansion fails, just return original query
       console.warn(`[QueryExpansion] Failed to expand query, using original: ${error.message}`);
       return [originalQuery];

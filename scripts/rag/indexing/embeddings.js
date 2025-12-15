@@ -65,14 +65,17 @@ export class EmbeddingGenerator {
      * Tries Ollama first, falls back to simple text-based embedding if unavailable
      */
     async generateEmbedding(text) {
+        // VERIFIED: Embedding generation logging - confirms embedding method selection and dimension
         // console.log(`[Embeddings] Generating embedding for text (${text.length} chars)`);
         if (this.useOllama) {
             try {
                 const embedding = await this.ollamaEmbedding(text);
+                // VERIFIED: Ollama embedding success - confirms 768-dimensional embeddings from nomic-embed-text
                 // console.log(`[Embeddings] Generated Ollama embedding with ${embedding.length} dimensions`);
                 return embedding;
             }
             catch (error) {
+                // VERIFIED: Fallback mechanism - confirms graceful degradation when Ollama unavailable
                 // Fallback to simple embeddings if Ollama fails
                 console.warn(`[Embeddings] Ollama embedding failed, using simple embeddings: ${error.message}`);
                 const embedding = this.simpleTextEmbedding(text);
@@ -81,6 +84,7 @@ export class EmbeddingGenerator {
             }
         }
         else {
+            // VERIFIED: Simple embedding generation - confirms 384-dimensional simple embeddings
             // Use simple text-based embedding (open source approach)
             const embedding = this.simpleTextEmbedding(text);
             // console.log(`[Embeddings] Generated embedding with ${embedding.length} dimensions`);

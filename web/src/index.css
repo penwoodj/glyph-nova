@@ -18,7 +18,9 @@
   --vscode-active-border: #007acc;
   --vscode-selection-bg: #264f78;
   --vscode-hover-bg: #2a2d2e;
-  --vscode-button-bg: #0e639c;
+  --vscode-button-bg: #313131;
+  --vscode-button-fg: #ffffff;
+  --vscode-button-hover-bg: #3a3a3a;
   --vscode-button-hover: #1177bb;
   --vscode-input-bg: #3c3c3c;
   --vscode-input-border: #454545;

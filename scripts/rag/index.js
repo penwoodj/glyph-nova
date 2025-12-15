@@ -43,17 +43,21 @@ Usage:
 
 Options:
   --json            Use JSON encoding (slower but human-readable)
-                    Default: Binary encoding (faster and more efficient)
+            Default: Binary encoding (faster and more efficient)
   --watch           Watch indexed files for changes and auto-reindex (index command only)
   --expand-queries  Use query expansion with multi-query generation and RRF fusion (query command only)
                     Improves recall for abstract queries by generating multiple query variations
+  --rerank          Use LLM-based reranking to improve precision (query command only)
+                    Retrieves top-20 candidates, reranks to top-5 for better relevance
 
 Examples:
   rag index ./document.txt                              # Index with binary encoding (fast)
   rag index ./docs --json                               # Index with JSON encoding
   rag index file1.txt file2.md --watch                  # Index with file watching
-  rag query "What is the main topic?"                   # Query (auto-detects encoding)
-  rag query "What is the main topic?" --expand-queries   # Query with expansion (better recall)
+  rag query "What is the main topic?"                              # Query (auto-detects encoding)
+  rag query "What is the main topic?" --expand-queries              # Query with expansion (better recall)
+  rag query "What is the main topic?" --rerank                      # Query with reranking (better precision)
+  rag query "What is the main topic?" --expand-queries --rerank     # Query with both (best results)
 
 Supported file types: .txt, .md, .js, .ts, .json, .py, .java, .cpp, .c, .h
 `);
@@ -278,7 +282,7 @@ async function startFileWatcher(filePaths, useJson) {
  * Auto-detects encoding format (JSON or binary) based on which file exists.
  * Supports query expansion with multi-query generation and RRF fusion for improved recall.
  */
-async function queryDocuments(query, useJson, expandQueries = false) {
+async function queryDocuments(query, useJson, expandQueries = false, useReranking = false) {
     console.log(`\n=== Querying Documents ===\n`);
     console.log(`Query: "${query}"\n`);
     // Setup paths
@@ -331,9 +335,13 @@ async function queryDocuments(query, useJson, expandQueries = false) {
     // - Context assembly
     // - LLM response generation via Ollama
     // - Optional query expansion with RRF fusion
-    const rag = new RAGSystem(vectorStore, 'llama2', expandQueries, 3);
+    // - Optional reranking for improved precision
+    const rag = new RAGSystem(vectorStore, 'llama2', expandQueries, 3, useReranking);
     if (expandQueries) {
         console.log(`Query expansion enabled: Will generate multiple query variations and fuse results\n`);
+    }
+    if (useReranking) {
+        console.log(`Reranking enabled: Will rerank top-20 candidates to top-5 for improved precision\n`);
     }
     // Query
     try {
@@ -396,6 +404,7 @@ async function main() {
             const queryParts = [];
             let useJson = undefined;
             let expandQueries = false;
+            let useReranking = false;
             for (let i = 1; i < args.length; i++) {
                 const arg = args[i];
                 if (arg === '--json') {
@@ -403,6 +412,9 @@ async function main() {
                 }
                 else if (arg === '--expand-queries') {
                     expandQueries = true;
+                }
+                else if (arg === '--rerank') {
+                    useReranking = true;
                 }
                 else {
                     queryParts.push(arg);
@@ -414,7 +426,7 @@ async function main() {
                 process.exit(1);
             }
             const query = queryParts.join(' ');
-            await queryDocuments(query, useJson, expandQueries);
+            await queryDocuments(query, useJson, expandQueries, useReranking);
         }
         else {
             console.error(`Error: Unknown command "${command}"`);

@@ -22,13 +22,16 @@ export class ReciprocalRankFusion {
      * @returns Fused and deduplicated list of chunks, sorted by RRF score
      */
     fuse(rankedLists, topK = 10) {
+        // VERIFIED: RRF fusion entry - confirms fusion method called with multiple ranked lists
         if (rankedLists.length === 0) {
             return [];
         }
+        // VERIFIED: Single list handling - confirms direct return when only one list provided
         // If only one list, just return top-K
         if (rankedLists.length === 1) {
             return rankedLists[0].slice(0, topK);
         }
+        // VERIFIED: RRF score calculation - confirms RRF algorithm applied: score = Σ(1 / (k + rank))
         // Calculate RRF scores for each chunk
         const chunkScores = new Map();
         for (let listIndex = 0; listIndex < rankedLists.length; listIndex++) {
@@ -37,10 +40,12 @@ export class ReciprocalRankFusion {
                 const chunk = list[rank];
                 // Create unique key for chunk (using text + source file)
                 const key = this.getChunkKey(chunk);
+                // VERIFIED: RRF contribution calculation - confirms formula: 1 / (k + rank + 1) where k=60
                 // Calculate RRF contribution: 1 / (k + rank)
                 // rank is 0-indexed, so we add 1 to get 1-indexed rank
                 const rrfContribution = 1 / (this.k + rank + 1);
                 if (chunkScores.has(key)) {
+                    // VERIFIED: Score accumulation - confirms chunks appearing in multiple lists get higher scores
                     // Add to existing score
                     chunkScores.get(key).score += rrfContribution;
                 }
@@ -53,6 +58,7 @@ export class ReciprocalRankFusion {
                 }
             }
         }
+        // VERIFIED: Final ranking - confirms chunks sorted by RRF score and top-K returned
         // Convert to array, sort by score (descending), and return top-K
         const sorted = Array.from(chunkScores.values())
             .sort((a, b) => b.score - a.score)

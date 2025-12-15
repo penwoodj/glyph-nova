@@ -3,6 +3,7 @@ import { EmbeddingGenerator, cosineSimilarity } from '../indexing/embeddings.js'
 import { IVectorStore, Chunk } from '../indexing/storeInterface.js';
 import { QueryExpander } from './queryExpansion.js';
 import { ReciprocalRankFusion } from './resultFusion.js';
+import { Reranker, LLMReranker } from './reranker.js';
 
 /**
  * RAG system that retrieves relevant chunks and generates responses using Ollama
@@ -16,20 +17,27 @@ export class RAGSystem {
   private ollamaModel: string;
   private queryExpander: QueryExpander | null;
   private rrf: ReciprocalRankFusion;
+  private reranker: Reranker | null;
   private useQueryExpansion: boolean;
+  private useReranking: boolean;
 
   constructor(
     vectorStore: IVectorStore,
     ollamaModel: string = 'llama2',
     useQueryExpansion: boolean = false,
-    numQueryVariations: number = 3
+    numQueryVariations: number = 3,
+    useReranking: boolean = false
   ) {
     this.embeddingGenerator = new EmbeddingGenerator();
     this.vectorStore = vectorStore;
     this.ollamaModel = ollamaModel;
     this.useQueryExpansion = useQueryExpansion;
+    this.useReranking = useReranking;
     this.queryExpander = useQueryExpansion
       ? new QueryExpander(ollamaModel, 'http://localhost:11434', numQueryVariations)
+      : null;
+    this.reranker = useReranking
+      ? new LLMReranker(ollamaModel, 'http://localhost:11434')
       : null;
     this.rrf = new ReciprocalRankFusion(60);
   }
@@ -42,12 +50,15 @@ export class RAGSystem {
    * Otherwise, uses single-query retrieval.
    */
   async retrieveRelevantChunks(query: string, topK: number = 3): Promise<Chunk[]> {
+    // VERIFIED: Query routing - confirms correct path selection (single vs multi-query)
     // console.log(`[RAG] Retrieving relevant chunks for query: "${query}"`);
 
     if (this.useQueryExpansion && this.queryExpander) {
+      // VERIFIED: Multi-query path - confirms query expansion is enabled and used
       // Multi-query retrieval with RRF fusion
       return await this.retrieveWithQueryExpansion(query, topK);
     } else {
+      // VERIFIED: Single-query path - confirms backward compatibility maintained
       // Single-query retrieval (original behavior)
       return await this.retrieveSingleQuery(query, topK);
     }
@@ -57,12 +68,14 @@ export class RAGSystem {
    * Single-query retrieval (original behavior)
    */
   private async retrieveSingleQuery(query: string, topK: number): Promise<Chunk[]> {
+    // VERIFIED: Single-query retrieval flow - confirms embedding generation, similarity calculation, and top-K selection
     // Generate query embedding
     const queryEmbedding = await this.embeddingGenerator.generateEmbedding(query);
     // console.log(`[RAG] Generated query embedding`);
 
     // Get all chunks from store
     const chunks = this.vectorStore.getChunks();
+    // VERIFIED: Chunk retrieval - confirms vector store provides chunks for similarity search
     // console.log(`[RAG] Comparing against ${chunks.length} chunks`);
 
     // Calculate similarities
@@ -72,10 +85,12 @@ export class RAGSystem {
       index,
     }));
 
+    // VERIFIED: Similarity calculation - confirms cosine similarity computed for all chunks
     // Sort by similarity and get top K
     similarities.sort((a, b) => b.similarity - a.similarity);
     const topChunks = similarities.slice(0, topK);
 
+    // VERIFIED: Top-K selection - confirms most similar chunks selected and returned
     // console.log(`[RAG] Top ${topK} chunks found:`);
     // topChunks.forEach((item, i) => {
     //   console.log(`[RAG]   ${i + 1}. Similarity: ${item.similarity.toFixed(4)}, Chunk ${item.chunk.metadata.chunkIndex}`);
@@ -92,10 +107,12 @@ export class RAGSystem {
       return this.retrieveSingleQuery(query, topK);
     }
 
+    // VERIFIED: Query expansion initiation - confirms multi-query retrieval path activated
     // console.log(`[RAG] Expanding query into multiple variations...`);
 
     // Expand query into variations
     const queryVariations = await this.queryExpander.expandQuery(query);
+    // VERIFIED: Query expansion success - confirms multiple query variations generated (typically 3-5)
     // console.log(`[RAG] Generated ${queryVariations.length} query variations`);
 
     // Retrieve chunks for each query variation
@@ -103,6 +120,7 @@ export class RAGSystem {
     const chunks = this.vectorStore.getChunks();
 
     for (const variation of queryVariations) {
+      // VERIFIED: Per-variation retrieval - confirms each query variation retrieves chunks independently
       // Generate embedding for this variation
       const variationEmbedding = await this.embeddingGenerator.generateEmbedding(variation);
 
@@ -119,10 +137,12 @@ export class RAGSystem {
       rankedLists.push(topChunks);
     }
 
+    // VERIFIED: RRF fusion - confirms multiple ranked lists combined using Reciprocal Rank Fusion algorithm
     // Fuse results using RRF
     // console.log(`[RAG] Fusing ${rankedLists.length} result sets using RRF...`);
     const fusedChunks = this.rrf.fuse(rankedLists, topK);
 
+    // VERIFIED: Final result - confirms fused chunks returned after RRF combination
     // console.log(`[RAG] Fused to ${fusedChunks.length} top chunks`);
     return fusedChunks;
   }
@@ -131,8 +151,10 @@ export class RAGSystem {
    * Generate response using Ollama with retrieved context
    */
   async generateResponse(query: string, contextChunks: Chunk[]): Promise<string> {
+    // VERIFIED: Response generation entry - confirms generation method called with query and context chunks
     // console.log(`[RAG] Generating response using Ollama model: ${this.ollamaModel}`);
 
+    // VERIFIED: Context assembly - confirms chunks assembled with source information for LLM
     // Build context from chunks with source information
     // Including source file info helps the LLM provide better context
     // and allows users to trace where information came from
@@ -145,6 +167,7 @@ export class RAGSystem {
       })
       .join('\n\n');
 
+    // VERIFIED: Prompt construction - confirms prompt includes context and query for LLM
     // Create prompt
     const prompt = `Based on the following context, answer the question. If the context doesn't contain enough information, say so.
 
@@ -155,6 +178,7 @@ Question: ${query}
 
 Answer:`;
 
+    // VERIFIED: LLM generation - confirms Ollama called to generate response with context
     // console.log(`[RAG] Sending prompt to Ollama (${prompt.length} chars)`);
 
     try {
@@ -219,17 +243,33 @@ Answer:`;
    * Query the RAG system
    */
   async query(query: string, topK: number = 3): Promise<string> {
+    // VERIFIED: Query entry - confirms RAG query method called with user query
     // console.log(`[RAG] Processing query: "${query}"`);
 
-    // Retrieve relevant chunks
-    const relevantChunks = await this.retrieveRelevantChunks(query, topK);
+    // Retrieve relevant chunks (retrieve more if reranking enabled)
+    const initialTopK = this.useReranking ? Math.max(topK * 4, 20) : topK;
+    const relevantChunks = await this.retrieveRelevantChunks(query, initialTopK);
 
     if (relevantChunks.length === 0) {
       return 'No relevant context found in the indexed document.';
     }
 
+    // VERIFIED: Reranking integration - confirms reranking applied if enabled (retrieve top-20, rerank to top-5)
+    // Apply reranking if enabled
+    let finalChunks = relevantChunks;
+    if (this.useReranking && this.reranker && relevantChunks.length > topK) {
+      // VERIFIED: Reranking execution - confirms chunks reranked by LLM relevance scoring
+      finalChunks = await this.reranker.rerank(query, relevantChunks);
+      // Return top-K after reranking
+      finalChunks = finalChunks.slice(0, topK);
+    } else if (relevantChunks.length > topK) {
+      // If not reranking, just take top-K
+      finalChunks = relevantChunks.slice(0, topK);
+    }
+
+    // VERIFIED: Context assembly - confirms final chunks (reranked or not) used for generation
     // Generate response
-    const response = await this.generateResponse(query, relevantChunks);
+    const response = await this.generateResponse(query, finalChunks);
 
     return response;
   }

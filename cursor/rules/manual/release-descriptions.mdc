@@ -118,12 +118,45 @@ This rule defines how Cursor should write professional, clean GitHub release des
 
 When generating a release description:
 
-1. **Analyze Git Commits**: Review commits since last release to identify changes
-2. **Categorize Changes**: Group into Features, Improvements, Bug Fixes
-3. **User Impact Focus**: Emphasize user-visible changes over internal refactoring
-4. **UI Element Names**: Use exact names from the UI (File Tree, Chat Interface, Editor Panel, etc.)
-5. **Version Number**: Extract from `src-tauri/tauri.conf.json` or `src-tauri/Cargo.toml`
-6. **Build Artifacts**: Reference the actual build outputs (`.dmg`, `.exe`, `.deb`, `.rpm`, `.AppImage`)
+1. **Use Release Context**: If available, use `scripts/prepare-release-context.sh` to generate a context file with:
+   - Commits since last release
+   - Previous release notes (to avoid duplication)
+   - Project context
+
+2. **Analyze Previous Releases**: **CRITICAL** - Review all previous release notes to ensure:
+   - Features listed as "new" weren't already released
+   - Improvements aren't duplicates of previous improvements
+   - Bug fixes aren't listed twice
+   - No overlap or confusion between releases
+
+3. **Analyze Git Commits**: Review commits since last release to identify changes, but:
+   - Don't just copy commit messages verbatim
+   - Group related commits into meaningful features
+   - Use human-readable descriptions, not technical commit messages
+   - Look for patterns and themes across commits
+
+4. **Categorize Changes**: Group into Features, Improvements, Bug Fixes based on:
+   - Actual user impact, not just commit message prefixes
+   - Whether it's genuinely new vs. improvement to existing feature
+   - Reference previous releases to verify accuracy
+
+5. **User Impact Focus**: Emphasize user-visible changes over internal refactoring:
+   - Focus on what users will notice and benefit from
+   - Technical changes only if significant (e.g., performance improvements)
+   - UI Element Names: Use exact names from the UI (File Tree, Chat Interface, Editor Panel, etc.)
+
+6. **Version Number**: Extract from `src-tauri/tauri.conf.json` or `src-tauri/Cargo.toml`
+
+7. **Build Artifacts**: Reference the actual build outputs (`.dmg`, `.exe`, `.deb`, `.rpm`, `.AppImage`)
+
+### Using with GitHub Actions
+
+When the GitHub Action creates a draft release:
+
+1. The workflow will generate an initial release description from commits
+2. **Review and improve** using this rule and the release context
+3. The description includes previous release notes for reference
+4. Update the draft release description before publishing to ensure accuracy
 
 ### Example Release Description Template
 
@@ -185,6 +218,10 @@ This release introduces core desktop app functionality with file management, mar
 
 Before finalizing a release description, ensure:
 
+- [ ] **CRITICAL**: Compared with all previous release notes to avoid duplication
+- [ ] Features listed as "new" were not previously released in earlier versions
+- [ ] Improvements are not duplicates of previous improvements
+- [ ] Bug fixes are not listed twice across releases
 - [ ] Title includes version number with emoji
 - [ ] Summary is clear and concise (2-3 sentences)
 - [ ] Features are user-focused and reference visible UI elements
@@ -195,6 +232,7 @@ Before finalizing a release description, ensure:
 - [ ] Technical jargon matches project terminology (UI element names)
 - [ ] All major changes since last release are included
 - [ ] Formatting is clean and scannable with proper markdown
+- [ ] Commits are interpreted, not just copied verbatim
 
 ### Version Number Extraction
 
