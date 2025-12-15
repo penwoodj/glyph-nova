@@ -23,6 +23,20 @@ export interface Chunk {
     chunkIndex: number;
     sourceFile?: string; // File path for this chunk
     sourcePath?: string; // Full absolute path
+    // Enriched metadata (optional, added by MetadataExtractor)
+    documentType?: string; // e.g., 'markdown', 'typescript', 'python'
+    section?: string; // Markdown header or section name
+    abstractionLevel?: 'high' | 'medium' | 'low'; // Classification of abstraction level
+    keywords?: string[]; // Extracted keywords
+    topics?: string[]; // Extracted topics
+    timestamp?: string; // Document modification time
+    author?: string; // Document author (if available)
+    version?: string; // Document version (if available)
+    // Hierarchical chunking metadata (optional)
+    parentId?: string; // ID of parent chunk (if this is a child)
+    childIds?: string[]; // IDs of child chunks (if this is a parent)
+    isParent?: boolean; // Whether this is a parent chunk
+    isChild?: boolean; // Whether this is a child chunk
   };
 }
 

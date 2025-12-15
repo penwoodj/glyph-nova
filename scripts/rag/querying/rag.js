@@ -3,11 +3,13 @@ import { EmbeddingGenerator, cosineSimilarity } from '../indexing/embeddings.js'
 import { QueryExpander } from './queryExpansion.js';
 import { ReciprocalRankFusion } from './resultFusion.js';
 import { LLMReranker } from './reranker.js';
+import { ContextExpander } from './contextExpander.js';
 /**
  * RAG system that retrieves relevant chunks and generates responses using Ollama
  *
  * Supports query expansion with multi-query generation and RRF fusion for improved recall.
- * Reference: [[04-query-expansion-reranking]]
+ * Supports context expansion with sentence window to preserve context across boundaries.
+ * Reference: [[04-query-expansion-reranking]], [[05-hierarchical-context-retrieval]]
  */
 export class RAGSystem {
     embeddingGenerator;
@@ -16,19 +18,27 @@ export class RAGSystem {
     queryExpander;
     rrf;
     reranker;
+    contextExpander;
     useQueryExpansion;
     useReranking;
-    constructor(vectorStore, ollamaModel = 'llama2', useQueryExpansion = false, numQueryVariations = 3, useReranking = false) {
+    useContextExpansion;
+    useHierarchical;
+    constructor(vectorStore, ollamaModel = 'llama2', useQueryExpansion = false, numQueryVariations = 3, useReranking = false, useContextExpansion = false, contextWindowSize = 2, useHierarchical = false) {
         this.embeddingGenerator = new EmbeddingGenerator();
         this.vectorStore = vectorStore;
         this.ollamaModel = ollamaModel;
         this.useQueryExpansion = useQueryExpansion;
         this.useReranking = useReranking;
+        this.useContextExpansion = useContextExpansion;
+        this.useHierarchical = useHierarchical;
         this.queryExpander = useQueryExpansion
             ? new QueryExpander(ollamaModel, 'http://localhost:11434', numQueryVariations)
             : null;
         this.reranker = useReranking
             ? new LLMReranker(ollamaModel, 'http://localhost:11434')
+            : null;
+        this.contextExpander = useContextExpansion
+            ? new ContextExpander(contextWindowSize)
             : null;
         this.rrf = new ReciprocalRankFusion(60);
     }
@@ -224,9 +234,54 @@ Answer:`;
             // If not reranking, just take top-K
             finalChunks = relevantChunks.slice(0, topK);
         }
-        // VERIFIED: Context assembly - confirms final chunks (reranked or not) used for generation
+        // VERIFIED: Hierarchical chunking integration - confirms parent chunks included if hierarchical enabled
+        // Apply hierarchical chunking if enabled (retrieve child chunks, include parent chunks for context)
+        if (this.useHierarchical) {
+            // VERIFIED: Hierarchical retrieval - confirms child chunks retrieved and parent chunks included
+            finalChunks = this.includeParentChunks(finalChunks);
+        }
+        // VERIFIED: Context expansion integration - confirms expansion applied if enabled (adds ±N sentences around chunks)
+        // Apply context expansion if enabled (after reranking to expand final top-K chunks)
+        if (this.useContextExpansion && this.contextExpander) {
+            // VERIFIED: Context expansion execution - confirms chunks expanded with surrounding sentences
+            finalChunks = await this.contextExpander.expandChunks(finalChunks);
+        }
+        // VERIFIED: Context assembly - confirms final chunks (hierarchical, reranked, and/or expanded) used for generation
         // Generate response
         const response = await this.generateResponse(query, finalChunks);
         return response;
+    }
+    /**
+     * Include parent chunks for child chunks (hierarchical chunking)
+     * When a child chunk is retrieved, include its parent chunk for context
+     */
+    includeParentChunks(chunks) {
+        // VERIFIED: Parent chunk inclusion - confirms parent chunks found and included for child chunks
+        const allChunks = this.vectorStore.getChunks();
+        const result = [];
+        const addedParentIds = new Set();
+        for (const chunk of chunks) {
+            // Add the child chunk
+            result.push(chunk);
+            // If this is a child chunk, find and add its parent
+            if (chunk.metadata.isChild && chunk.metadata.parentId) {
+                const parentId = chunk.metadata.parentId;
+                if (!addedParentIds.has(parentId)) {
+                    // Find parent chunk by matching parentId
+                    const parent = allChunks.find(c => c.metadata.isParent && this.getChunkId(c) === parentId);
+                    if (parent) {
+                        result.push(parent);
+                        addedParentIds.add(parentId);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * Generate unique ID for a chunk (same logic as HierarchicalChunker)
+     */
+    getChunkId(chunk) {
+        return `${chunk.metadata.sourcePath || ''}_${chunk.metadata.chunkIndex}_${chunk.metadata.startIndex}_${chunk.metadata.endIndex}`;
     }
 }

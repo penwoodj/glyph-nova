@@ -1,10 +1,18 @@
 import { readFileSync } from 'fs';
+import { SemanticChunker } from './semanticChunker.js';
 export class DocumentChunker {
     chunkSize;
     overlap;
-    constructor(chunkSize = 500, overlap = 50) {
+    useSemanticChunking;
+    semanticChunker;
+    constructor(chunkSize = 500, overlap = 50, useSemanticChunking = false, embeddingGenerator) {
         this.chunkSize = chunkSize;
         this.overlap = overlap;
+        this.useSemanticChunking = useSemanticChunking;
+        // Initialize semantic chunker if enabled
+        if (useSemanticChunking && embeddingGenerator) {
+            this.semanticChunker = new SemanticChunker(embeddingGenerator);
+        }
     }
     /**
      * Read document from file
@@ -59,17 +67,29 @@ export class DocumentChunker {
      * Enhanced version that includes source file metadata in chunks.
      * This helps the RAG system provide better context about where
      * information came from.
+     *
+     * Supports both fixed-size and semantic chunking strategies.
      */
-    chunkFile(filePath) {
+    async chunkFile(filePath) {
         const content = this.readDocument(filePath);
-        const chunks = this.chunkDocument(content);
-        // Add source file metadata to each chunk
-        // This is important for RAG - when retrieving chunks, we know
-        // which file they came from, improving context and traceability
-        return chunks.map(chunk => ({
-            ...chunk,
-            sourceFile: filePath,
-            sourcePath: filePath,
-        }));
+        let chunks;
+        // VERIFIED: Chunking strategy selection - confirms semantic or fixed-size chunking selected
+        if (this.useSemanticChunking && this.semanticChunker) {
+            // Use semantic chunking
+            // VERIFIED: Semantic chunking execution - confirms semantic chunker used for topic-aware splitting
+            chunks = await this.semanticChunker.chunkDocument(content, filePath, filePath);
+        }
+        else {
+            // Use fixed-size chunking (backward compatible)
+            // VERIFIED: Fixed-size chunking execution - confirms fixed-size chunker used for backward compatibility
+            chunks = this.chunkDocument(content);
+            // Add source file metadata to each chunk
+            chunks = chunks.map(chunk => ({
+                ...chunk,
+                sourceFile: filePath,
+                sourcePath: filePath,
+            }));
+        }
+        return chunks;
     }
 }

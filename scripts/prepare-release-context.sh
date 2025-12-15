@@ -69,7 +69,7 @@ else
 ## Previous Release Notes
 
 *Note: GitHub CLI (gh) not available. Install it to fetch previous release notes automatically.*
-*Alternatively, manually review previous releases at: https://github.com/\$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')/releases*
+*Alternatively, manually review previous releases at: https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')/releases*
 
 EOF
 fi
@@ -103,3 +103,4 @@ echo "Next steps:"
 echo "1. Review the context file: $OUTPUT_FILE"
 echo "2. Use Cursor with the release-descriptions.mdc rule to generate the release description"
 echo "3. Or use this context when the GitHub Action creates a draft release"
+

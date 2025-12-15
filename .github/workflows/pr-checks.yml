@@ -74,3 +74,4 @@ jobs:
           cd src-tauri
           yarn tauri build --bundles none
         continue-on-error: false
+
