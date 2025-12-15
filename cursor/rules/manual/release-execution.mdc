@@ -1,0 +1,44 @@
+# GitHub Release Execution Rule
+
+## Purpose
+Step-by-step instructions for Cursor to execute the GitHub release workflow for the desktop app, generate high-quality release notes, and ensure correctness against previous releases.
+
+## Key Files
+- Workflow: `.github/workflows/release.yml`
+- Release notes rule: `cursor/rules/manual/release-descriptions.mdc`
+- Release context prep: `scripts/prepare-release-context.sh`
+- Version sources: `src-tauri/tauri.conf.json` (source of truth), `src-tauri/Cargo.toml`
+
+## Preconditions (must verify)
+1. Working tree clean; CI green on PR.
+2. Version bump already applied to both `tauri.conf.json` and `Cargo.toml`.
+3. Version is semantic (X.Y.Z) and matches between files.
+4. Secrets for signing/uploading are present in GitHub Actions (TAURI_PRIVATE_KEY, APPLE_* as needed).
+
+## Release Execution Paths
+### A) Tag-triggered (preferred)
+1. Ensure main is up to date and version files are bumped.
+2. Create and push tag matching the version: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. Workflow builds all platforms, creates a **draft** release with artifacts, and bumps next patch.
+
+### B) Manual dispatch (GitHub UI or gh)
+1. Run: `gh workflow run release.yml -f version=X.Y.Z` (must match `tauri.conf.json`).
+2. Workflow will create/push the tag if absent, build artifacts, and open a **draft** release.
+
+## Release Notes Generation with LLM
+1. Prepare context (optional but recommended): `./scripts/prepare-release-context.sh vX.Y.Z` → produces `release-context.md` with commits + previous release notes.
+2. Use Cursor with `release-descriptions.mdc` and the context file to draft the release description.
+3. Validate against previous releases (no duplicated “new” items, improvements, or fixes).
+4. Paste refined notes into the draft release; keep emojis and install instructions accurate.
+
+## Quality Checklist before Publish
+- Version in tag == `tauri.conf.json` == `Cargo.toml` (semantic X.Y.Z).
+- Draft release has all artifacts (`.dmg`, `.exe`/`.msi`, `.deb`, `.rpm`, `.AppImage`).
+- Notes reviewed with `release-descriptions.mdc`; no overlap with prior releases.
+- Installation section present for macOS/Windows/Linux.
+- Draft release promoted to published once confirmed.
+
+## If Something Fails
+- Build failure: check workflow logs; ensure system deps (webkit2gtk, etc.) and signing secrets are set.
+- Version mismatch: fix versions in `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, retag, rerun.
+- Missing previous releases: run `scripts/prepare-release-context.sh` or fetch manually from GitHub releases.

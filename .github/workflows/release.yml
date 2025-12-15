@@ -1,0 +1,530 @@
+name: Build and Release Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v0.1.0, v1.2.3, etc.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0). Must match version in tauri.conf.json'
+        required: true
+
+env:
+  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+  APPLE_ID: ${{ secrets.APPLE_ID }}
+  APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+  APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+  APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            artifact-name: 'glyph-nova_*_universal.dmg'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+            artifact-name: 'glyph-nova_*_x64.dmg'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            artifact-name: 'glyph-nova_*_amd64.deb,glyph-nova_*_amd64.AppImage,glyph-nova-*.x86_64.rpm'
+          - platform: 'windows-latest'
+            args: ''
+            artifact-name: 'glyph-nova_*_x64_en-US.msi,glyph-nova_*_x64-setup.exe'
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install system dependencies (Linux only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install frontend dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build frontend
+        run: yarn rw build
+
+      - name: Build Tauri app
+        run: |
+          cd src-tauri
+          yarn tauri build ${{ matrix.args }}
+        env:
+          TAURI_PRIVATE_KEY: ${{ env.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ env.TAURI_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ env.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ env.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ env.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ env.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ env.APPLE_TEAM_ID }}
+          APPLE_API_KEY: ${{ env.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ env.APPLE_API_ISSUER }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.args == '--target aarch64-apple-darwin' && 'aarch64' || matrix.args == '--target x86_64-apple-darwin' && 'x64' || 'build' }}
+          path: |
+            src-tauri/target/release/bundle/**/*.dmg
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.AppImage
+            src-tauri/target/release/bundle/**/*.rpm
+            src-tauri/target/release/bundle/**/*.msi
+            src-tauri/target/release/bundle/**/*.exe
+          retention-days: 30
+          if-no-files-found: error
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for changelog generation
+
+      - name: Extract version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            # Validate semantic versioning format (X.Y.Z)
+            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Error: Version must be in semantic versioning format (X.Y.Z), got: $VERSION"
+              exit 1
+            fi
+          else
+            # Extract version from tag name (remove 'v' prefix)
+            VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+            # Validate semantic versioning format (X.Y.Z, no prerelease/build metadata)
+            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Error: Version tag must be in semantic versioning format (X.Y.Z), got: $VERSION"
+              echo "Prerelease and build metadata (e.g., -alpha, +build) are not supported for releases"
+              exit 1
+            fi
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+          # Verify version matches tauri.conf.json
+          CONFIG_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          if [[ "$VERSION" != "$CONFIG_VERSION" ]]; then
+            echo "Error: Version $VERSION does not match tauri.conf.json version $CONFIG_VERSION"
+            echo "Version mismatch will cause release artifacts to have incorrect version numbers"
+            exit 1
+          fi
+
+      - name: Fetch previous release notes
+        id: previous_releases
+        run: |
+          # Fetch last 5 release notes using GitHub API
+          # Handle errors gracefully (first release, API issues, etc.)
+          PREVIOUS_RELEASES=$(gh release list --limit 5 --json tagName,body --jq '.[] | "### \(.tagName)\n\n\(.body)\n\n---\n\n"' 2>/dev/null || echo "")
+
+          # Store in file for later use (create empty file if no releases)
+          # Use printf %b to interpret escape sequences (like \n) from jq output
+          printf '%b' "$PREVIOUS_RELEASES" > previous_releases.md
+
+          # Also output as multi-line for reference
+          echo "previous_releases<<EOF" >> $GITHUB_OUTPUT
+          echo "$PREVIOUS_RELEASES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          if [ -z "$PREVIOUS_RELEASES" ]; then
+            echo "No previous releases found (this may be the first release)"
+          else
+            echo "Fetched previous release notes"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get the previous tag or initial commit
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Get commits since last tag (or all commits if first release)
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s|%h" --reverse)
+          else
+            COMMITS=$(git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"%s|%h" --reverse)
+          fi
+
+          # Extract version
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Categorize commits
+          FEATURES=""
+          IMPROVEMENTS=""
+          BUGFIXES=""
+          OTHER=""
+
+          while IFS='|' read -r subject hash; do
+            subject_lower=$(echo "$subject" | tr '[:upper:]' '[:lower:]')
+
+            if [[ "$subject_lower" =~ ^(feat|add|new|implement).* ]] || [[ "$subject" =~ ✨ ]]; then
+              FEATURES="${FEATURES}- ${subject} (${hash:0:7})\n"
+            elif [[ "$subject_lower" =~ ^(fix|bug|patch).* ]] || [[ "$subject" =~ 🐛 ]]; then
+              BUGFIXES="${BUGFIXES}- ${subject} (${hash:0:7})\n"
+            elif [[ "$subject_lower" =~ ^(improve|enhance|refactor|optimize|update|upgrade|chore:).* ]] || [[ "$subject" =~ (🔧|⚡) ]]; then
+              IMPROVEMENTS="${IMPROVEMENTS}- ${subject} (${hash:0:7})\n"
+            else
+              OTHER="${OTHER}- ${subject} (${hash:0:7})\n"
+            fi
+          done <<< "$COMMITS"
+
+          # Generate release description following Cursor rule format
+          {
+            echo "🚀 Release v${VERSION}"
+            echo ""
+            echo "This release includes updates and improvements to the Glyph Nova desktop application."
+            echo ""
+
+            if [ -n "$FEATURES" ]; then
+              echo "✨ **What's New**"
+              echo ""
+              echo -e "$FEATURES"
+              echo ""
+            fi
+
+            if [ -n "$IMPROVEMENTS" ]; then
+              echo "🔧 **Improvements**"
+              echo ""
+              echo -e "$IMPROVEMENTS"
+              echo ""
+            fi
+
+            if [ -n "$BUGFIXES" ]; then
+              echo "🐛 **Bug Fixes**"
+              echo ""
+              echo -e "$BUGFIXES"
+              echo ""
+            fi
+
+            if [ -n "$OTHER" ] && [ -z "$FEATURES" ] && [ -z "$IMPROVEMENTS" ] && [ -z "$BUGFIXES" ]; then
+              echo "📝 **Changes**"
+              echo ""
+              echo -e "$OTHER"
+              echo ""
+            fi
+
+            # Add previous release notes context if available
+            if [ -f previous_releases.md ] && [ -s previous_releases.md ]; then
+              echo ""
+              echo "---"
+              echo ""
+              echo "## Previous Releases (for reference to avoid duplication)"
+              echo ""
+              cat previous_releases.md
+            fi
+
+          cat << 'INSTALL_EOF'
+📦 **Installation**
+
+**macOS:**
+1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
+2. Open the downloaded `.dmg` file
+3. Drag Glyph Nova to your Applications folder
+4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
+
+**Windows:**
+1. Download the `.exe` installer for your architecture (x64 or ARM64)
+2. Run the installer and follow the setup wizard
+3. Launch Glyph Nova from the Start menu
+
+**Linux:**
+- **Debian/Ubuntu**: Download and install the `.deb` file
+  ```bash
+  sudo dpkg -i glyph-nova_*.deb
+  ```
+- **Fedora/RHEL**: Download and install the `.rpm` file
+  ```bash
+  sudo rpm -i glyph-nova-*.rpm
+  ```
+- **AppImage**: Download the `.AppImage` file, make it executable, and run:
+  ```bash
+  chmod +x glyph-nova_*.AppImage
+  ./glyph-nova_*.AppImage
+  ```
+
+**System Requirements:**
+- macOS: macOS 10.15 (Catalina) or later
+- Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)
+- Linux: Modern distributions with WebKitGTK
+
+---
+
+**Note:** This is a draft release. Please review and improve the description using Cursor with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases.
+INSTALL_EOF
+          } > release_notes.md
+
+          # Output the notes
+          cat release_notes.md
+
+      - name: Get or create tag
+        id: tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG_NAME="v${VERSION}"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # For workflow_dispatch, create tag if it doesn't exist
+            if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+              git push origin "$TAG_NAME" || exit 1
+              echo "Created and pushed tag: $TAG_NAME"
+            else
+              echo "Tag $TAG_NAME already exists"
+            fi
+          else
+            # For tag push, use the existing tag
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          draft: true
+          prerelease: false
+          files: |
+            artifacts/**/*.dmg
+            artifacts/**/*.deb
+            artifacts/**/*.AppImage
+            artifacts/**/*.rpm
+            artifacts/**/*.msi
+            artifacts/**/*.exe
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  bump-version:
+    needs: create-release
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch full history for branch detection
+
+      - name: Extract current version
+        id: current_version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # For workflow_dispatch, get version from input
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # For tag push, extract from ref name
+            VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          fi
+
+          # Validate semantic versioning format (X.Y.Z, no prerelease/build metadata)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version tag must be in semantic versioning format (X.Y.Z), got: $VERSION"
+            echo "Prerelease and build metadata (e.g., -alpha, +build) are not supported for version bumping"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Calculate next patch version
+          IFS='.' read -ra ADDR <<< "$VERSION"
+          MAJOR=${ADDR[0]}
+          MINOR=${ADDR[1]}
+          PATCH=${ADDR[2]}
+
+          # Validate that PATCH is numeric before arithmetic
+          if [[ ! "$PATCH" =~ ^[0-9]+$ ]]; then
+            echo "Error: Patch version must be numeric, got: $PATCH"
+            exit 1
+          fi
+
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current: $VERSION, Next: $NEXT_VERSION"
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Get the tag name for the release we just created
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG_NAME="v${{ github.event.inputs.version }}"
+          else
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+
+          # Fetch the tag to ensure we have it locally
+          echo "Fetching tag: $TAG_NAME"
+          git fetch origin tag "$TAG_NAME" || true
+
+          # Get the commit SHA that the tag points to
+          TAG_COMMIT=$(git rev-parse "$TAG_NAME" 2>/dev/null || echo "")
+
+          if [ -z "$TAG_COMMIT" ]; then
+            echo "Error: Could not find tag $TAG_NAME"
+            exit 1
+          fi
+
+          echo "Tag $TAG_NAME points to commit: $TAG_COMMIT"
+
+          # Determine which branch to use (main or master)
+          BRANCH=""
+          if git branch -r --contains "$TAG_COMMIT" | grep -q "origin/main"; then
+            BRANCH="main"
+          elif git branch -r --contains "$TAG_COMMIT" | grep -q "origin/master"; then
+            BRANCH="master"
+          else
+            # Fallback: try main first, then master
+            echo "Warning: Tag commit not found on main or master, using main as fallback"
+            BRANCH="main"
+          fi
+
+          # Check out the branch FIRST (before modifying files)
+          echo "Checking out branch: $BRANCH"
+          if ! git checkout "$BRANCH"; then
+            echo "Failed to checkout $BRANCH, falling back to master"
+            if ! git checkout master; then
+              echo "Error: Failed to checkout both $BRANCH and master branches"
+              exit 1
+            fi
+            BRANCH="master"
+          fi
+          git pull origin "$BRANCH" || true
+
+          # Verify the tag commit is reachable from this branch
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" HEAD 2>/dev/null; then
+            echo "Warning: Tag commit $TAG_COMMIT is not on branch $BRANCH"
+            echo "This may indicate the tag was created on a different branch"
+          fi
+
+          # NOW update version files (after checkout/pull, so changes aren't lost)
+          NEXT_VERSION="${{ steps.current_version.outputs.next_version }}"
+
+          # Update tauri.conf.json using Python for cross-platform compatibility
+          # Pass NEXT_VERSION as environment variable to avoid shell interpolation issues
+          NEXT_VERSION="$NEXT_VERSION" python3 << 'PYTHON_EOF'
+          import json
+          import re
+          import os
+
+          next_version = os.environ['NEXT_VERSION']
+
+          # Update tauri.conf.json
+          with open('src-tauri/tauri.conf.json', 'r') as f:
+              config = json.load(f)
+          config['version'] = next_version
+          with open('src-tauri/tauri.conf.json', 'w') as f:
+              json.dump(config, f, indent=2)
+
+          # Update Cargo.toml - only update version in [package] section
+          with open('src-tauri/Cargo.toml', 'r') as f:
+              lines = f.readlines()
+
+          in_package_section = False
+          updated = False
+          output_lines = []
+
+          for line in lines:
+              # Check if we're entering the [package] section
+              if line.strip() == '[package]':
+                  in_package_section = True
+                  output_lines.append(line)
+              # Check if we're leaving the [package] section (entering another section)
+              elif line.startswith('[') and in_package_section:
+                  in_package_section = False
+                  output_lines.append(line)
+              # Update version only if we're in [package] section and haven't updated yet
+              elif in_package_section and not updated and re.match(r'^\s*version\s*=\s*".*"', line):
+                  # Preserve leading whitespace and line ending
+                  leading_ws = line[:len(line) - len(line.lstrip())]
+                  line_ending = line[len(line.rstrip()):] if line.rstrip() != line else '\n'
+                  output_lines.append(f'{leading_ws}version = "{next_version}"{line_ending}')
+                  updated = True
+              else:
+                  output_lines.append(line)
+
+          with open('src-tauri/Cargo.toml', 'w') as f:
+              f.writelines(output_lines)
+          PYTHON_EOF
+
+          echo "Updated versions to $NEXT_VERSION"
+
+          # Stage and commit the changes
+          git add src-tauri/tauri.conf.json src-tauri/Cargo.toml
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit - version files already up to date"
+          else
+            git commit -m "chore: bump version to ${{ steps.current_version.outputs.next_version }} for next release"
+          fi
+
+          # Push regardless of whether we committed (in case of no-op or successful commit)
+          # But fail if the push itself fails
+          git push origin "$BRANCH" || exit 1
+
+          echo "::notice title=Version Bump::Version bumped to ${{ steps.current_version.outputs.next_version }} on $BRANCH branch"
