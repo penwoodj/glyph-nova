@@ -66,9 +66,6 @@ jobs:
       - name: Build frontend
         run: yarn rw build
 
-      - name: Install Tauri CLI
-        run: yarn add -D @tauri-apps/cli@^2.9.5
-
       - name: Build Tauri app (no bundle)
         run: |
           cd src-tauri

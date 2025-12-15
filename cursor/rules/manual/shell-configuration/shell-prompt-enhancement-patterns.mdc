@@ -1,0 +1,403 @@
+---
+description: Patterns and best practices for enhancing shell prompts with system resource monitoring, temperature display, and color coding. Apply when working on Zsh/Bash prompt customization, system monitoring displays, or hardware detection tasks.
+globs:
+  - "**/.zshrc"
+  - "**/.bashrc"
+  - "**/shell-config/**"
+alwaysApply: false
+---
+
+# Shell Prompt Enhancement Patterns
+
+## Zsh Prompt Expansion Best Practices
+
+### Critical Expansion Rules
+- **Literal Percent Signs:** Always use `%%` for literal `%` characters in Zsh prompts
+- **Color Codes:** Wrap color codes in `%{...%}` for proper expansion
+- **Function Calls:** Use `$(function_name)` for dynamic content in prompts
+- **Testing:** Always test with `print -P "$PROMPT"` to verify expansion
+
+### Common Pitfalls to Avoid
+- ❌ Using single `%` for literal percent signs (causes expansion errors)
+- ❌ Storing color codes in variables without proper escaping
+- ❌ Using variable substitution instead of function calls for dynamic content
+- ❌ Not testing prompt expansion before finalizing
+
+### Example: Correct Prompt Construction
+```zsh
+# ✅ CORRECT: Function-based with proper escaping
+PROMPT='$(get_system_resources) $(get_colored_path)$(custom_git_prompt)'$'\n'"${accent}${bold}❯${reset_color} "
+
+# ❌ INCORRECT: Variable-based with single %
+PROMPT="${cpu_percent}% "  # Will cause expansion issues
+```
+
+## System Resource Monitoring Patterns
+
+### Caching Strategy
+- **CPU/RAM:** 2-second cache (frequently changing)
+- **GPU:** 5-second cache (slower to query)
+- **Temperature:** Can use same cache as usage (they're queried together)
+- **Cache Location:** Use `$HOME/.zsh_*_cache` files with timestamp checking
+
+### Function Design Pattern
+```zsh
+get_resource() {
+    local cache_file="$HOME/.zsh_resource_cache"
+    local cache_age=2
+    local result=""
+
+    # Check cache
+    if [[ -f "$cache_file" ]]; then
+        local cache_time=$(stat -c %Y "$cache_file" 2>/dev/null)
+        local current_time=$(date +%s)
+        local age=$((current_time - cache_time))
+
+        if [[ $age -lt $cache_age ]] && [[ $age -ge 0 ]]; then
+            result=$(cat "$cache_file" 2>/dev/null)
+        fi
+    fi
+
+    # Query if cache stale
+    if [[ -z "$result" ]]; then
+        result=$(query_resource)
+        echo "$result" > "$cache_file" 2>/dev/null
+    fi
+
+    echo -n "$result"
+}
+```
+
+### Combined Resources Function Pattern
+When displaying multiple resources, create a single combined function:
+- Reduces prompt evaluation overhead
+- Ensures consistent formatting
+- Simplifies prompt string construction
+- Allows better caching coordination
+
+```zsh
+get_system_resources() {
+    local result=""
+
+    # Get CPU
+    local cpu=$(get_cpu_info)
+    result+="CPU:${cpu} "
+
+    # Get GPU
+    local gpu=$(get_gpu_info)
+    result+="GPU:${gpu} "
+
+    # Get RAM
+    local ram=$(get_ram_info)
+    result+="RAM:${ram}"
+
+    echo -n " [${result}]"
+}
+```
+
+## Hardware Detection Patterns
+
+### GPU Detection Priority
+1. **NVIDIA:** Check for `nvidia-smi` command
+2. **AMD:** Check `/sys/class/drm/card*/device/vendor` for `0x1002`
+3. **Intel:** Check for `intel_gpu_top` or Intel-specific sysfs paths
+
+### AMD GPU Detection Pattern
+```zsh
+# Find AMD GPU via sysfs
+for card in /sys/class/drm/card[0-9]; do
+    if [[ -f "$card/device/vendor" ]]; then
+        local vendor=$(cat "$card/device/vendor" 2>/dev/null | tr -d '[:space:]')
+        if [[ "$vendor" == "0x1002" ]]; then
+            # AMD GPU found
+            local gpu_util=$(cat "$card/device/gpu_busy_percent" 2>/dev/null)
+            local vram_total=$(cat "$card/device/mem_info_vram_total" 2>/dev/null)
+            local vram_used=$(cat "$card/device/mem_info_vram_used" 2>/dev/null)
+            break
+        fi
+    fi
+done
+```
+
+### CPU Temperature Detection Priority
+1. **Primary:** `sensors` command (if available)
+2. **Secondary:** hwmon interface (`/sys/class/hwmon/hwmon*/temp1_input`)
+   - Look for `k10temp`, `zenpower`, or `cpu` in hwmon name
+3. **Fallback:** Thermal zones (`/sys/class/thermal/thermal_zone*/temp`)
+
+### CPU Temperature Detection Pattern
+```zsh
+# Try sensors first
+if command -v sensors &> /dev/null; then
+    local temp=$(sensors | grep -iE "(cpu|core)" | grep -oE '[0-9]+°[CF]' | head -1)
+fi
+
+# Fallback to hwmon
+if [[ -z "$temp" ]]; then
+    for hwmon in /sys/class/hwmon/hwmon*; do
+        [[ -f "$hwmon/name" ]] || continue
+        local name=$(cat "$hwmon/name" 2>/dev/null)
+        if [[ "$name" =~ (k10temp|zenpower|cpu) ]]; then
+            if [[ -f "$hwmon/temp1_input" ]]; then
+                local temp_raw=$(cat "$hwmon/temp1_input" 2>/dev/null)
+                local temp_c=$((temp_raw / 1000))
+                temp=$(echo "scale=0; ($temp_c * 9 / 5) + 32" | bc)
+                break
+            fi
+        fi
+    done
+fi
+```
+
+### Sensor Verification Pattern
+Always verify sensor identification to prevent confusion:
+```zsh
+# Verify CPU sensor
+echo "CPU sensor: $(cat /sys/class/hwmon/hwmon1/name)"
+echo "CPU temp: $(cat /sys/class/hwmon/hwmon1/temp1_input)"
+
+# Verify GPU sensor
+echo "GPU sensor: $(cat /sys/class/drm/card1/device/hwmon/hwmon*/name)"
+echo "GPU temp: $(cat /sys/class/drm/card1/device/hwmon/hwmon*/temp1_input)"
+```
+
+## Color Coding Standards
+
+### Standard Color Progression
+Use 7-level progression for granular feedback:
+1. **Green** - Very low/safe
+2. **Bright Green** - Low/normal
+3. **Yellow** - Moderate
+4. **Bright Yellow** - High
+5. **Red** - Very high
+6. **Bright Red** - Critical
+7. **Magenta/Pink** - Extreme/dangerous
+
+### Usage Percentage Color Ranges
+```zsh
+if [[ $usage -lt 25 ]]; then
+    color="%{$fg[green]%}"
+elif [[ $usage -lt 50 ]]; then
+    color="%{$fg_bold[green]%}"
+elif [[ $usage -lt 65 ]]; then
+    color="%{$fg[yellow]%}"
+elif [[ $usage -lt 80 ]]; then
+    color="%{$fg_bold[yellow]%}"
+elif [[ $usage -lt 90 ]]; then
+    color="%{$fg[red]%}"
+elif [[ $usage -lt 95 ]]; then
+    color="%{$fg_bold[red]%}"
+else
+    color="%{$fg_bold[magenta]%}"
+fi
+```
+
+### Temperature Color Ranges (Hardware-Specific)
+**Always research hardware-specific ranges before implementing:**
+
+**CPU (AMD Ryzen 5 2600 example):**
+- <86°F: Cyan (very cool)
+- 86-113°F: Green (normal idle)
+- 113-140°F: Bright Green (warm)
+- 140-170°F: Yellow (moderate load)
+- 170-185°F: Bright Yellow (high load)
+- 185-195°F: Red (very hot)
+- 195-203°F: Bright Red (critical)
+- >203°F: Magenta/Pink (dangerous)
+
+**GPU (AMD Radeon RX 470/480/570/580 example):**
+- <86°F: Cyan (very cool)
+- 86-122°F: Green (normal idle)
+- 122-140°F: Bright Green (warm)
+- 140-165°F: Yellow (moderate load)
+- 165-185°F: Bright Yellow (high load)
+- 185-194°F: Red (very hot)
+- 194-203°F: Bright Red (critical)
+- >203°F: Magenta/Pink (dangerous)
+
+### Temperature Color Pattern
+```zsh
+get_temp_color() {
+    local temp=$1
+    local type=$2  # "cpu" or "gpu"
+    local color=""
+
+    # CPU-specific ranges
+    if [[ "$type" == "cpu" ]]; then
+        if [[ $temp -lt 86 ]]; then
+            color="%{$fg[cyan]%}"
+        elif [[ $temp -lt 113 ]]; then
+            color="%{$fg[green]%}"
+        # ... continue with CPU-specific ranges
+        fi
+    # GPU-specific ranges
+    elif [[ "$type" == "gpu" ]]; then
+        if [[ $temp -lt 86 ]]; then
+            color="%{$fg[cyan]%}"
+        elif [[ $temp -lt 122 ]]; then
+            color="%{$fg[green]%}"
+        # ... continue with GPU-specific ranges
+        fi
+    fi
+
+    echo -n "$color"
+}
+```
+
+## Prompt Layout Design
+
+### Information Organization Principles
+1. **Most Important First:** Time, system status
+2. **Grouped Resources:** CPU, GPU, RAM, VRAM together
+3. **Context Last:** Path, git status
+4. **Clear Separation:** Command prompt on separate line for extensive info
+
+### Multi-Line Prompt Pattern
+```zsh
+# Data dashboard line
+PROMPT='$(get_time_temp_display)$(get_system_resources) $(get_colored_path)$(get_git_info)'
+
+# Command prompt on new line
+PROMPT+=$'\n'"${accent}${bold}❯${reset_color} "
+```
+
+### Format Consistency
+- Use consistent bracket style: `[resource:value]`
+- Group related resources: `[CPU:XX%:XXX°F GPU:XX%:XXX°F RAM:X.X/X.XGB VRAM:X.X/X.XGB]`
+- Consistent spacing between groups
+- Clear visual hierarchy with color coding
+
+## Research Integration Workflow
+
+### When to Research
+- **Before Implementation:** Research hardware-specific temperature ranges
+- **Before Color Coding:** Research normal operating ranges
+- **Before Thresholds:** Research critical limits and safe zones
+
+### Research Sources Priority
+1. Hardware manufacturer specifications
+2. Community forums and technical documentation
+3. Temperature monitoring best practices
+4. User community experiences
+
+### Research Application Pattern
+```markdown
+## Research Findings
+- Hardware: AMD Ryzen 5 2600
+- Idle Range: 86-113°F (normal)
+- Load Range: 140-185°F (acceptable)
+- Critical: >203°F (dangerous)
+
+## Implementation
+- Apply research to color thresholds
+- Create hardware-specific configurations
+- Document rationale for thresholds
+- Test against actual hardware
+```
+
+## Error Handling Patterns
+
+### Glob Pattern Safety
+Use `(N)` glob qualifier to handle no matches gracefully:
+```zsh
+# ✅ Safe: Won't error if no matches
+local thermal_zones=(/sys/class/thermal/thermal_zone*/temp(N))
+for zone in $thermal_zones; do
+    # Process zone
+done
+
+# ❌ Unsafe: Will error if no matches
+for zone in /sys/class/thermal/thermal_zone*/temp; do
+    # May fail if no thermal zones exist
+done
+```
+
+### Command Availability Checks
+Always check for command availability:
+```zsh
+if command -v sensors &> /dev/null; then
+    # Use sensors
+elif [[ -f "/sys/class/hwmon/hwmon1/temp1_input" ]]; then
+    # Use hwmon fallback
+fi
+```
+
+### Value Validation
+Always validate numeric values:
+```zsh
+if [[ -n "$temp" ]] && [[ "$temp" =~ ^[0-9]+$ ]] && [[ $temp -gt 0 ]]; then
+    # Use temperature value
+fi
+```
+
+## Testing and Verification
+
+### Prompt Expansion Testing
+```zsh
+# Test prompt expansion
+result=$(get_system_resources)
+print -P "$result"  # Should show colors, not literal codes
+```
+
+### Sensor Verification Testing
+```zsh
+# Verify CPU sensor
+cat /sys/class/hwmon/hwmon1/name  # Should be "k10temp" or similar
+cat /sys/class/hwmon/hwmon1/temp1_input  # Should be reasonable value
+
+# Verify GPU sensor
+cat /sys/class/drm/card1/device/hwmon/hwmon*/name  # Should be "amdgpu" or similar
+cat /sys/class/drm/card1/device/hwmon/hwmon*/temp1_input  # Should be reasonable value
+```
+
+### Color Range Testing
+Test with various usage/temperature values:
+```zsh
+# Test low usage
+echo "21" > ~/.zsh_cpu_cache
+get_system_resources  # Should show green
+
+# Test high usage
+echo "95" > ~/.zsh_cpu_cache
+get_system_resources  # Should show red/magenta
+```
+
+## Performance Optimization
+
+### Cache Strategy
+- Cache expensive operations (GPU queries, temperature reads)
+- Use appropriate cache durations (2s for CPU/RAM, 5s for GPU)
+- Invalidate cache on errors
+
+### Function Efficiency
+- Minimize external command calls
+- Use sysfs when possible (faster than commands)
+- Batch related queries together
+
+### Prompt Evaluation
+- Keep prompt functions lightweight
+- Avoid blocking operations in prompt functions
+- Use background processes for heavy operations if needed
+
+## Common Issues and Solutions
+
+### Issue: Literal `{` Symbols in Prompt
+**Solution:** Use `%%` for literal percent signs, ensure color codes are properly wrapped
+
+### Issue: Color Codes Not Expanding
+**Solution:** Use function-based approach `$(function)` instead of variable substitution
+
+### Issue: Sensor Confusion
+**Solution:** Always verify sensor names match expected hardware before using
+
+### Issue: Glob Pattern Errors
+**Solution:** Use `(N)` glob qualifier to handle no matches gracefully
+
+### Issue: Temperature Not Showing
+**Solution:** Check multiple sources (sensors, hwmon, thermal zones) with proper fallbacks
+
+## Related Patterns
+
+- See `transcript-formatting-agent.mdc` for documentation standards
+- See `plan-execute-verify.mdc` for implementation workflow
+- See existing transcript files for real-world examples

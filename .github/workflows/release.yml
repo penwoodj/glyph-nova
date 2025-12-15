@@ -82,9 +82,6 @@ jobs:
       - name: Build frontend
         run: yarn rw build
 
-      - name: Install Tauri CLI
-        run: yarn add -D @tauri-apps/cli@^2.9.5
-
       - name: Build Tauri app
         run: |
           cd src-tauri
@@ -153,7 +150,9 @@ jobs:
           # Verify version matches tauri.conf.json
           CONFIG_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
           if [[ "$VERSION" != "$CONFIG_VERSION" ]]; then
-            echo "Warning: Version $VERSION does not match tauri.conf.json version $CONFIG_VERSION"
+            echo "Error: Version $VERSION does not match tauri.conf.json version $CONFIG_VERSION"
+            echo "Version mismatch will cause release artifacts to have incorrect version numbers"
+            exit 1
           fi
 
       - name: Fetch previous release notes
@@ -164,7 +163,8 @@ jobs:
           PREVIOUS_RELEASES=$(gh release list --limit 5 --json tagName,body --jq '.[] | "### \(.tagName)\n\n\(.body)\n\n---\n\n"' 2>/dev/null || echo "")
 
           # Store in file for later use (create empty file if no releases)
-          echo "$PREVIOUS_RELEASES" > previous_releases.md
+          # Use printf %b to interpret escape sequences (like \n) from jq output
+          printf '%b' "$PREVIOUS_RELEASES" > previous_releases.md
 
           # Also output as multi-line for reference
           echo "previous_releases<<EOF" >> $GITHUB_OUTPUT
@@ -190,7 +190,7 @@ jobs:
           if [ -z "$PREVIOUS_TAG" ]; then
             COMMITS=$(git log --pretty=format:"%s|%h" --reverse)
           else
-            COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"%s|%h" --reverse)
+            COMMITS=$(git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"%s|%h" --reverse)
           fi
 
           # Extract version
@@ -209,7 +209,7 @@ jobs:
               FEATURES="${FEATURES}- ${subject} (${hash:0:7})\n"
             elif [[ "$subject_lower" =~ ^(fix|bug|patch).* ]] || [[ "$subject" =~ 🐛 ]]; then
               BUGFIXES="${BUGFIXES}- ${subject} (${hash:0:7})\n"
-            elif [[ "$subject_lower" =~ ^(improve|enhance|refactor|optimize|update|upgrade|chore:).* ]] || [[ "$subject" =~ 🔧|⚡ ]]; then
+            elif [[ "$subject_lower" =~ ^(improve|enhance|refactor|optimize|update|upgrade|chore:).* ]] || [[ "$subject" =~ (🔧|⚡) ]]; then
               IMPROVEMENTS="${IMPROVEMENTS}- ${subject} (${hash:0:7})\n"
             else
               OTHER="${OTHER}- ${subject} (${hash:0:7})\n"
@@ -261,44 +261,44 @@ jobs:
               cat previous_releases.md
             fi
 
-            cat << 'INSTALL_EOF'
-          📦 **Installation**
+          cat << 'INSTALL_EOF'
+📦 **Installation**
 
-          **macOS:**
-          1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
-          2. Open the downloaded `.dmg` file
-          3. Drag Glyph Nova to your Applications folder
-          4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
+**macOS:**
+1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
+2. Open the downloaded `.dmg` file
+3. Drag Glyph Nova to your Applications folder
+4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
 
-          **Windows:**
-          1. Download the `.exe` installer for your architecture (x64 or ARM64)
-          2. Run the installer and follow the setup wizard
-          3. Launch Glyph Nova from the Start menu
+**Windows:**
+1. Download the `.exe` installer for your architecture (x64 or ARM64)
+2. Run the installer and follow the setup wizard
+3. Launch Glyph Nova from the Start menu
 
-          **Linux:**
-          - **Debian/Ubuntu**: Download and install the `.deb` file
-            ```bash
-            sudo dpkg -i glyph-nova_*.deb
-            ```
-          - **Fedora/RHEL**: Download and install the `.rpm` file
-            ```bash
-            sudo rpm -i glyph-nova-*.rpm
-            ```
-          - **AppImage**: Download the `.AppImage` file, make it executable, and run:
-            ```bash
-            chmod +x glyph-nova_*.AppImage
-            ./glyph-nova_*.AppImage
-            ```
+**Linux:**
+- **Debian/Ubuntu**: Download and install the `.deb` file
+  ```bash
+  sudo dpkg -i glyph-nova_*.deb
+  ```
+- **Fedora/RHEL**: Download and install the `.rpm` file
+  ```bash
+  sudo rpm -i glyph-nova-*.rpm
+  ```
+- **AppImage**: Download the `.AppImage` file, make it executable, and run:
+  ```bash
+  chmod +x glyph-nova_*.AppImage
+  ./glyph-nova_*.AppImage
+  ```
 
-          **System Requirements:**
-          - macOS: macOS 10.15 (Catalina) or later
-          - Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)
-          - Linux: Modern distributions with WebKitGTK
+**System Requirements:**
+- macOS: macOS 10.15 (Catalina) or later
+- Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)
+- Linux: Modern distributions with WebKitGTK
 
-          ---
+---
 
-          **Note:** This is a draft release. Please review and improve the description using Cursor with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases.
-          INSTALL_EOF
+**Note:** This is a draft release. Please review and improve the description using Cursor with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases.
+INSTALL_EOF
           } > release_notes.md
 
           # Output the notes
@@ -366,6 +366,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch full history for branch detection
 
       - name: Extract current version
         id: current_version
@@ -404,8 +405,63 @@ jobs:
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
           echo "Current: $VERSION, Next: $NEXT_VERSION"
 
-      - name: Update version files for next release
+      - name: Commit and push version bump
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Get the tag name for the release we just created
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG_NAME="v${{ github.event.inputs.version }}"
+          else
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+
+          # Fetch the tag to ensure we have it locally
+          echo "Fetching tag: $TAG_NAME"
+          git fetch origin tag "$TAG_NAME" || true
+
+          # Get the commit SHA that the tag points to
+          TAG_COMMIT=$(git rev-parse "$TAG_NAME" 2>/dev/null || echo "")
+
+          if [ -z "$TAG_COMMIT" ]; then
+            echo "Error: Could not find tag $TAG_NAME"
+            exit 1
+          fi
+
+          echo "Tag $TAG_NAME points to commit: $TAG_COMMIT"
+
+          # Determine which branch to use (main or master)
+          BRANCH=""
+          if git branch -r --contains "$TAG_COMMIT" | grep -q "origin/main"; then
+            BRANCH="main"
+          elif git branch -r --contains "$TAG_COMMIT" | grep -q "origin/master"; then
+            BRANCH="master"
+          else
+            # Fallback: try main first, then master
+            echo "Warning: Tag commit not found on main or master, using main as fallback"
+            BRANCH="main"
+          fi
+
+          # Check out the branch FIRST (before modifying files)
+          echo "Checking out branch: $BRANCH"
+          if ! git checkout "$BRANCH"; then
+            echo "Failed to checkout $BRANCH, falling back to master"
+            if ! git checkout master; then
+              echo "Error: Failed to checkout both $BRANCH and master branches"
+              exit 1
+            fi
+            BRANCH="master"
+          fi
+          git pull origin "$BRANCH" || true
+
+          # Verify the tag commit is reachable from this branch
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" HEAD 2>/dev/null; then
+            echo "Warning: Tag commit $TAG_COMMIT is not on branch $BRANCH"
+            echo "This may indicate the tag was created on a different branch"
+          fi
+
+          # NOW update version files (after checkout/pull, so changes aren't lost)
           NEXT_VERSION="${{ steps.current_version.outputs.next_version }}"
 
           # Update tauri.conf.json using Python for cross-platform compatibility
@@ -457,55 +513,7 @@ jobs:
 
           echo "Updated versions to $NEXT_VERSION"
 
-      - name: Commit and push version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Get the tag name for the release we just created
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TAG_NAME="v${{ github.event.inputs.version }}"
-          else
-            TAG_NAME="${{ github.ref_name }}"
-          fi
-
-          # Fetch the tag to ensure we have it locally
-          echo "Fetching tag: $TAG_NAME"
-          git fetch origin tag "$TAG_NAME" || true
-
-          # Get the commit SHA that the tag points to
-          TAG_COMMIT=$(git rev-parse "$TAG_NAME" 2>/dev/null || echo "")
-
-          if [ -z "$TAG_COMMIT" ]; then
-            echo "Error: Could not find tag $TAG_NAME"
-            exit 1
-          fi
-
-          echo "Tag $TAG_NAME points to commit: $TAG_COMMIT"
-
-          # Determine which branch to use (main or master)
-          BRANCH=""
-          if git branch -r --contains "$TAG_COMMIT" | grep -q "origin/main"; then
-            BRANCH="main"
-          elif git branch -r --contains "$TAG_COMMIT" | grep -q "origin/master"; then
-            BRANCH="master"
-          else
-            # Fallback: try main first, then master
-            echo "Warning: Tag commit not found on main or master, using main as fallback"
-            BRANCH="main"
-          fi
-
-          # Check out the branch
-          echo "Checking out branch: $BRANCH"
-          git checkout "$BRANCH" || git checkout master
-          git pull origin "$BRANCH" || git pull origin master || true
-
-          # Verify the tag commit is reachable from this branch
-          if ! git merge-base --is-ancestor "$TAG_COMMIT" HEAD 2>/dev/null; then
-            echo "Warning: Tag commit $TAG_COMMIT is not on branch $BRANCH"
-            echo "This may indicate the tag was created on a different branch"
-          fi
-
+          # Stage and commit the changes
           git add src-tauri/tauri.conf.json src-tauri/Cargo.toml
 
           # Check if there are changes to commit
@@ -516,6 +524,7 @@ jobs:
           fi
 
           # Push regardless of whether we committed (in case of no-op or successful commit)
-          git push origin main || git push origin master
+          # But fail if the push itself fails
+          git push origin "$BRANCH" || exit 1
 
-          echo "::notice title=Version Bump::Version bumped to ${{ steps.current_version.outputs.next_version }} on main branch"
+          echo "::notice title=Version Bump::Version bumped to ${{ steps.current_version.outputs.next_version }} on $BRANCH branch"

@@ -3,7 +3,31 @@
   "scripts": {
     "kill:dev": "lsof -ti:8912 | xargs -r kill -9 && lsof -ti:8911 | xargs -r kill -9",
     "kill:port": "bash scripts/kill-port.sh",
-    "rag": "cd scripts/rag && npm run build && node index.js"
+    "rag": "cd scripts/rag && npm run build && node index.js",
+    "rag:build": "cd scripts/rag && npm run build",
+    "rag:index": "cd scripts/rag && npm run build && node index.js index",
+    "rag:index:watch": "cd scripts/rag && npm run build && node index.js index --watch",
+    "rag:index:semantic": "cd scripts/rag && npm run build && node index.js index --semantic-chunking",
+    "rag:index:metadata": "cd scripts/rag && npm run build && node index.js index --enrich-metadata",
+    "rag:index:hierarchical": "cd scripts/rag && npm run build && node index.js index --hierarchical",
+    "rag:index:all": "cd scripts/rag && npm run build && node index.js index --semantic-chunking --enrich-metadata --hierarchical",
+    "rag:query": "cd scripts/rag && npm run build && node index.js query",
+    "rag:query:expand": "cd scripts/rag && npm run build && node index.js query --expand-queries",
+    "rag:query:rerank": "cd scripts/rag && npm run build && node index.js query --rerank",
+    "rag:query:context": "cd scripts/rag && npm run build && node index.js query --expand-context",
+    "rag:query:hierarchical": "cd scripts/rag && npm run build && node index.js query --hierarchical",
+    "rag:query:multipass": "cd scripts/rag && npm run build && node index.js query --multi-pass",
+    "rag:query:hybrid": "cd scripts/rag && npm run build && node index.js query --hybrid",
+    "rag:query:full": "cd scripts/rag && npm run build && node index.js query --expand-queries --rerank --expand-context",
+    "rag:query:advanced": "cd scripts/rag && npm run build && node index.js query --expand-queries --rerank --expand-context --hierarchical",
+    "rag:query:debug": "cd scripts/rag && npm run build && RAG_DEBUG=true node index.js query",
+    "rag:evaluate": "cd scripts/rag && npm run build && node index.js evaluate",
+    "rag:n8n:test": "cd scripts/rag/n8n && node test-workflow.js",
+    "rag:n8n:test:execution": "cd scripts/rag/n8n && node test-workflow-execution.js",
+    "rag:n8n:test:dataflow": "cd scripts/rag/n8n && node test-workflow-data-flow.js",
+    "rag:n8n:test:edgecases": "cd scripts/rag/n8n && node test-workflow-edge-cases.js",
+    "rag:n8n:test:ollama": "cd scripts/rag/n8n && node test-ollama-format.js",
+    "rag:n8n:test:ollama:response": "cd scripts/rag/n8n && node test-ollama-response-format.js"
   },
   "workspaces": {
     "packages": [

@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { Chunk } from '../indexing/storeInterface.js';
+import { debugLog } from '../utils/debug.js';
 
 /**
  * Reranker Interface
@@ -42,6 +43,9 @@ export class LLMReranker implements Reranker {
    */
   async rerank(query: string, chunks: Chunk[]): Promise<Chunk[]> {
     // VERIFIED: Reranking entry - confirms reranking method called with query and chunks
+    // Expected Result: Log shows number of chunks being reranked and the query
+    // Verification Level: DEBUG - Confirms reranking process initiated
+    debugLog('Reranker', `Reranking ${chunks.length} chunks for query: "${query}"`);
     if (chunks.length === 0) {
       return [];
     }
@@ -52,6 +56,9 @@ export class LLMReranker implements Reranker {
     }
 
     // VERIFIED: LLM scoring - confirms each chunk scored individually for relevance
+    // Expected Result: Log shows number of chunks being scored
+    // Verification Level: DEBUG - Confirms LLM scoring process for each chunk
+    debugLog('Reranker', `Scoring ${chunks.length} chunks with LLM`);
     // Score each chunk with LLM
     const scoredChunks = await Promise.all(
       chunks.map(async (chunk) => {
@@ -65,6 +72,9 @@ export class LLMReranker implements Reranker {
     scoredChunks.sort((a, b) => b.score - a.score);
 
     // VERIFIED: Reranking result - confirms chunks returned sorted by relevance score
+    // Expected Result: Log shows top relevance score (0.0-1.0 range)
+    // Verification Level: DEBUG - Confirms reranking completed with top score displayed
+    debugLog('Reranker', `Reranked chunks, top score: ${scoredChunks[0]?.score.toFixed(3)}`);
     return scoredChunks.map(item => item.chunk);
   }
 
@@ -95,6 +105,9 @@ Respond with ONLY a number between 0.0 and 1.0 (e.g., 0.85):`;
       const response = await this.generateWithOllama(prompt);
 
       // VERIFIED: Score parsing - confirms LLM response parsed to numeric score (0-1)
+      // Expected Result: Log shows raw LLM response before parsing (if debug enabled)
+      // Verification Level: DEBUG - Confirms LLM response received and being parsed
+      debugLog('Reranker', `LLM scored chunk: ${response.trim()}`);
       // Parse score from response (extract first number)
       const scoreMatch = response.match(/(\d+\.?\d*)/);
       if (scoreMatch) {

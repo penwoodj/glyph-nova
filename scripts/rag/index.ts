@@ -45,11 +45,14 @@ import { HierarchicalChunker, HierarchicalChunk } from './indexing/hierarchicalC
  *   --rerank           Use LLM-based reranking to improve precision (better relevance)
  *   --expand-context   Use context expansion with sentence window (±2 sentences) to preserve context across boundaries
  *   --hierarchical     Use hierarchical chunking (retrieve child chunks, include parent chunks for context)
+ *   --multi-pass       Use multi-pass retrieval (broad retrieval, extract concepts, focused retrieval per concept)
+ *   --hybrid           Use hybrid retrieval (combine semantic search with keyword search BM25)
  */
 
 const COMMANDS = {
   INDEX: 'index',
   QUERY: 'query',
+  EVALUATE: 'evaluate',
 };
 
 function printUsage() {
@@ -57,6 +60,7 @@ function printUsage() {
 Usage:
   rag index <path...> [--json] [--watch]              Index file(s), folder(s), or multiple paths
   rag query <query> [--json] [--expand-queries]       Query the indexed documents
+  rag evaluate [--dataset <file>]                     Evaluate RAG system quality
 
 Options:
   --json              Use JSON encoding (slower but human-readable)
@@ -76,6 +80,10 @@ Options:
                       Preserves context across chunk boundaries, reduces fragmentation
   --hierarchical      Use hierarchical chunking (query command only)
                       Retrieves child chunks for precision, includes parent chunks for context
+  --multi-pass        Use multi-pass retrieval (query command only)
+                      Pass 1: Broad retrieval (top-20), Pass 2: Focused retrieval per concept (top-5 each)
+  --hybrid            Use hybrid retrieval (query command only)
+                      Combines semantic search (vector similarity) with keyword search (BM25) for better recall
 
 Examples:
   rag index ./document.txt                              # Index with binary encoding (fast)
@@ -536,7 +544,9 @@ async function queryDocuments(
   expandQueries: boolean = false,
   useReranking: boolean = false,
   useContextExpansion: boolean = false,
-  useHierarchical: boolean = false
+  useHierarchical: boolean = false,
+  useMultiPass: boolean = false,
+  useHybrid: boolean = false
 ) {
   console.log(`\n=== Querying Documents ===\n`);
   console.log(`Query: "${query}"\n`);
@@ -595,7 +605,10 @@ async function queryDocuments(
   // - Optional query expansion with RRF fusion
   // - Optional reranking for improved precision
   // - Optional context expansion with sentence window
-  const rag = new RAGSystem(vectorStore, 'llama2', expandQueries, 3, useReranking, useContextExpansion, 2, useHierarchical);
+  // - Optional hierarchical chunking (retrieve child chunks, include parent chunks)
+  // - Optional multi-pass retrieval (broad retrieval + focused retrieval per concept)
+  // - Optional hybrid retrieval (semantic + keyword search)
+  const rag = new RAGSystem(vectorStore, 'llama2', expandQueries, 3, useReranking, useContextExpansion, 2, useHierarchical, useMultiPass, useHybrid);
 
   if (expandQueries) {
     console.log(`Query expansion enabled: Will generate multiple query variations and fuse results\n`);
@@ -608,6 +621,12 @@ async function queryDocuments(
   }
   if (useHierarchical) {
     console.log(`Hierarchical chunking enabled: Will retrieve child chunks and include parent chunks for context\n`);
+  }
+  if (useMultiPass) {
+    console.log(`Multi-pass retrieval enabled: Will perform broad retrieval, extract concepts, then focused retrieval\n`);
+  }
+  if (useHybrid) {
+    console.log(`Hybrid retrieval enabled: Will combine semantic search with keyword search (BM25)\n`);
   }
 
   // Query
@@ -689,6 +708,8 @@ async function main() {
       let useReranking = false;
       let useContextExpansion = false;
       let useHierarchical = false;
+      let useMultiPass = false;
+      let useHybrid = false;
 
       for (let i = 1; i < args.length; i++) {
         const arg = args[i];
@@ -702,6 +723,10 @@ async function main() {
           useContextExpansion = true;
         } else if (arg === '--hierarchical') {
           useHierarchical = true;
+        } else if (arg === '--multi-pass') {
+          useMultiPass = true;
+        } else if (arg === '--hybrid') {
+          useHybrid = true;
         } else {
           queryParts.push(arg);
         }
@@ -714,7 +739,19 @@ async function main() {
       }
 
       const query = queryParts.join(' ');
-      await queryDocuments(query, useJson, expandQueries, useReranking, useContextExpansion, useHierarchical);
+      await queryDocuments(query, useJson, expandQueries, useReranking, useContextExpansion, useHierarchical, useMultiPass, useHybrid);
+    } else if (command === COMMANDS.EVALUATE) {
+      // Evaluation command - for now, just a placeholder
+      // Full evaluation framework would require evaluation dataset
+      console.log(`\n=== RAG System Evaluation ===\n`);
+      console.log(`Evaluation framework is implemented but requires an evaluation dataset.`);
+      console.log(`To use evaluation:`);
+      console.log(`  1. Create an evaluation dataset with queries and relevant chunk IDs`);
+      console.log(`  2. Use the RAGEvaluator class programmatically`);
+      console.log(`\nEvaluation metrics available:`);
+      console.log(`  - Retrieval: Precision@K, Recall@K, MRR`);
+      console.log(`  - Generation: Faithfulness, Answer Relevance (LLM-as-judge)`);
+      console.log(`\nSee: scripts/rag/evaluation/ for implementation details.`);
     } else {
       console.error(`Error: Unknown command "${command}"`);
       printUsage();

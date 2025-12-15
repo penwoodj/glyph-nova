@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { debugLog } from '../utils/debug.js';
 
 /**
  * Generate embeddings using Ollama
@@ -80,13 +81,17 @@ export class EmbeddingGenerator {
    */
   async generateEmbedding(text: string): Promise<number[]> {
     // VERIFIED: Embedding generation logging - confirms embedding method selection and dimension
-    // console.log(`[Embeddings] Generating embedding for text (${text.length} chars)`);
+    // Expected Result: Log shows text length and embedding method being used
+    // Verification Level: DEBUG - Confirms embedding generation entry point and method selection
+    debugLog('Embeddings', `Generating embedding for text (${text.length} chars)`);
 
     if (this.useOllama) {
       try {
         const embedding = await this.ollamaEmbedding(text);
         // VERIFIED: Ollama embedding success - confirms 768-dimensional embeddings from nomic-embed-text
-        // console.log(`[Embeddings] Generated Ollama embedding with ${embedding.length} dimensions`);
+        // Expected Result: Log shows 768 dimensions when Ollama succeeds, or 384 when fallback used
+        // Verification Level: DEBUG - Confirms successful embedding generation and dimension count
+        debugLog('Embeddings', `Generated Ollama embedding with ${embedding.length} dimensions`);
         return embedding;
       } catch (error: any) {
         // VERIFIED: Fallback mechanism - confirms graceful degradation when Ollama unavailable
@@ -98,9 +103,11 @@ export class EmbeddingGenerator {
       }
     } else {
       // VERIFIED: Simple embedding generation - confirms 384-dimensional simple embeddings
+      // Expected Result: Log shows "Using simple embedding (384 dimensions)" when Ollama unavailable
+      // Verification Level: DEBUG - Confirms fallback to simple embeddings when Ollama fails
       // Use simple text-based embedding (open source approach)
       const embedding = this.simpleTextEmbedding(text);
-      // console.log(`[Embeddings] Generated embedding with ${embedding.length} dimensions`);
+      debugLog('Embeddings', `Using simple embedding (384 dimensions)`);
       return embedding;
     }
   }

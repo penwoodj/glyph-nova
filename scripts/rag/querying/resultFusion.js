@@ -1,3 +1,4 @@
+import { debugLog } from '../utils/debug.js';
 /**
  * Reciprocal Rank Fusion (RRF) Algorithm
  *
@@ -23,6 +24,9 @@ export class ReciprocalRankFusion {
      */
     fuse(rankedLists, topK = 10) {
         // VERIFIED: RRF fusion entry - confirms fusion method called with multiple ranked lists
+        // Expected Result: Log shows number of lists being fused and top-K value
+        // Verification Level: DEBUG - Confirms RRF fusion process initiated with list count
+        debugLog('RRF', `Fusing ${rankedLists.length} ranked lists, returning top-${topK}`);
         if (rankedLists.length === 0) {
             return [];
         }
@@ -32,6 +36,9 @@ export class ReciprocalRankFusion {
             return rankedLists[0].slice(0, topK);
         }
         // VERIFIED: RRF score calculation - confirms RRF algorithm applied: score = Σ(1 / (k + rank))
+        // Expected Result: Log shows RRF parameter k (typically 60)
+        // Verification Level: DEBUG - Confirms RRF algorithm parameters and score calculation
+        debugLog('RRF', `Calculating RRF scores with k=${this.k}`);
         // Calculate RRF scores for each chunk
         const chunkScores = new Map();
         for (let listIndex = 0; listIndex < rankedLists.length; listIndex++) {
@@ -59,6 +66,9 @@ export class ReciprocalRankFusion {
             }
         }
         // VERIFIED: Final ranking - confirms chunks sorted by RRF score and top-K returned
+        // Expected Result: Log shows number of unique chunks being ranked
+        // Verification Level: DEBUG - Confirms final ranking step with unique chunk count
+        debugLog('RRF', `Ranking ${chunkScores.size} unique chunks by RRF score`);
         // Convert to array, sort by score (descending), and return top-K
         const sorted = Array.from(chunkScores.values())
             .sort((a, b) => b.score - a.score)

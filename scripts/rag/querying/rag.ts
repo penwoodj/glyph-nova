@@ -5,6 +5,9 @@ import { QueryExpander } from './queryExpansion.js';
 import { ReciprocalRankFusion } from './resultFusion.js';
 import { Reranker, LLMReranker } from './reranker.js';
 import { ContextExpander } from './contextExpander.js';
+import { MultiPassRetriever } from './multiPassRetrieval.js';
+import { HybridRetriever } from './hybridRetrieval.js';
+import { debugLog } from '../utils/debug.js';
 
 /**
  * RAG system that retrieves relevant chunks and generates responses using Ollama
@@ -25,6 +28,10 @@ export class RAGSystem {
   private useReranking: boolean;
   private useContextExpansion: boolean;
   private useHierarchical: boolean;
+  private useMultiPass: boolean;
+  private useHybrid: boolean;
+  private multiPassRetriever: MultiPassRetriever | null;
+  private hybridRetriever: HybridRetriever | null;
 
   constructor(
     vectorStore: IVectorStore,
@@ -34,7 +41,9 @@ export class RAGSystem {
     useReranking: boolean = false,
     useContextExpansion: boolean = false,
     contextWindowSize: number = 2,
-    useHierarchical: boolean = false
+    useHierarchical: boolean = false,
+    useMultiPass: boolean = false,
+    useHybrid: boolean = false
   ) {
     this.embeddingGenerator = new EmbeddingGenerator();
     this.vectorStore = vectorStore;
@@ -43,6 +52,8 @@ export class RAGSystem {
     this.useReranking = useReranking;
     this.useContextExpansion = useContextExpansion;
     this.useHierarchical = useHierarchical;
+    this.useMultiPass = useMultiPass;
+    this.useHybrid = useHybrid;
     this.queryExpander = useQueryExpansion
       ? new QueryExpander(ollamaModel, 'http://localhost:11434', numQueryVariations)
       : null;
@@ -51,6 +62,12 @@ export class RAGSystem {
       : null;
     this.contextExpander = useContextExpansion
       ? new ContextExpander(contextWindowSize)
+      : null;
+    this.multiPassRetriever = useMultiPass
+      ? new MultiPassRetriever(vectorStore, ollamaModel, 'http://localhost:11434', 20, 5)
+      : null;
+    this.hybridRetriever = useHybrid
+      ? new HybridRetriever(vectorStore, 0.7, 0.3, true)
       : null;
     this.rrf = new ReciprocalRankFusion(60);
   }
@@ -64,7 +81,9 @@ export class RAGSystem {
    */
   async retrieveRelevantChunks(query: string, topK: number = 3): Promise<Chunk[]> {
     // VERIFIED: Query routing - confirms correct path selection (single vs multi-query)
-    // console.log(`[RAG] Retrieving relevant chunks for query: "${query}"`);
+    // Expected Result: Log shows query being processed and retrieval method selected
+    // Verification Level: DEBUG - Confirms retrieval process initiated with query
+    debugLog('RAG', `Retrieving relevant chunks for query: "${query}"`);
 
     if (this.useQueryExpansion && this.queryExpander) {
       // VERIFIED: Multi-query path - confirms query expansion is enabled and used
@@ -84,12 +103,16 @@ export class RAGSystem {
     // VERIFIED: Single-query retrieval flow - confirms embedding generation, similarity calculation, and top-K selection
     // Generate query embedding
     const queryEmbedding = await this.embeddingGenerator.generateEmbedding(query);
-    // console.log(`[RAG] Generated query embedding`);
+    // Expected Result: Log confirms query embedding generated
+    // Verification Level: DEBUG - Confirms embedding generation step completed
+    debugLog('RAG', `Generated query embedding`);
 
     // Get all chunks from store
     const chunks = this.vectorStore.getChunks();
     // VERIFIED: Chunk retrieval - confirms vector store provides chunks for similarity search
-    // console.log(`[RAG] Comparing against ${chunks.length} chunks`);
+    // Expected Result: Log shows number of chunks available for comparison
+    // Verification Level: DEBUG - Confirms chunk retrieval from vector store
+    debugLog('RAG', `Comparing against ${chunks.length} chunks`);
 
     // Calculate similarities
     const similarities = chunks.map((chunk, index) => ({
@@ -121,12 +144,16 @@ export class RAGSystem {
     }
 
     // VERIFIED: Query expansion initiation - confirms multi-query retrieval path activated
-    // console.log(`[RAG] Expanding query into multiple variations...`);
+    // Expected Result: Log confirms query expansion process started
+    // Verification Level: DEBUG - Confirms multi-query retrieval path selected
+    debugLog('RAG', `Expanding query into multiple variations...`);
 
     // Expand query into variations
     const queryVariations = await this.queryExpander.expandQuery(query);
     // VERIFIED: Query expansion success - confirms multiple query variations generated (typically 3-5)
-    // console.log(`[RAG] Generated ${queryVariations.length} query variations`);
+    // Expected Result: Log shows number of query variations generated
+    // Verification Level: DEBUG - Confirms query expansion completed with variation count
+    debugLog('RAG', `Generated ${queryVariations.length} query variations`);
 
     // Retrieve chunks for each query variation
     const rankedLists: Chunk[][] = [];
@@ -151,12 +178,15 @@ export class RAGSystem {
     }
 
     // VERIFIED: RRF fusion - confirms multiple ranked lists combined using Reciprocal Rank Fusion algorithm
-    // Fuse results using RRF
-    // console.log(`[RAG] Fusing ${rankedLists.length} result sets using RRF...`);
+    // Expected Result: Log shows number of result sets being fused
+    // Verification Level: DEBUG - Confirms RRF fusion process initiated
+    debugLog('RAG', `Fusing ${rankedLists.length} result sets using RRF...`);
     const fusedChunks = this.rrf.fuse(rankedLists, topK);
 
     // VERIFIED: Final result - confirms fused chunks returned after RRF combination
-    // console.log(`[RAG] Fused to ${fusedChunks.length} top chunks`);
+    // Expected Result: Log shows final number of fused chunks
+    // Verification Level: DEBUG - Confirms RRF fusion completed with final chunk count
+    debugLog('RAG', `Fused to ${fusedChunks.length} top chunks`);
     return fusedChunks;
   }
 
@@ -165,7 +195,9 @@ export class RAGSystem {
    */
   async generateResponse(query: string, contextChunks: Chunk[]): Promise<string> {
     // VERIFIED: Response generation entry - confirms generation method called with query and context chunks
-    // console.log(`[RAG] Generating response using Ollama model: ${this.ollamaModel}`);
+    // Expected Result: Log shows Ollama model being used for response generation
+    // Verification Level: DEBUG - Confirms response generation process initiated
+    debugLog('RAG', `Generating response using Ollama model: ${this.ollamaModel}`);
 
     // VERIFIED: Context assembly - confirms chunks assembled with source information for LLM
     // Build context from chunks with source information
@@ -192,7 +224,9 @@ Question: ${query}
 Answer:`;
 
     // VERIFIED: LLM generation - confirms Ollama called to generate response with context
-    // console.log(`[RAG] Sending prompt to Ollama (${prompt.length} chars)`);
+    // Expected Result: Log shows prompt length being sent to Ollama
+    // Verification Level: DEBUG - Confirms prompt prepared and sent to LLM
+    debugLog('RAG', `Sending prompt to Ollama (${prompt.length} chars)`);
 
     try {
       // Use echo + pipe to avoid shell escaping issues with ollama run
@@ -257,20 +291,35 @@ Answer:`;
    */
   async query(query: string, topK: number = 3): Promise<string> {
     // VERIFIED: Query entry - confirms RAG query method called with user query
-    // console.log(`[RAG] Processing query: "${query}"`);
+    // Expected Result: Log shows user query being processed
+    // Verification Level: DEBUG - Confirms RAG query method entry point
+    debugLog('RAG', `Processing query: "${query}"`);
 
-    // Retrieve relevant chunks (retrieve more if reranking enabled)
-    const initialTopK = this.useReranking ? Math.max(topK * 4, 20) : topK;
-    const relevantChunks = await this.retrieveRelevantChunks(query, initialTopK);
+    // VERIFIED: Retrieval routing - confirms retrieval method selected (multi-pass, hybrid, or standard)
+    // Retrieve relevant chunks (use multi-pass, hybrid, or standard retrieval)
+    let relevantChunks: Chunk[];
+    if (this.useMultiPass && this.multiPassRetriever) {
+      // VERIFIED: Multi-pass retrieval execution - confirms multi-pass retrieval performed
+      // Multi-pass retrieval: Pass 1 (broad) + Pass 2 (focused per concept)
+      relevantChunks = await this.multiPassRetriever.retrieve(query, topK * 4);
+    } else if (this.useHybrid && this.hybridRetriever) {
+      // VERIFIED: Hybrid retrieval execution - confirms hybrid retrieval performed (semantic + keyword)
+      // Hybrid retrieval: Semantic search + Keyword search (BM25), fused with RRF
+      relevantChunks = await this.hybridRetriever.retrieve(query, topK * 4);
+    } else {
+      // Standard retrieval (retrieve more if reranking enabled)
+      const initialTopK = this.useReranking ? Math.max(topK * 4, 20) : topK;
+      relevantChunks = await this.retrieveRelevantChunks(query, initialTopK);
+    }
 
     if (relevantChunks.length === 0) {
       return 'No relevant context found in the indexed document.';
     }
 
     // VERIFIED: Reranking integration - confirms reranking applied if enabled (retrieve top-20, rerank to top-5)
-    // Apply reranking if enabled
+    // Apply reranking if enabled (skip if multi-pass was used, as it already provides comprehensive coverage)
     let finalChunks = relevantChunks;
-    if (this.useReranking && this.reranker && relevantChunks.length > topK) {
+    if (!this.useMultiPass && this.useReranking && this.reranker && relevantChunks.length > topK) {
       // VERIFIED: Reranking execution - confirms chunks reranked by LLM relevance scoring
       finalChunks = await this.reranker.rerank(query, relevantChunks);
       // Return top-K after reranking
