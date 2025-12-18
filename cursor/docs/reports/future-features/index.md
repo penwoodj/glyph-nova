@@ -4,7 +4,7 @@
 
 > 📋 **Purpose:** Comprehensive specification of planned features, technical approaches, and implementation strategies.
 
-**Related:** [project-vision](../project-vision.md) provides the high-level vision and philosophy.
+**Related:** [project-vision](../vision/project-vision.md) provides the high-level vision and philosophy.
 
 ---
 

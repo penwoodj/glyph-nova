@@ -46,23 +46,21 @@ This rule automates the process of:
 ```
 
 ### Step 2: Link Verification & Formatting
-**Format all links in copyable blocks with title included:**
+**Format all links in copyable blocks with title on same line:**
 
 ```
-https://example.com/resource-1
-Title: Resource Name
+https://example.com/resource-1   Resource Name
 ```
 **Description:** Brief explanation of why this link is valuable
 **Rating:** High/Medium/Low based on organic search ranking and quality
 
 ```
-https://example.com/resource-2
-Title: Another Resource Name
+https://example.com/resource-2   Another Resource Name
 ```
 **Description:** Brief explanation of why this link is valuable
 **Rating:** High/Medium/Low based on organic search ranking and quality
 
-**Note:** The title is included in the copyable block after the link to enable efficient pasting into Cursor's "Add Doc" feature - paste the block, extract the link for the first input, then extract the title for the second input.
+**Note:** The title is included on the same line as the URL (separated by spaces) to enable efficient pasting into Cursor's "Add Doc" feature - paste the block, extract the link for the first input, then extract the title for the second input.
 
 ### Step 3: Context Integration
 **Provide comprehensive context for each link type:**
@@ -88,7 +86,7 @@ Title: Another Resource Name
 
 ## 🎨 Copyable Format Standards
 
-**Always format links in copyable blocks with title included after the link:**
+**Always format links in copyable blocks with title on same line:**
 
 ```markdown
 **1. [Resource Name]**
@@ -101,14 +99,14 @@ https://example.com/resource   Resource Name
 
 **Benefits:**
 - Easy copy/paste for users
-- Title included in copyable block for Cursor "Add Doc" workflow
+- Title included on same line as URL for Cursor "Add Doc" workflow
 - Paste block → extract link for first input → extract title for second input
 - Clear categorization by resource type
 - Quality indicators for decision-making
 - Consistent formatting across all responses
 
 **Cursor "Add Doc" Workflow Optimization:**
-- Format enables efficient indexing: paste the copyable block, extract the URL for the first input field, then extract the title (after "Title: ") for the second modal input field
+- Format enables efficient indexing: paste the copyable block, extract the URL for the first input field, then extract the title (after the URL) for the second modal input field
 - This eliminates the need to manually type titles and speeds up the indexing process significantly
 
 ## 🔍 Quality Verification Process
@@ -138,16 +136,14 @@ Based on the web search results, I can provide you with verified working links t
 
 **1. [Resource Name]**
 ```
-https://example.com/resource-1
-Title: Resource Name
+https://example.com/resource-1   Resource Name
 ```
 **Description:** [Why this resource is valuable]
 **Rating:** High - [specific quality indicators]
 
 **2. [Resource Name]**
 ```
-https://example.com/resource-2
-Title: Another Resource Name
+https://example.com/resource-2   Another Resource Name
 ```
 **Description:** [Why this resource is valuable]
 **Rating:** High - [specific quality indicators]
@@ -156,8 +152,7 @@ Title: Another Resource Name
 
 **3. [Resource Name]**
 ```
-https://example.com/resource-3
-Title: Third Resource Name
+https://example.com/resource-3   Third Resource Name
 ```
 **Description:** [Why this resource is valuable]
 **Rating:** Medium - [specific quality indicators]
@@ -176,8 +171,8 @@ These resources provide a good mix of:
 ### When Applying This Rule:
 
 1. **Always categorize links** by type and quality
-2. **Format in copyable blocks** with title included after the link
-3. **Include title in copyable block** using format: `Title: [Resource Name]` on the line after the URL
+2. **Format in copyable blocks** with title on same line as URL
+3. **Include title in copyable block** using format: `https://url   Title` with spaces separating URL and title
 4. **Provide context** for why each link is valuable
 5. **Include quality ratings** with specific criteria
 6. **Verify link accessibility** before including
@@ -220,5 +215,5 @@ These resources provide a good mix of:
 - Links are always working and accessible
 - Content is relevant and high-quality
 - Formatting is consistent and copyable
-- Titles are included in copyable blocks for efficient Cursor indexing
+- Titles are included on same line as URLs for efficient Cursor indexing
 - Context is comprehensive and helpful
