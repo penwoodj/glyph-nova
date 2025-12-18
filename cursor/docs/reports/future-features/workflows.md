@@ -1,6 +1,6 @@
 # Workflows System
 
-**Related:** [project-vision](../project-vision.md) | [agentic-mode-system](./agentic-mode-system.md) | [context-engineering](./context-engineering.md) | [self-improvement-system](./self-improvement-system.md) | [multi-source-integration](./multi-source-integration.md)
+**Related:** [project-vision](../vision/project-vision.md) | [agentic-mode-system](./agentic-mode-system.md) | [context-engineering](./context-engineering.md) | [self-improvement-system](./self-improvement-system.md) | [multi-source-integration](./multi-source-integration.md)
 
 ---
 

@@ -16,7 +16,6 @@ A desktop application for chatting with local LLMs (via Ollama) with integrated 
 > #### When Automatic Encoding of Agentic behavior
 > - Becomes actually useful
 > - Speeds up Chat Based text generation Workflows
-> -
 
 ## Documentation
 

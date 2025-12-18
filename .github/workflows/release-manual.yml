@@ -1,9 +1,6 @@
-name: Build and Release Desktop App
+name: Build and Release Desktop App (Manual)
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'  # Trigger on version tags like v0.1.0, v1.2.3, etc.
   workflow_dispatch:
     inputs:
       version:
@@ -48,6 +45,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -127,23 +126,13 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ github.event.inputs.version }}"
-            # Validate semantic versioning format (X.Y.Z)
-            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: Version must be in semantic versioning format (X.Y.Z), got: $VERSION"
-              exit 1
-            fi
-          else
-            # Extract version from tag name (remove 'v' prefix)
-            VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-            # Validate semantic versioning format (X.Y.Z, no prerelease/build metadata)
-            if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: Version tag must be in semantic versioning format (X.Y.Z), got: $VERSION"
-              echo "Prerelease and build metadata (e.g., -alpha, +build) are not supported for releases"
-              exit 1
-            fi
+          VERSION="${{ github.event.inputs.version }}"
+          # Validate semantic versioning format (X.Y.Z)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be X.Y.Z, got: $VERSION"
+            exit 1
           fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
@@ -151,31 +140,17 @@ jobs:
           CONFIG_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
           if [[ "$VERSION" != "$CONFIG_VERSION" ]]; then
             echo "Error: Version $VERSION does not match tauri.conf.json version $CONFIG_VERSION"
-            echo "Version mismatch will cause release artifacts to have incorrect version numbers"
             exit 1
           fi
 
       - name: Fetch previous release notes
         id: previous_releases
         run: |
-          # Fetch last 5 release notes using GitHub API
-          # Handle errors gracefully (first release, API issues, etc.)
           PREVIOUS_RELEASES=$(gh release list --limit 5 --json tagName,body --jq '.[] | "### \(.tagName)\n\n\(.body)\n\n---\n\n"' 2>/dev/null || echo "")
-
-          # Store in file for later use (create empty file if no releases)
-          # Use printf %b to interpret escape sequences (like \n) from jq output
           printf '%b' "$PREVIOUS_RELEASES" > previous_releases.md
-
-          # Also output as multi-line for reference
           echo "previous_releases<<EOF" >> $GITHUB_OUTPUT
           echo "$PREVIOUS_RELEASES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
-          if [ -z "$PREVIOUS_RELEASES" ]; then
-            echo "No previous releases found (this may be the first release)"
-          else
-            echo "Fetched previous release notes"
-          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
@@ -183,20 +158,16 @@ jobs:
       - name: Generate release notes
         id: release_notes
         run: |
-          # Get the previous tag or initial commit
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
 
-          # Get commits since last tag (or all commits if first release)
           if [ -z "$PREVIOUS_TAG" ]; then
             COMMITS=$(git log --pretty=format:"%s|%h" --reverse)
           else
             COMMITS=$(git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"%s|%h" --reverse)
           fi
 
-          # Extract version
           VERSION="${{ steps.version.outputs.version }}"
 
-          # Categorize commits
           FEATURES=""
           IMPROVEMENTS=""
           BUGFIXES=""
@@ -216,11 +187,10 @@ jobs:
             fi
           done <<< "$COMMITS"
 
-          # Generate release description following Cursor rule format
           {
             echo "🚀 Release v${VERSION}"
             echo ""
-            echo "This release includes updates and improvements to the Glyph Nova desktop application."
+            echo "This release includes updates and improvements to the Glyph Nova desktop application. Note: minimal, initial app; not yet broadly useful."
             echo ""
 
             if [ -n "$FEATURES" ]; then
@@ -251,7 +221,6 @@ jobs:
               echo ""
             fi
 
-            # Add previous release notes context if available
             if [ -f previous_releases.md ] && [ -s previous_releases.md ]; then
               echo ""
               echo "---"
@@ -297,10 +266,9 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "**Note:** This is a draft release. Please review and improve the description using Cursor with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases."
+            echo "**Note:** Draft release. Please review and improve with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases. Minimal initial app; not yet broadly useful."
           } > release_notes.md
 
-          # Output the notes
           cat release_notes.md
 
       - name: Get or create tag
@@ -309,20 +277,14 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           TAG_NAME="v${VERSION}"
 
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            # For workflow_dispatch, create tag if it doesn't exist
-            if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-              git config user.name "github-actions[bot]"
-              git config user.email "github-actions[bot]@users.noreply.github.com"
-              git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-              git push origin "$TAG_NAME" || exit 1
-              echo "Created and pushed tag: $TAG_NAME"
-            else
-              echo "Tag $TAG_NAME already exists"
-            fi
+          if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+            git push origin "$TAG_NAME" || exit 1
+            echo "Created and pushed tag: $TAG_NAME"
           else
-            # For tag push, use the existing tag
-            TAG_NAME="${{ github.ref_name }}"
+            echo "Tag $TAG_NAME already exists"
           fi
 
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
@@ -351,179 +313,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  bump-version:
-    needs: create-release
-    if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-      github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # Fetch full history for branch detection
-
-      - name: Extract current version
-        id: current_version
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            # For workflow_dispatch, get version from input
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            # For tag push, extract from ref name
-            VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          fi
-
-          # Validate semantic versioning format (X.Y.Z, no prerelease/build metadata)
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Version tag must be in semantic versioning format (X.Y.Z), got: $VERSION"
-            echo "Prerelease and build metadata (e.g., -alpha, +build) are not supported for version bumping"
-            exit 1
-          fi
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-          # Calculate next patch version
-          IFS='.' read -ra ADDR <<< "$VERSION"
-          MAJOR=${ADDR[0]}
-          MINOR=${ADDR[1]}
-          PATCH=${ADDR[2]}
-
-          # Validate that PATCH is numeric before arithmetic
-          if [[ ! "$PATCH" =~ ^[0-9]+$ ]]; then
-            echo "Error: Patch version must be numeric, got: $PATCH"
-            exit 1
-          fi
-
-          NEXT_PATCH=$((PATCH + 1))
-          NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}"
-          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
-          echo "Current: $VERSION, Next: $NEXT_VERSION"
-
-      - name: Commit and push version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Get the tag name for the release we just created
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TAG_NAME="v${{ github.event.inputs.version }}"
-          else
-            TAG_NAME="${{ github.ref_name }}"
-          fi
-
-          # Fetch the tag to ensure we have it locally
-          echo "Fetching tag: $TAG_NAME"
-          git fetch origin tag "$TAG_NAME" || true
-
-          # Get the commit SHA that the tag points to
-          TAG_COMMIT=$(git rev-parse "$TAG_NAME" 2>/dev/null || echo "")
-
-          if [ -z "$TAG_COMMIT" ]; then
-            echo "Error: Could not find tag $TAG_NAME"
-            exit 1
-          fi
-
-          echo "Tag $TAG_NAME points to commit: $TAG_COMMIT"
-
-          # Determine which branch to use (main or master)
-          BRANCH=""
-          if git branch -r --contains "$TAG_COMMIT" | grep -q "origin/main"; then
-            BRANCH="main"
-          elif git branch -r --contains "$TAG_COMMIT" | grep -q "origin/master"; then
-            BRANCH="master"
-          else
-            # Fallback: try main first, then master
-            echo "Warning: Tag commit not found on main or master, using main as fallback"
-            BRANCH="main"
-          fi
-
-          # Check out the branch FIRST (before modifying files)
-          echo "Checking out branch: $BRANCH"
-          if ! git checkout "$BRANCH"; then
-            echo "Failed to checkout $BRANCH, falling back to master"
-            if ! git checkout master; then
-              echo "Error: Failed to checkout both $BRANCH and master branches"
-              exit 1
-            fi
-            BRANCH="master"
-          fi
-          git pull origin "$BRANCH" || true
-
-          # Verify the tag commit is reachable from this branch
-          if ! git merge-base --is-ancestor "$TAG_COMMIT" HEAD 2>/dev/null; then
-            echo "Warning: Tag commit $TAG_COMMIT is not on branch $BRANCH"
-            echo "This may indicate the tag was created on a different branch"
-          fi
-
-          # NOW update version files (after checkout/pull, so changes aren't lost)
-          NEXT_VERSION="${{ steps.current_version.outputs.next_version }}"
-
-          # Update tauri.conf.json using Python for cross-platform compatibility
-          # Pass NEXT_VERSION as environment variable to avoid shell interpolation issues
-          NEXT_VERSION="$NEXT_VERSION" python3 << 'PYTHON_EOF'
-          import json
-          import re
-          import os
-
-          next_version = os.environ['NEXT_VERSION']
-
-          # Update tauri.conf.json
-          with open('src-tauri/tauri.conf.json', 'r') as f:
-              config = json.load(f)
-          config['version'] = next_version
-          with open('src-tauri/tauri.conf.json', 'w') as f:
-              json.dump(config, f, indent=2)
-
-          # Update Cargo.toml - only update version in [package] section
-          with open('src-tauri/Cargo.toml', 'r') as f:
-              lines = f.readlines()
-
-          in_package_section = False
-          updated = False
-          output_lines = []
-
-          for line in lines:
-              # Check if we're entering the [package] section
-              if line.strip() == '[package]':
-                  in_package_section = True
-                  output_lines.append(line)
-              # Check if we're leaving the [package] section (entering another section)
-              elif line.startswith('[') and in_package_section:
-                  in_package_section = False
-                  output_lines.append(line)
-              # Update version only if we're in [package] section and haven't updated yet
-              elif in_package_section and not updated and re.match(r'^\s*version\s*=\s*".*"', line):
-                  # Preserve leading whitespace and line ending
-                  leading_ws = line[:len(line) - len(line.lstrip())]
-                  line_ending = line[len(line.rstrip()):] if line.rstrip() != line else '\n'
-                  output_lines.append(f'{leading_ws}version = "{next_version}"{line_ending}')
-                  updated = True
-              else:
-                  output_lines.append(line)
-
-          with open('src-tauri/Cargo.toml', 'w') as f:
-              f.writelines(output_lines)
-          PYTHON_EOF
-
-          echo "Updated versions to $NEXT_VERSION"
-
-          # Stage and commit the changes
-          git add src-tauri/tauri.conf.json src-tauri/Cargo.toml
-
-          # Check if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No changes to commit - version files already up to date"
-          else
-            git commit -m "chore: bump version to ${{ steps.current_version.outputs.next_version }} for next release"
-          fi
-
-          # Push regardless of whether we committed (in case of no-op or successful commit)
-          # But fail if the push itself fails
-          git push origin "$BRANCH" || exit 1
-
-          echo "::notice title=Version Bump::Version bumped to ${{ steps.current_version.outputs.next_version }} on $BRANCH branch"
