@@ -16,6 +16,34 @@
 
 *No critical bugs currently tracked.*
 
+## Recently Fixed Critical Bugs
+
+- [x] **BUG-017:** Double text rendering in file tree for nested folders - **FIXED**
+  - **Location:** `web/src/components/FileTree/FileTreeItem.tsx:93-105`, `web/src/components/FileTree/FileTreeView.tsx:239-260`
+  - **Error:** Nested folders and files display duplicate text when expanded
+  - **Impact:** Critical - File tree shows confusing duplicate entries, poor UX
+  - **Status:** ✅ FIXED
+  - **Found:** 2025-12-17
+  - **Fixed:** 2025-12-17
+  - **Root Cause:**
+    - FileTreeView uses virtual scrolling with a flattened tree structure (lines 239-260)
+    - FileTreeItem also recursively renders children when expanded (lines 93-105)
+    - This causes double rendering: once from virtual scrolling list, once from recursive rendering
+    - The issue only appears on nested folders because root level items are only rendered once
+  - **Steps to Reproduce:**
+    1. Open file tree
+    2. Expand any folder
+    3. Expand a nested folder inside it
+    4. Observe duplicate text for nested items
+  - **Fix Applied:**
+    - Removed recursive rendering from FileTreeItem (lines 93-105)
+    - Removed `showChildren` and `hasChildren` variables (no longer needed)
+    - Removed recursive `node.children?.map()` rendering
+    - Changed return from `<>...</>` fragment to single `<div>` element
+    - Updated React.memo comparison to remove `children.length` check
+    - Virtual scrolling in FileTreeView now handles all rendering exclusively
+  - **Verification:** Test by expanding nested folders in file tree - should see no duplicate entries
+
 ## High Priority Bugs
 
 - [x] **BUG-010:** Directory reading error when loading file context - Fixed 2025-01-15

@@ -47,7 +47,7 @@ export class EmbeddingGenerator {
         },
         body: JSON.stringify({
           model: this.embeddingModel,
-          prompt: text,
+          input: text,
         }),
       });
 
@@ -58,13 +58,16 @@ export class EmbeddingGenerator {
 
       const data = await response.json();
 
-      if (!data.embedding || !Array.isArray(data.embedding)) {
-        throw new Error('Invalid response from Ollama API: missing embedding array');
+      if (!data.embeddings || !Array.isArray(data.embeddings) || data.embeddings.length === 0) {
+        throw new Error('Invalid response from Ollama API: missing embeddings array');
       }
 
+      // Ollama returns embeddings as an array of arrays, take the first one
+      const embedding = data.embeddings[0];
+
       // nomic-embed-text produces 768-dimensional embeddings
-      this.embeddingDimension = data.embedding.length;
-      return data.embedding;
+      this.embeddingDimension = embedding.length;
+      return embedding;
     } catch (error: any) {
       // If it's a network error or model not found, fall back to simple embeddings
       if (error.message.includes('fetch') || error.message.includes('ECONNREFUSED') || error.message.includes('not found')) {
