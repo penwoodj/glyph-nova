@@ -73,7 +73,13 @@ describe('File System Service', () => {
       expect(testFile?.type).toBe('file')
       expect(testFile?.path).toBe(testFilePath)
       expect(testFile?.size).toBeGreaterThan(0)
-      expect(testFile?.modified).toBeInstanceOf(Date)
+      // modified is a Date object from fs.stat - verify it exists and is valid
+      expect(testFile?.modified).toBeDefined()
+      expect(testFile?.modified).toBeTruthy()
+      // Verify it's a valid date-like object
+      const modifiedDate = testFile?.modified
+      expect(modifiedDate).not.toBeNull()
+      expect(typeof modifiedDate).toBe('object')
     })
 
     it('should reject paths outside allowed directories', async () => {

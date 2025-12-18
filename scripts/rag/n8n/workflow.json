@@ -1,0 +1,454 @@
+{
+  "name": "RAG Knowledge Graph Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "",
+      "notes": "Triggers every minute to check for new files (can be changed to watch folder)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// List files in watch folder\nconst fs = $fs;\nconst path = $path;\n\nconst watchFolder = $env.WATCH_FOLDER || '/home/jon/code/glyph-nova/scripts/rag';\nconst supportedExtensions = ['.txt', '.md', '.js', '.ts', '.json', '.py'];\n\nfunction getAllFiles(dirPath, arrayOfFiles = []) {\n  try {\n    const files = fs.readdirSync(dirPath);\n    \n    files.forEach(file => {\n      const filePath = path.join(dirPath, file);\n      try {\n        if (fs.statSync(filePath).isDirectory()) {\n          // Skip hidden directories and node_modules\n          if (!file.startsWith('.') && file !== 'node_modules') {\n            arrayOfFiles = getAllFiles(filePath, arrayOfFiles);\n          }\n        } else {\n          const ext = path.extname(file).toLowerCase();\n          if (supportedExtensions.includes(ext)) {\n            arrayOfFiles.push(filePath);\n          }\n        }\n      } catch (err) {\n        // Skip files we can't access\n      }\n    });\n  } catch (err) {\n    // Skip directories we can't access\n  }\n  \n  return arrayOfFiles;\n}\n\nconst files = getAllFiles(watchFolder);\nreturn files.map(filePath => ({\n  json: {\n    filePath: filePath,\n    fileName: path.basename(filePath)\n  }\n}));"
+      },
+      "id": "list-files",
+      "name": "List Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "notes": "Lists all supported files in the watch folder recursively"
+    },
+    {
+      "parameters": {
+        "fileName": "={{ $json.filePath }}",
+        "options": {}
+      },
+      "id": "read-file",
+      "name": "Read File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "notes": "Reads each file from the list"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Chunk text into smaller pieces\nconst chunkSize = 500;\nconst overlap = 50;\n\n// Get file content from previous node\nconst item = $input.item;\nconst text = item.binary?.data ? Buffer.from(item.binary.data, 'base64').toString('utf8') : item.json?.data || '';\nconst fileName = item.json?.fileName || 'unknown';\nconst filePath = item.json?.filePath || fileName;\n\nif (!text || text.length === 0) {\n  return [];\n}\n\nconst chunks = [];\n// Simple chunking with overlap\nfor (let i = 0; i < text.length; i += chunkSize - overlap) {\n  const chunk = text.slice(i, i + chunkSize);\n  chunks.push({\n    json: {\n      chunkText: chunk,\n      chunkIndex: Math.floor(i / (chunkSize - overlap)),\n      startIndex: i,\n      endIndex: i + chunk.length,\n      sourceFile: fileName,\n      sourcePath: filePath\n    }\n  });\n}\n\nreturn chunks;"
+      },
+      "id": "chunk-text",
+      "name": "Chunk Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "notes": "Splits text into chunks of 500 chars with 50 char overlap"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:11434/api/embed",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ {\n  model: 'nomic-embed-text',\n  prompt: $json.chunkText || ''\n} }}",
+        "options": {}
+      },
+      "id": "generate-embeddings",
+      "name": "Generate Embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1050, 300],
+      "notes": "Generates embeddings using Ollama"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract embedding from Ollama response\nconst item = $input.item;\nconst embedding = item.json?.embedding || [];\nreturn {\n  json: {\n    ...item.json,\n    embedding: embedding,\n    embeddingLength: embedding.length\n  }\n};"
+      },
+      "id": "extract-embedding",
+      "name": "Extract Embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300],
+      "notes": "Extracts embedding vector from Ollama response"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chunks (id, text, embedding, metadata, source_file, chunk_index)\nVALUES (\n  gen_random_uuid(),\n  $1,\n  $2::vector,\n  $3::jsonb,\n  $4,\n  $5\n)\nON CONFLICT (source_file, chunk_index) DO UPDATE\nSET text = EXCLUDED.text,\n    embedding = EXCLUDED.embedding,\n    metadata = EXCLUDED.metadata\nRETURNING id",
+        "additionalFields": {
+          "queryParameters": "={{ [\n  $json.chunkText,\n  JSON.stringify($json.embedding),\n  JSON.stringify({\n    startIndex: $json.startIndex,\n    endIndex: $json.endIndex,\n    chunkIndex: $json.chunkIndex\n  }),\n  $json.sourceFile,\n  $json.chunkIndex\n] }}"
+        }
+      },
+      "id": "store-vector",
+      "name": "Store in Vector DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1450, 300],
+      "notes": "Stores chunks with embeddings in Postgres (requires pgvector extension)",
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Postgres DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:11434/api/generate",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"model\": \"llama2\",\n  \"prompt\": \"Extract entities from this text chunk. Return JSON only:\\n{\\n  \\\"entities\\\": [\\n    {\\n      \\\"name\\\": \\\"entity_name\\\",\\n      \\\"type\\\": \\\"function|class|concept|api|file\\\",\\n      \\\"description\\\": \\\"brief description\\\",\\n      \\\"confidence\\\": 0.0-1.0\\n    }\\n  ]\\n}\\n\\nText chunk:\\n\" + $json.chunkText,\n  \"stream\": false\n}",
+        "options": {}
+      },
+      "id": "extract-entities",
+      "name": "Extract Entities",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 500],
+      "notes": "Extracts entities using Ollama LLM"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse entity extraction response\nconst item = $input.item;\nconst response = item.json?.response || item.json?.text || '';\n\n// Try to extract JSON from response\nlet entities = [];\ntry {\n  // Look for JSON in the response\n  const jsonMatch = response.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    const parsed = JSON.parse(jsonMatch[0]);\n    entities = parsed.entities || [];\n  }\n} catch (err) {\n  // If parsing fails, return empty array\n  entities = [];\n}\n\n// If no entities found, return empty array\nif (entities.length === 0) {\n  return [];\n}\n\n// Add entities to chunk data\nreturn entities.map(entity => ({\n  json: {\n    chunkText: item.json?.chunkText || '',\n    chunkIndex: item.json?.chunkIndex || 0,\n    sourceFile: item.json?.sourceFile || '',\n    sourcePath: item.json?.sourcePath || '',\n    entityName: entity.name,\n    entityType: entity.type,\n    entityDescription: entity.description,\n    entityConfidence: entity.confidence || 0.5\n  }\n}));"
+      },
+      "id": "parse-entities",
+      "name": "Parse Entities",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 500],
+      "notes": "Parses entity extraction response"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:7474/db/data/transaction/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Basic {{ $env.NEO4J_AUTH || 'bmVvNGo6cGFzc3dvcmQ=' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "statements",
+              "value": "=[{\n  \"statement\": \"MERGE (e:Entity {name: $name, type: $type})\\n  SET e.description = $description,\\n      e.confidence = $confidence,\\n      e.chunkIndex = $chunkIndex,\\n      e.sourceFile = $sourceFile\\n  RETURN e\",\n  \"parameters\": {\n    \"name\": \"{{ $json.entityName }}\",\n    \"type\": \"{{ $json.entityType }}\",\n    \"description\": \"{{ $json.entityDescription }}\",\n    \"confidence\": {{ $json.entityConfidence || 0.5 }},\n    \"chunkIndex\": {{ $json.chunkIndex }},\n    \"sourceFile\": \"{{ $json.sourceFile }}\"\n  }\n}]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "store-graph-entities",
+      "name": "Store Graph Entities",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 500],
+      "notes": "Stores entities in Neo4j graph database"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rag-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 700],
+      "webhookId": "rag-query-webhook",
+      "notes": "Webhook for CLI queries"
+    },
+    {
+      "parameters": {},
+      "id": "chat-trigger",
+      "name": "Chat Trigger",
+      "type": "n8n-nodes-base.chatTrigger",
+      "typeVersion": 1,
+      "position": [250, 900],
+      "webhookId": "",
+      "notes": "Chat trigger for n8n dashboard"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract query from trigger\nconst item = $input.item;\nconst query = item.json?.query || item.json?.body?.query || item.json?.message || item.json?.text || '';\n\nreturn {\n  json: {\n    query: query,\n    source: item.json?.source || 'webhook'\n  }\n};"
+      },
+      "id": "extract-query",
+      "name": "Extract Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 800],
+      "notes": "Extracts query text from trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:11434/api/embed",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ {\n  model: 'nomic-embed-text',\n  prompt: $json.query || ''\n} }}",
+        "options": {}
+      },
+      "id": "generate-query-embedding",
+      "name": "Generate Query Embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 800],
+      "notes": "Generates embedding for query"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT chunk_id, text, metadata, source_file,\n       1 - (embedding <=> $1::vector) as similarity\nFROM chunks\nORDER BY embedding <=> $1::vector\nLIMIT 10",
+        "additionalFields": {
+          "queryParameters": "={{ [JSON.stringify($json.embedding)] }}"
+        }
+      },
+      "id": "vector-search",
+      "name": "Vector Search",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [850, 800],
+      "notes": "Searches for similar chunks using vector similarity",
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Postgres DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine vector search results\nconst vectorResults = $input.all();\nconst query = $input.first().json.query || '';\n\nreturn {\n  json: {\n    query: query,\n    vectorResults: vectorResults.map(r => r.json),\n    resultCount: vectorResults.length\n  }\n};"
+      },
+      "id": "combine-results",
+      "name": "Combine Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 800],
+      "notes": "Combines search results"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:11434/api/generate",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"model\": \"llama2\",\n  \"prompt\": \"Answer the question using the provided context from the knowledge base.\\n\\nQuestion: \" + $json.query + \"\\n\\nContext:\\n\" + $json.vectorResults.map(r => \"- \" + r.text).join(\"\\n\") + \"\\n\\nProvide a comprehensive answer citing relevant sources.\",\n  \"stream\": false\n}",
+        "options": {}
+      },
+      "id": "generate-response",
+      "name": "Generate Response",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 800],
+      "notes": "Generates final response using LLM"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { response: $json.response || $json } }}"
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1450, 800],
+      "notes": "Returns response to webhook"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "List Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files": {
+      "main": [
+        [
+          {
+            "node": "Read File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read File": {
+      "main": [
+        [
+          {
+            "node": "Chunk Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Text": {
+      "main": [
+        [
+          {
+            "node": "Generate Embeddings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Entities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Embeddings": {
+      "main": [
+        [
+          {
+            "node": "Extract Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Embedding": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Entities": {
+      "main": [
+        [
+          {
+            "node": "Parse Entities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Entities": {
+      "main": [
+        [
+          {
+            "node": "Store Graph Entities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Query": {
+      "main": [
+        [
+          {
+            "node": "Generate Query Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Query Embedding": {
+      "main": [
+        [
+          {
+            "node": "Vector Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Search": {
+      "main": [
+        [
+          {
+            "node": "Combine Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Results": {
+      "main": [
+        [
+          {
+            "node": "Generate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Response": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-16T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { debugLog } from '../utils/debug.js';
 /**
  * Query Expansion Module
  *
@@ -26,6 +27,10 @@ export class QueryExpander {
      * @returns Array of query variations (includes original as first element)
      */
     async expandQuery(originalQuery) {
+        // VERIFIED: Query expansion entry - confirms expansion method called with original query
+        // Expected Result: Log shows original query being expanded
+        // Verification Level: DEBUG - Confirms query expansion process initiated
+        debugLog('QueryExpansion', `Expanding query: "${originalQuery}"`);
         // If only 1 variation requested, just return original
         if (this.numVariations === 1) {
             return [originalQuery];
@@ -40,7 +45,15 @@ Original query: "${originalQuery}"
 
 Generate ${this.numVariations} variations, one per line, without numbering or bullets:`;
         try {
+            // VERIFIED: LLM query expansion - confirms Ollama called to generate query variations
+            // Expected Result: Log shows number of variations being generated (typically 3)
+            // Verification Level: DEBUG - Confirms LLM called to generate query variations
+            debugLog('QueryExpansion', `Generating ${this.numVariations} query variations using LLM`);
             const variations = await this.generateWithOllama(prompt);
+            // VERIFIED: Variation parsing - confirms LLM response parsed into individual query variations
+            // Expected Result: Log confirms parsing step initiated
+            // Verification Level: DEBUG - Confirms LLM response being processed into query variations
+            debugLog('QueryExpansion', `Parsing LLM response into query variations`);
             // Parse variations (one per line)
             const lines = variations
                 .split('\n')
@@ -53,15 +66,21 @@ Generate ${this.numVariations} variations, one per line, without numbering or bu
                     result.push(lines[i]);
                 }
             }
+            // VERIFIED: Result padding - confirms variations array padded to numVariations if needed
             // If we didn't get enough variations, pad with original
             while (result.length < this.numVariations) {
                 result.push(originalQuery);
             }
+            // VERIFIED: Query expansion success - confirms array of query variations returned (original + variations)
+            // Expected Result: Log shows total number of variations generated (original + N variations)
+            // Verification Level: DEBUG - Confirms successful query expansion with variation count
+            debugLog('QueryExpansion', `Generated ${result.length} query variations`);
             return result.slice(0, this.numVariations);
         }
         catch (error) {
-            // If expansion fails, just return original query
+            // VERIFIED: Expansion fallback - confirms original query returned if expansion fails
             console.warn(`[QueryExpansion] Failed to expand query, using original: ${error.message}`);
+            // If expansion fails, just return original query
             return [originalQuery];
         }
     }

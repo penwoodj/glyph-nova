@@ -2,8 +2,10 @@ name: Build and Release Desktop App
 
 on:
   push:
+    branches:
+      - main
     tags:
-      - 'v*.*.*'  # Trigger on version tags like v0.1.0, v1.2.3, etc.
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:
@@ -48,6 +50,28 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history to check for tags
+
+      - name: Verify release trigger
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # For pushes to main, check if the commit has a version tag
+          COMMIT_SHA="${{ github.sha }}"
+          TAGS=$(git tag --points-at "$COMMIT_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)
+
+          if [ -z "$TAGS" ]; then
+            echo "::notice title=Skipping Release::Commit $COMMIT_SHA on main branch has no version tag (v*.*.*). This is likely a version bump commit."
+            echo "Skipping release workflow. Releases only trigger when:"
+            echo "  1. A version tag (v*.*.*) is pushed, OR"
+            echo "  2. A commit to main has a version tag, OR"
+            echo "  3. workflow_dispatch is used manually"
+            exit 78  # Exit code 78 = neutral exit (skips workflow)
+          else
+            echo "✅ Found version tag(s) on commit $COMMIT_SHA:"
+            echo "$TAGS"
+            echo "Proceeding with release..."
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -134,15 +158,35 @@ jobs:
               echo "Error: Version must be in semantic versioning format (X.Y.Z), got: $VERSION"
               exit 1
             fi
-          else
-            # Extract version from tag name (remove 'v' prefix)
-            VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          elif [[ "${{ github.ref }}" =~ ^refs/tags/v(.+)$ ]]; then
+            # Tag push: extract version from tag name (refs/tags/v1.2.3 -> 1.2.3)
+            TAG_REF="${{ github.ref }}"
+            VERSION="${BASH_REMATCH[1]}"
             # Validate semantic versioning format (X.Y.Z, no prerelease/build metadata)
             if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo "Error: Version tag must be in semantic versioning format (X.Y.Z), got: $VERSION"
               echo "Prerelease and build metadata (e.g., -alpha, +build) are not supported for releases"
               exit 1
             fi
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # Push to main: extract version from tag on commit
+            COMMIT_SHA="${{ github.sha }}"
+            TAG=$(git tag --points-at "$COMMIT_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            if [ -z "$TAG" ]; then
+              echo "Error: Commit $COMMIT_SHA on main branch has no version tag (v*.*.*)"
+              exit 1
+            fi
+            # Extract version from tag (v1.2.3 -> 1.2.3)
+            if [[ "$TAG" =~ ^v(.+)$ ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+            else
+              echo "Error: Invalid tag format: $TAG"
+              exit 1
+            fi
+            echo "Found version tag $TAG on commit $COMMIT_SHA"
+          else
+            echo "Error: Unexpected ref format: ${{ github.ref }}"
+            exit 1
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
@@ -320,9 +364,22 @@ jobs:
             else
               echo "Tag $TAG_NAME already exists"
             fi
+          elif [[ "${{ github.ref }}" =~ ^refs/tags/(.+)$ ]]; then
+            # For tag push, the tag already exists and triggered this workflow
+            TAG_NAME="${BASH_REMATCH[1]}"
+            echo "Using existing tag from tag push: $TAG_NAME"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # For push to main, the tag exists on the commit (verified in earlier step)
+            COMMIT_SHA="${{ github.sha }}"
+            TAG_NAME=$(git tag --points-at "$COMMIT_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            if [ -z "$TAG_NAME" ]; then
+              echo "Error: No version tag found on commit $COMMIT_SHA"
+              exit 1
+            fi
+            echo "Using existing tag from main branch commit: $TAG_NAME"
           else
-            # For tag push, use the existing tag
-            TAG_NAME="${{ github.ref_name }}"
+            echo "Error: Unexpected ref format: ${{ github.ref }}"
+            exit 1
           fi
 
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
@@ -354,7 +411,7 @@ jobs:
   bump-version:
     needs: create-release
     if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')) ||
       github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
@@ -373,9 +430,28 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             # For workflow_dispatch, get version from input
             VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref }}" =~ ^refs/tags/v(.+)$ ]]; then
+            # Tag push: extract version from tag name (refs/tags/v1.2.3 -> 1.2.3)
+            VERSION="${BASH_REMATCH[1]}"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # Push to main: extract version from tag on commit
+            COMMIT_SHA="${{ github.sha }}"
+            TAG=$(git tag --points-at "$COMMIT_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+            if [ -z "$TAG" ]; then
+              echo "Error: Commit $COMMIT_SHA on main branch has no version tag (v*.*.*)"
+              exit 1
+            fi
+            # Extract version from tag (v1.2.3 -> 1.2.3)
+            if [[ "$TAG" =~ ^v(.+)$ ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+            else
+              echo "Error: Invalid tag format: $TAG"
+              exit 1
+            fi
+            echo "Found version tag $TAG on commit $COMMIT_SHA"
           else
-            # For tag push, extract from ref name
-            VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+            echo "Error: Unexpected ref format: ${{ github.ref }}"
+            exit 1
           fi
 
           # Validate semantic versioning format (X.Y.Z, no prerelease/build metadata)
@@ -413,7 +489,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             TAG_NAME="v${{ github.event.inputs.version }}"
           else
-            TAG_NAME="${{ github.ref_name }}"
+            TAG_NAME="v${{ steps.current_version.outputs.version }}"
           fi
 
           # Fetch the tag to ensure we have it locally

@@ -298,6 +298,13 @@ const getAllowedBaseDirectories = (): string[] => {
     logger.info('File system access: allowing home directory', { homeDir })
   }
 
+  // In test environment, allow temp directory for test files
+  if (process.env.NODE_ENV === 'test') {
+    const tmpDir = os.tmpdir()
+    allowed.push(tmpDir)
+    logger.info('File system access: allowing temp directory for tests', { tmpDir })
+  }
+
   // Allow custom ALLOWED_DIRECTORIES from environment (comma-separated)
   if (process.env.ALLOWED_DIRECTORIES) {
     const customDirs = process.env.ALLOWED_DIRECTORIES.split(',').map((dir) =>

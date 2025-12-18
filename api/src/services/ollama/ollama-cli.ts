@@ -317,8 +317,33 @@ export class OllamaCLIService {
     onComplete: (exitCode: number | null) => void
   ): ChildProcess {
     if (!this.validateModelName(model)) {
-      onError(new Error(`Invalid model name: ${model}`))
-      throw new Error(`Invalid model name: ${model}`)
+      // Use callback-based error handling to maintain API contract
+      // Create a dummy process that immediately errors
+      const child = spawn('echo', [''], { stdio: 'ignore' })
+      // Attach error listener before scheduling callbacks to prevent unhandled errors
+      child.on('error', () => {
+        // Suppress any errors from the dummy process
+      })
+      process.nextTick(() => {
+        onError(new Error(`Invalid model name: ${model}`))
+        onComplete(1)
+      })
+      return child
+    }
+
+    if (!prompt || prompt.trim().length === 0) {
+      // Use callback-based error handling to maintain API contract
+      // Create a dummy process that immediately errors
+      const child = spawn('echo', [''], { stdio: 'ignore' })
+      // Attach error listener before scheduling callbacks to prevent unhandled errors
+      child.on('error', () => {
+        // Suppress any errors from the dummy process
+      })
+      process.nextTick(() => {
+        onError(new Error('Prompt cannot be empty'))
+        onComplete(1)
+      })
+      return child
     }
 
     const child = spawn('ollama', ['run', model, prompt], {
@@ -337,6 +362,93 @@ export class OllamaCLIService {
     child.stderr?.on('data', (data: Buffer) => {
       const chunk = data.toString()
       // Also stream stderr (might contain progress or error info)
+      onChunk(chunk)
+    })
+
+    child.on('error', (error) => {
+      if ((error as any).code === 'ENOENT') {
+        onError(new Error('Ollama is not installed or not in PATH'))
+      } else {
+        onError(error)
+      }
+    })
+
+    child.on('close', (code) => {
+      onComplete(code)
+    })
+
+    return child
+  }
+
+  /**
+   * Pull a model from Ollama registry
+   *
+   * @param model - Model name (e.g., 'llama3.2', 'mistral', 'codellama')
+   * @param timeoutMs - Timeout in milliseconds (default: 300000 = 5 minutes, models can be large)
+   * @returns Promise that resolves when model is pulled
+   */
+  async pullModel(model: string, timeoutMs: number = 300000): Promise<OllamaCommandResult> {
+    if (!this.validateModelName(model)) {
+      throw new Error(`Invalid model name: ${model}`)
+    }
+
+    // Pull command can take a while for large models, so use longer timeout
+    const result = await this.executeCommand('pull', [model], timeoutMs)
+
+    if (!result.success) {
+      const parsedError = this.parseError(result.stderr, 'pull', [model])
+      throw new Error(parsedError.message)
+    }
+
+    return result
+  }
+
+  /**
+   * Stream model pull progress (for long-running pulls)
+   *
+   * @param model - Model name to pull
+   * @param onChunk - Callback for progress updates
+   * @param onError - Callback for errors
+   * @param onComplete - Callback when pull completes
+   * @returns ChildProcess instance
+   */
+  streamPull(
+    model: string,
+    onChunk: (chunk: string) => void,
+    onError: (error: Error) => void,
+    onComplete: (exitCode: number | null) => void
+  ): ChildProcess {
+    if (!this.validateModelName(model)) {
+      // Use callback-based error handling to maintain API contract
+      // Create a dummy process that immediately errors
+      const child = spawn('echo', [''], { stdio: 'ignore' })
+      // Attach error listener before scheduling callbacks to prevent unhandled errors
+      child.on('error', () => {
+        // Suppress any errors from the dummy process
+      })
+      process.nextTick(() => {
+        onError(new Error(`Invalid model name: ${model}`))
+        onComplete(1)
+      })
+      return child
+    }
+
+    const child = spawn('ollama', ['pull', model], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        PATH: process.env.PATH || '',
+        HOME: process.env.HOME || '',
+      }
+    })
+
+    child.stdout?.on('data', (data: Buffer) => {
+      const chunk = data.toString()
+      onChunk(chunk)
+    })
+
+    child.stderr?.on('data', (data: Buffer) => {
+      const chunk = data.toString()
+      // Stream stderr as well (often contains progress info)
       onChunk(chunk)
     })
 
