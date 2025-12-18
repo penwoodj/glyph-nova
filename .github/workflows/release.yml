@@ -261,44 +261,43 @@ jobs:
               cat previous_releases.md
             fi
 
-          cat << 'INSTALL_EOF'
-📦 **Installation**
-
-**macOS:**
-1. Download the `.dmg` file for your architecture (Intel or Apple Silicon)
-2. Open the downloaded `.dmg` file
-3. Drag Glyph Nova to your Applications folder
-4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)
-
-**Windows:**
-1. Download the `.exe` installer for your architecture (x64 or ARM64)
-2. Run the installer and follow the setup wizard
-3. Launch Glyph Nova from the Start menu
-
-**Linux:**
-- **Debian/Ubuntu**: Download and install the `.deb` file
-  ```bash
-  sudo dpkg -i glyph-nova_*.deb
-  ```
-- **Fedora/RHEL**: Download and install the `.rpm` file
-  ```bash
-  sudo rpm -i glyph-nova-*.rpm
-  ```
-- **AppImage**: Download the `.AppImage` file, make it executable, and run:
-  ```bash
-  chmod +x glyph-nova_*.AppImage
-  ./glyph-nova_*.AppImage
-  ```
-
-**System Requirements:**
-- macOS: macOS 10.15 (Catalina) or later
-- Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)
-- Linux: Modern distributions with WebKitGTK
-
----
-
-**Note:** This is a draft release. Please review and improve the description using Cursor with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases.
-INSTALL_EOF
+            echo ""
+            echo "📦 **Installation**"
+            echo ""
+            echo "**macOS:**"
+            echo "1. Download the \`.dmg\` file for your architecture (Intel or Apple Silicon)"
+            echo "2. Open the downloaded \`.dmg\` file"
+            echo "3. Drag Glyph Nova to your Applications folder"
+            echo "4. Open Glyph Nova from Applications (you may need to allow it in Security & Privacy settings)"
+            echo ""
+            echo "**Windows:**"
+            echo "1. Download the \`.exe\` installer for your architecture (x64 or ARM64)"
+            echo "2. Run the installer and follow the setup wizard"
+            echo "3. Launch Glyph Nova from the Start menu"
+            echo ""
+            echo "**Linux:**"
+            echo "- **Debian/Ubuntu**: Download and install the \`.deb\` file"
+            echo "  \`\`\`bash"
+            echo "  sudo dpkg -i glyph-nova_*.deb"
+            echo "  \`\`\`"
+            echo "- **Fedora/RHEL**: Download and install the \`.rpm\` file"
+            echo "  \`\`\`bash"
+            echo "  sudo rpm -i glyph-nova-*.rpm"
+            echo "  \`\`\`"
+            echo "- **AppImage**: Download the \`.AppImage\` file, make it executable, and run:"
+            echo "  \`\`\`bash"
+            echo "  chmod +x glyph-nova_*.AppImage"
+            echo "  ./glyph-nova_*.AppImage"
+            echo "  \`\`\`"
+            echo ""
+            echo "**System Requirements:**"
+            echo "- macOS: macOS 10.15 (Catalina) or later"
+            echo "- Windows: Windows 7 or later (Windows 10 20H2+ recommended for WebView2)"
+            echo "- Linux: Modern distributions with WebKitGTK"
+            echo ""
+            echo "---"
+            echo ""
+            echo "**Note:** This is a draft release. Please review and improve the description using Cursor with the release-descriptions.mdc rule to ensure accuracy and avoid duplication with previous releases."
           } > release_notes.md
 
           # Output the notes
