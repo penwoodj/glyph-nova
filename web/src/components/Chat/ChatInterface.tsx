@@ -406,8 +406,9 @@ export const ChatInterface = () => {
             style={{
               backgroundColor: 'var(--vscode-input-bg)',
               color: 'var(--vscode-fg)',
+              minHeight: '60px',
+              maxHeight: '200px'
             }}
-            style={{ minHeight: '60px', maxHeight: '200px' }}
           />
           <button
             onClick={handleSend}
