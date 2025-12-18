@@ -69,6 +69,6 @@ jobs:
       - name: Build Tauri app (no bundle)
         run: |
           cd src-tauri
-          yarn tauri build --bundles none
+          yarn tauri build --no-bundle
         continue-on-error: false
 

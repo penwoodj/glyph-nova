@@ -317,8 +317,33 @@ export class OllamaCLIService {
     onComplete: (exitCode: number | null) => void
   ): ChildProcess {
     if (!this.validateModelName(model)) {
-      // Fail fast and let caller handle via exception (no double-reporting)
-      throw new Error(`Invalid model name: ${model}`)
+      // Use callback-based error handling to maintain API contract
+      // Create a dummy process that immediately errors
+      const child = spawn('echo', [''], { stdio: 'ignore' })
+      // Attach error listener before scheduling callbacks to prevent unhandled errors
+      child.on('error', () => {
+        // Suppress any errors from the dummy process
+      })
+      process.nextTick(() => {
+        onError(new Error(`Invalid model name: ${model}`))
+        onComplete(1)
+      })
+      return child
+    }
+
+    if (!prompt || prompt.trim().length === 0) {
+      // Use callback-based error handling to maintain API contract
+      // Create a dummy process that immediately errors
+      const child = spawn('echo', [''], { stdio: 'ignore' })
+      // Attach error listener before scheduling callbacks to prevent unhandled errors
+      child.on('error', () => {
+        // Suppress any errors from the dummy process
+      })
+      process.nextTick(() => {
+        onError(new Error('Prompt cannot be empty'))
+        onComplete(1)
+      })
+      return child
     }
 
     const child = spawn('ollama', ['run', model, prompt], {
@@ -394,8 +419,18 @@ export class OllamaCLIService {
     onComplete: (exitCode: number | null) => void
   ): ChildProcess {
     if (!this.validateModelName(model)) {
-      // Fail fast and let caller handle via exception (no double-reporting)
-      throw new Error(`Invalid model name: ${model}`)
+      // Use callback-based error handling to maintain API contract
+      // Create a dummy process that immediately errors
+      const child = spawn('echo', [''], { stdio: 'ignore' })
+      // Attach error listener before scheduling callbacks to prevent unhandled errors
+      child.on('error', () => {
+        // Suppress any errors from the dummy process
+      })
+      process.nextTick(() => {
+        onError(new Error(`Invalid model name: ${model}`))
+        onComplete(1)
+      })
+      return child
     }
 
     const child = spawn('ollama', ['pull', model], {

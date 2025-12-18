@@ -1,6 +1,6 @@
 # GlyphNova - Desktop Chat Application
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/yourusername/glyph-nova)
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-20.x-brightgreen.svg)](https://nodejs.org)
 
